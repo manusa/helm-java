@@ -26,11 +26,23 @@ public class CreateCommand implements Callable<Helm> {
     return new Helm(dir.normalize().resolve(name));
   }
 
+  /**
+   * Name of the chart to create.
+   * <p>
+   * This will also be the name of the directory containing the chart.
+   * @param name a {@link String} with the name of the chart.
+   * @return this {@link CreateCommand} instance.
+   */
   public CreateCommand withName(String name) {
     this.name = name;
     return this;
   }
 
+  /**
+   * Path to the directory where the directory containing the chart files will be created.
+   * @param dir a {@link Path} to the directory.
+   * @return this {@link CreateCommand} instance.
+   */
   public CreateCommand withDir(Path dir) {
     this.dir = dir;
     return this;

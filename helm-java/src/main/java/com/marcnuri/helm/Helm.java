@@ -19,6 +19,10 @@ public class Helm {
     this.path = path;
   }
 
+  /**
+   * This command creates a chart directory along with the common files and directories used in a chart.
+   * @return the {@link CreateCommand} callable command.
+   */
   public static CreateCommand create() {
     return new CreateCommand(NativeLibHolder.INSTANCE.load());
   }
