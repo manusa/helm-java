@@ -23,7 +23,7 @@ public class CreateCommand implements Callable<Helm> {
     if (result.err != null) {
       throw new IllegalStateException(result.err);
     }
-    return new Helm(dir.normalize());
+    return new Helm(dir.normalize().resolve(name));
   }
 
   public CreateCommand withName(String name) {
