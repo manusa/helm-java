@@ -21,13 +21,13 @@ public interface NativeLibrary {
 
   String getBinaryName();
 
-  default NativeHelm load() {
+  default HelmLib load() {
     final Path temp = createTempDirectory();
     final Path tempBinary = temp.resolve(getBinaryName());
     tempBinary.toFile().deleteOnExit();
     try (final InputStream stream = Objects.requireNonNull(getClass().getResourceAsStream("/" + getBinaryName()))) {
       Files.copy(stream, tempBinary, StandardCopyOption.REPLACE_EXISTING);
-      return Native.load(tempBinary.toAbsolutePath().toString(), NativeHelm.class);
+      return Native.load(tempBinary.toAbsolutePath().toString(), HelmLib.class);
     } catch (IOException exception) {
       throw new IllegalStateException("Unable to load native library " + getBinaryName(), exception);
     }

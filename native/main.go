@@ -4,7 +4,7 @@ package main
 #include <stdlib.h>
 typedef struct {
 	char* err;
-} HelmResult;
+} Result;
 
 struct CreateOptions {
 	char* name;
@@ -15,11 +15,10 @@ import "C"
 import (
 	"fmt"
 	"github.com/manusa/helm-java/native/internal/helm"
-	"unsafe"
 )
 
 //export Create
-func Create(options *C.struct_CreateOptions) C.HelmResult {
+func Create(options *C.struct_CreateOptions) C.Result {
 	var err string
 	defer func() {
 		if r := recover(); r != nil {
@@ -33,11 +32,11 @@ func Create(options *C.struct_CreateOptions) C.HelmResult {
 		err = ex.Error()
 	}
 	if err == "" {
-		return C.HelmResult{}
+		return C.Result{}
 	}
 	cstr := C.CString(err)
-	defer C.free(unsafe.Pointer(cstr))
-	return C.HelmResult{err: cstr}
+	//defer C.free(unsafe.Pointer(cstr))
+	return C.Result{err: cstr}
 }
 
 func main() {
