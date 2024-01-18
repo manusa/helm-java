@@ -1,0 +1,14 @@
+.idea/
+*.iml
+
+target/
+
+*.dll
+*.so
+*.dylib
+*.h
+
+*.test
+
+vendor/
+go.work

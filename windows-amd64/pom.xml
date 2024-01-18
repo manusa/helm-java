@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.marcnuri.helm-java</groupId>
+    <artifactId>helm-java-parent</artifactId>
+    <version>0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>windows-amd64</artifactId>
+  <name>Helm Java :: Windows Amd64</name>
+  <description>
+    Native binaries for Helm Java for Windows Amd64
+  </description>
+
+  <properties>
+    <enforcer.skipRules>requireFilesExist</enforcer.skipRules>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>lib-api</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>../lib</directory>
+        <includes>
+          <include>helm-windows-4.0-amd64.h</include>
+          <include>helm-windows-4.0-amd64.dll</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+</project>

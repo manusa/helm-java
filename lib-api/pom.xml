@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.marcnuri.helm-java</groupId>
+    <artifactId>helm-java-parent</artifactId>
+    <version>0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>lib-api</artifactId>
+  <name>Helm Java :: Native Library API</name>
+  <description>
+    Native library API, allows to load the Native binaries.
+  </description>
+
+  <properties>
+    <enforcer.skipRules>requireFilesExist</enforcer.skipRules>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-jpms</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform-jpms</artifactId>
+    </dependency>
+  </dependencies>
+</project>
