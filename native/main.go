@@ -15,6 +15,7 @@ import "C"
 import (
 	"fmt"
 	"github.com/manusa/helm-java/native/internal/helm"
+	"unsafe"
 )
 
 //export Create
@@ -37,6 +38,11 @@ func Create(options *C.struct_CreateOptions) C.Result {
 	cstr := C.CString(err)
 	//defer C.free(unsafe.Pointer(cstr))
 	return C.Result{err: cstr}
+}
+
+//export Free
+func Free(result C.Result) {
+	C.free(unsafe.Pointer(result.err))
 }
 
 func main() {

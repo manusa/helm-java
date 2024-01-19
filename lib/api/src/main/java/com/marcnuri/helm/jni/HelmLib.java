@@ -6,4 +6,6 @@ public interface HelmLib extends Library {
 
   Result Create(CreateOptions options);
 
+  void Free(Result result);
+
 }

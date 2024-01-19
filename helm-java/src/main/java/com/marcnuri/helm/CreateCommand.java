@@ -20,6 +20,7 @@ public class CreateCommand implements Callable<Helm> {
   @Override
   public Helm call() {
     final Result result = helmLib.Create(new CreateOptions(name, dir.normalize().toFile().getAbsolutePath()));
+    helmLib.Free(result);
     if (result.err != null) {
       throw new IllegalStateException(result.err);
     }
