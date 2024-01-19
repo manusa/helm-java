@@ -2,28 +2,25 @@ package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.CreateOptions;
 import com.marcnuri.helm.jni.HelmLib;
-import com.marcnuri.helm.jni.Result;
 
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 
-public class CreateCommand implements Callable<Helm> {
+public class CreateCommand extends HelmCommand<Helm> {
 
-  private final HelmLib helmLib;
   private String name;
   private Path dir;
 
   public CreateCommand(HelmLib helmLib) {
-    this.helmLib = helmLib;
+    super(helmLib);
   }
 
+  /**
+   * Execute the create command.
+   * @return a {@link Helm} instance pointing to the directory containing the chart files.
+   */
   @Override
   public Helm call() {
-    final Result result = helmLib.Create(new CreateOptions(name, dir.normalize().toFile().getAbsolutePath()));
-    helmLib.Free(result);
-    if (result.err != null && !result.err.trim().isEmpty()) {
-      throw new IllegalStateException(result.err);
-    }
+    run(hl -> hl.Create(new CreateOptions(name, dir.normalize().toFile().getAbsolutePath())));
     return new Helm(dir.normalize().resolve(name));
   }
 

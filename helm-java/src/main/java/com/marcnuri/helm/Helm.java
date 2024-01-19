@@ -28,4 +28,7 @@ public class Helm {
     return new CreateCommand(HelmLibHolder.INSTANCE);
   }
 
+  public LintCommand lint() {
+    return new LintCommand(HelmLibHolder.INSTANCE, path);
+  }
 }
