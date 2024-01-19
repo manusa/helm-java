@@ -64,12 +64,12 @@
   </properties>
 
   <modules>
-    <module>lib-api</module>
-    <module>darwin-amd64</module>
-    <module>darwin-arm64</module>
-    <module>linux-amd64</module>
-    <module>linux-arm64</module>
-    <module>windows-amd64</module>
+    <module>lib/api</module>
+    <module>lib/darwin-amd64</module>
+    <module>lib/darwin-arm64</module>
+    <module>lib/linux-amd64</module>
+    <module>lib/linux-arm64</module>
+    <module>lib/windows-amd64</module>
     <module>helm-java</module>
   </modules>
 
@@ -157,11 +157,11 @@
             <dependencyConvergence/>
             <requireFilesExist>
               <files>
-                <file>${project.basedir}/lib/helm-darwin-10.12-amd64.dylib</file>
-                <file>${project.basedir}/lib/helm-darwin-10.12-arm64.dylib</file>
-                <file>${project.basedir}/lib/helm-linux-amd64.so</file>
-                <file>${project.basedir}/lib/helm-linux-arm64.so</file>
-                <file>${project.basedir}/lib/helm-windows-4.0-amd64.dll</file>
+                <file>${project.basedir}/native/out/helm-darwin-10.12-amd64.dylib</file>
+                <file>${project.basedir}/native/out/helm-darwin-10.12-arm64.dylib</file>
+                <file>${project.basedir}/native/out/helm-linux-amd64.so</file>
+                <file>${project.basedir}/native/out/helm-linux-arm64.so</file>
+                <file>${project.basedir}/native/out/helm-windows-4.0-amd64.dll</file>
               </files>
             </requireFilesExist>
           </rules>

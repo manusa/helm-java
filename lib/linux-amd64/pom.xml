@@ -7,12 +7,12 @@
     <groupId>com.marcnuri.helm-java</groupId>
     <artifactId>helm-java-parent</artifactId>
     <version>0.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
-  <artifactId>darwin-amd64</artifactId>
-  <name>Helm Java :: Darwin Amd64</name>
+  <artifactId>linux-amd64</artifactId>
+  <name>Helm Java :: Linux Amd64</name>
   <description>
-    Native binaries for Helm Java for Darwin Amd64
+    Native binaries for Helm Java for Linux Amd64
   </description>
 
   <properties>
@@ -32,10 +32,10 @@
         <directory>src/main/resources</directory>
       </resource>
       <resource>
-        <directory>../lib</directory>
+        <directory>../../native/out</directory>
         <includes>
-          <include>helm-darwin-10.12-amd64.h</include>
-          <include>helm-darwin-10.12-amd64.dylib</include>
+          <include>helm-linux-amd64.h</include>
+          <include>helm-linux-amd64.so</include>
         </includes>
       </resource>
     </resources>

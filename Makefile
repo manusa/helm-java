@@ -6,16 +6,16 @@ COMMON_BUILD_ARGS=-ldflags "$(LD_FLAGS)" -buildmode=c-shared
 clean:
 	cd native && go clean ./...
 	mvn clean
-	rm -f lib/*.h lib/*.so lib/*.dylib lib/*.dll
+	rm -f native/out/*.h native/out/*.so native/out/*.dylib native/out/*.dll
 
 .PHONY: build-native
 build-native:
-	GOOS=linux GOARCH=amd64 cd native && go build $(COMMON_BUILD_ARGS) -o ../lib/helm.so
+	GOOS=linux GOARCH=amd64 cd native && go build $(COMMON_BUILD_ARGS) -o ./out/helm-linux-amd64.so
 
 .PHONY: build-native-cross-platform
 build-native-cross-platform:
 	go install src.techknowlogick.com/xgo@latest
-	xgo $(COMMON_BUILD_ARGS) -out lib/helm --targets */arm64,*/amd64 ./native
+	xgo $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
 .PHONY: build-java
 build-java:
