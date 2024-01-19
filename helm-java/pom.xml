@@ -53,6 +53,21 @@
       </dependencies>
     </profile>
     <profile>
+      <id>darwin-x86_64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>darwin-amd64</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>darwin-arm64</id>
       <activation>
         <os>
@@ -83,6 +98,21 @@
       </dependencies>
     </profile>
     <profile>
+      <id>linux-x86_64</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>linux-amd64</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>linux-arm64</id>
       <activation>
         <os>
@@ -103,6 +133,21 @@
         <os>
           <family>windows</family>
           <arch>amd64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>windows-amd64</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>windows-x86_64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>x86_64</arch>
         </os>
       </activation>
       <dependencies>
