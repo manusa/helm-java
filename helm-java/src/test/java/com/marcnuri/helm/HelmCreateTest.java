@@ -23,6 +23,15 @@ class HelmCreateTest {
   }
 
   @Test
+  void validWithDuplicateWarning(@TempDir Path tempDir) {
+    Helm.create().withName("test").withDir(tempDir).call();
+    Helm.create().withName("test").withDir(tempDir).call();
+    assertThat(tempDir).exists()
+      .isDirectoryContaining(p -> p.toFile().getName().equals("test"))
+      .isDirectoryRecursivelyContaining(p -> p.toFile().getName().equals("Chart.yaml"));
+  }
+
+  @Test
   void invalid() {
     final CreateCommand create = Helm.create()
       .withName("test")

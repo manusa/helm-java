@@ -21,7 +21,7 @@ public class CreateCommand implements Callable<Helm> {
   public Helm call() {
     final Result result = helmLib.Create(new CreateOptions(name, dir.normalize().toFile().getAbsolutePath()));
     helmLib.Free(result);
-    if (result.err != null) {
+    if (result.err != null && !result.err.trim().isEmpty()) {
       throw new IllegalStateException(result.err);
     }
     return new Helm(dir.normalize().resolve(name));

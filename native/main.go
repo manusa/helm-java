@@ -4,6 +4,8 @@ package main
 #include <stdlib.h>
 typedef struct {
 	char* err;
+	char* stdOut;
+	char* stdErr;
 } Result;
 
 struct CreateOptions {
@@ -15,10 +17,23 @@ import "C"
 import (
 	"fmt"
 	"github.com/manusa/helm-java/native/internal/helm"
+	"io"
+	"os"
+	"strings"
 	"unsafe"
 )
 
 func runCommand(f func() error) C.Result {
+	oldOut := os.Stdout
+	oldErr := os.Stderr
+	defer func() {
+		os.Stdout = oldOut
+		os.Stderr = oldErr
+	}()
+	outR, outW, _ := os.Pipe()
+	errR, errW, _ := os.Pipe()
+	os.Stdout = outW
+	os.Stderr = errW
 	var err string
 	defer func() {
 		if r := recover(); r != nil {
@@ -28,11 +43,11 @@ func runCommand(f func() error) C.Result {
 	if ex := f(); ex != nil {
 		err = ex.Error()
 	}
-	if err == "" {
-		return C.Result{}
+	return C.Result{
+		err:    toCString(err),
+		stdOut: toCString(toString(outR, outW)),
+		stdErr: toCString(toString(errR, errW)),
 	}
-	cstr := C.CString(err)
-	return C.Result{err: cstr}
 }
 
 //export Create
@@ -49,6 +64,24 @@ func Create(options *C.struct_CreateOptions) C.Result {
 //export Free
 func Free(result C.Result) {
 	C.free(unsafe.Pointer(result.err))
+	C.free(unsafe.Pointer(result.stdOut))
+	C.free(unsafe.Pointer(result.stdErr))
+}
+
+func toString(readFile *os.File, writeFile *os.File) string {
+	_ = writeFile.Close()
+	if readBytes, err := io.ReadAll(readFile); err != nil {
+		return ""
+	} else {
+		return string(readBytes)
+	}
+}
+
+func toCString(str string) *C.char {
+	if len(strings.TrimSpace(str)) == 0 {
+		return nil
+	}
+	return C.CString(str)
 }
 
 func main() {
@@ -56,7 +89,9 @@ func main() {
 	////Test
 	//ret := Create(&C.struct_CreateOptions{
 	//	name: C.CString("test"),
-	//	dir:  C.CString("/invalid"),
+	//	dir:  C.CString("/tmp"),
 	//})
+	//Free(ret)
+	//Free(C.Result{})
 	//fmt.Println(ret)
 }
