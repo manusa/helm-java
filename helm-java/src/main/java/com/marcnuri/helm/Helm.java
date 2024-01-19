@@ -1,5 +1,6 @@
 package com.marcnuri.helm;
 
+import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.NativeLibrary;
 
 import java.nio.file.Path;
@@ -7,10 +8,10 @@ import java.nio.file.Path;
 public class Helm {
 
   // Initialization on demand
-  static final class NativeLibHolder {
-    static final NativeLibrary INSTANCE = NativeLibrary.getInstance();
+  static final class HelmLibHolder {
+    static final HelmLib INSTANCE = NativeLibrary.getInstance().load();
 
-    private NativeLibHolder() {}
+    private HelmLibHolder() {}
   }
 
   private final Path path;
@@ -24,7 +25,7 @@ public class Helm {
    * @return the {@link CreateCommand} callable command.
    */
   public static CreateCommand create() {
-    return new CreateCommand(NativeLibHolder.INSTANCE.load());
+    return new CreateCommand(HelmLibHolder.INSTANCE);
   }
 
 }
