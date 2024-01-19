@@ -2,8 +2,40 @@
 
 Run Helm commands from Java with this library.
 
+## Getting started
+
 ////// TODO ///////
 
+## Features
+
+### Create
+
+Equivalent of [`helm create`](https://helm.sh/docs/helm/helm_create/).
+
+Creates a chart directory along with the common files and directories used in a chart.
+
+``` java
+Helm.create()
+  .withName("test")
+  .withDir(Paths.get("/tmp"))
+  .call();
+```
+
+
+### Lint
+
+Equivalent of [`helm lint`](https://helm.sh/docs/helm/helm_lint/).
+
+Examine a chart for possible issues.
+
+``` java
+LintResult result = new Helm(Paths.get("path", "to", "chart")).lint()
+  .strict() // Optionally enable strict mode (fail on lint warnings)
+  .quiet() // Optionally enable quiet mode (only show warnings and errors)
+  .call();
+result.isFailed(); // true if linting failed
+result.getMessages(); // list of linting messages
+```
 ## Development
 
 ### Project Structure
