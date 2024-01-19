@@ -18,26 +18,32 @@ import (
 	"unsafe"
 )
 
-//export Create
-func Create(options *C.struct_CreateOptions) C.Result {
+func runCommand(f func() error) C.Result {
 	var err string
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Sprintf("%v", r)
 		}
 	}()
-	if _, ex := helm.Create(&helm.CreateOptions{
-		Name: C.GoString(options.name),
-		Dir:  C.GoString(options.dir),
-	}); ex != nil {
+	if ex := f(); ex != nil {
 		err = ex.Error()
 	}
 	if err == "" {
 		return C.Result{}
 	}
 	cstr := C.CString(err)
-	//defer C.free(unsafe.Pointer(cstr))
 	return C.Result{err: cstr}
+}
+
+//export Create
+func Create(options *C.struct_CreateOptions) C.Result {
+	return runCommand(func() error {
+		_, ex := helm.Create(&helm.CreateOptions{
+			Name: C.GoString(options.name),
+			Dir:  C.GoString(options.dir),
+		})
+		return ex
+	})
 }
 
 //export Free
