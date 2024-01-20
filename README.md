@@ -1,10 +1,11 @@
 # Helm Client for Java
 
-Run Helm commands from Java with this library.
+This is a Helm client for Java.
+Run Helm commands directly from Java with this library without the need for a Helm CLI.
 
-Doesn't need a Helm installation.
-However, it still uses the native Helm libraries.
-Native Helm behavior is expected for any of the exposed commands.
+It allows you to execute Helm commands directly from Java without requiring a separate Helm installation.
+Despite this, it still leverages the native Helm libraries, which are written in Go, to function.
+As a result, you can expect the same behavior as you would get from using Helm directly.
 
 ## Getting started
 
@@ -46,7 +47,7 @@ Equivalent of [`helm show`](https://helm.sh/docs/helm/helm_show/).
 
 Show information about a chart.
 
-#### All
+#### Show all
 
 Show **all** information about a chart.
 
@@ -56,7 +57,7 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
-#### Chart
+#### Show chart
 
 Show the chart's definition.
 
@@ -66,7 +67,7 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
-#### CRDs
+#### Show CRDs
 
 Show the chart's CRDs.
 
@@ -76,7 +77,7 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
-#### Readme
+#### Show README
 
 Show the chart's README.
 
@@ -86,7 +87,7 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
-#### Values
+#### Show values
 
 Show the chart's values.
 
