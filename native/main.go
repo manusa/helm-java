@@ -86,6 +86,13 @@ func Lint(options *C.struct_LintOptions) C.Result {
 	})
 }
 
+//export Version
+func Version() C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Version()
+	})
+}
+
 //export Free
 func Free(result C.Result) {
 	C.free(unsafe.Pointer(result.out))
@@ -127,4 +134,6 @@ func main() {
 	})
 	fmt.Println(lint)
 	Free(lint)
+	version := Version()
+	fmt.Println(version)
 }

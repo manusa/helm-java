@@ -2,6 +2,10 @@
 
 Run Helm commands from Java with this library.
 
+Doesn't need a Helm installation.
+However, it still uses the native Helm libraries.
+Native Helm behavior is expected for any of the exposed commands.
+
 ## Getting started
 
 ////// TODO ///////
@@ -36,6 +40,17 @@ LintResult result = new Helm(Paths.get("path", "to", "chart")).lint()
 result.isFailed(); // true if linting failed
 result.getMessages(); // list of linting messages
 ```
+
+### Version
+
+Similar to [`helm version`](https://helm.sh/docs/helm/helm_version/).
+
+Returns the version of the underlying Helm library.
+
+``` java
+Version version = Helm.version();
+```
+
 ## Development
 
 ### Project Structure
