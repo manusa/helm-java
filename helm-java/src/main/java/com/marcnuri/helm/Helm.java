@@ -37,6 +37,14 @@ public class Helm {
   }
 
   /**
+   * This command shows information about a chart.
+   * @return the {@link ShowCommand} command.
+   */
+  public ShowCommand show() {
+    return new ShowCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
    * This command returns the underlying Helm library version
    * @return the {@link VersionCommand} callable command.
    */

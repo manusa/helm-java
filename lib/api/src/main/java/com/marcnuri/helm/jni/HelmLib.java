@@ -8,6 +8,8 @@ public interface HelmLib extends Library {
 
   Result Lint(LintOptions options);
 
+  Result Show(ShowOptions options);
+
   Result Version();
 
   void Free(Result result);
