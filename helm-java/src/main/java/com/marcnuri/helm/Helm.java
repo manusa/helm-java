@@ -28,7 +28,19 @@ public class Helm {
     return new CreateCommand(HelmLibHolder.INSTANCE);
   }
 
+  /**
+   * This command examines a chart for possible issues.
+   * @return the {@link LintCommand} callable command.
+   */
   public LintCommand lint() {
     return new LintCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
+   * This command returns the underlying Helm library version
+   * @return the {@link VersionCommand} callable command.
+   */
+  public static VersionCommand version() {
+    return new VersionCommand(HelmLibHolder.INSTANCE);
   }
 }
