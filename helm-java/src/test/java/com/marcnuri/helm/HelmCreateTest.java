@@ -1,6 +1,9 @@
 package com.marcnuri.helm;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
@@ -32,11 +35,22 @@ class HelmCreateTest {
   }
 
   @Test
-  void invalid() {
+  @DisabledOnOs(OS.WINDOWS)
+  void invalidLinux() {
     final CreateCommand create = Helm.create()
       .withName("test")
       .withDir(Paths.get("/im-an-invalid-path"));
     assertThatIllegalStateException().isThrownBy(create::call)
       .withMessage("stat /im-an-invalid-path: no such file or directory");
+  }
+
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
+  void invalidWindows() {
+    final CreateCommand create = Helm.create()
+      .withName("test")
+      .withDir(Paths.get("/im-an-invalid-path"));
+    assertThatIllegalStateException().isThrownBy(create::call)
+      .withMessageMatching("CreateFile [A-Z]:\\\\im-an-invalid-path: The system cannot find the file specified.");
   }
 }

@@ -38,8 +38,8 @@ class HelmLintTest {
       .hasFieldOrPropertyWithValue("failed", true)
       .extracting(LintResult::getMessages)
       .asInstanceOf(InstanceOfAssertFactories.list(String.class))
-      .singleElement()
-      .isEqualTo("Error unable to check Chart.yaml file in chart: stat /invalid/Chart.yaml: no such file or directory");
+      .singleElement().asString()
+      .startsWith("Error unable to check Chart.yaml file in chart:");
   }
 
   @Nested

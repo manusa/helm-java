@@ -1,6 +1,17 @@
 CGO_ENABLED=1
 LD_FLAGS=-s -w
 COMMON_BUILD_ARGS=-ldflags "$(LD_FLAGS)" -buildmode=c-shared
+MAVEN_OPTIONS=
+# Detect OS to be able to run build-native target and provide a name
+NATIVE_NAME=linux-amd64.so
+ifeq ($(OS), Windows_NT)
+	NATIVE_NAME := windows-4.0-amd64.dll
+else
+	UNAME := $(shell uname -s)
+	ifeq ($(UNAME), Darwin)
+		NATIVE_NAME := darwin-10.12-amd64.dylib
+	endif
+endif
 
 .PHONY: clean
 clean:
@@ -10,7 +21,7 @@ clean:
 
 .PHONY: build-native
 build-native:
-	GOOS=linux GOARCH=amd64 cd native && go build $(COMMON_BUILD_ARGS) -o ./out/helm-linux-amd64.so
+	cd native && go build $(COMMON_BUILD_ARGS) -o ./out/helm-$(NATIVE_NAME)
 
 .PHONY: build-native-cross-platform
 build-native-cross-platform:
@@ -19,7 +30,11 @@ build-native-cross-platform:
 
 .PHONY: build-java
 build-java:
-	mvn clean verify
+	mvn $(MAVEN_OPTIONS) clean verify
+
+.PHONY: build-current-platform
+build-current-platform: MAVEN_OPTIONS=-Denforcer.skipRules=requireFilesExist
+build-current-platform: build-native build-java
 
 .PHONY: build-all
 build-all: build-native-cross-platform build-java
