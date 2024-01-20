@@ -25,7 +25,6 @@ Helm.create()
   .call();
 ```
 
-
 ### Lint
 
 Equivalent of [`helm lint`](https://helm.sh/docs/helm/helm_lint/).
@@ -41,6 +40,62 @@ result.isFailed(); // true if linting failed
 result.getMessages(); // list of linting messages
 ```
 
+### Show
+
+Equivalent of [`helm show`](https://helm.sh/docs/helm/helm_show/).
+
+Show information about a chart.
+
+#### All
+
+Show **all** information about a chart.
+
+``` java
+String result = new Helm(Paths.get("path", "to", "chart")).show()
+  .all()
+  .call();
+```
+
+#### Chart
+
+Show the chart's definition.
+
+``` java
+String result = new Helm(Paths.get("path", "to", "chart")).show()
+  .chart()
+  .call();
+```
+
+#### CRDs
+
+Show the chart's CRDs.
+
+``` java
+String result = new Helm(Paths.get("path", "to", "chart")).show()
+  .crds()
+  .call();
+```
+
+#### Readme
+
+Show the chart's README.
+
+``` java
+String result = new Helm(Paths.get("path", "to", "chart")).show()
+  .readme()
+  .call();
+```
+
+#### Values
+
+Show the chart's values.
+
+``` java
+String result = new Helm(Paths.get("path", "to", "chart")).show()
+  .values()
+  .call();
+```
+
 ### Version
 
 Similar to [`helm version`](https://helm.sh/docs/helm/helm_version/).
@@ -48,7 +103,7 @@ Similar to [`helm version`](https://helm.sh/docs/helm/helm_version/).
 Returns the version of the underlying Helm library.
 
 ``` java
-Version version = Helm.version();
+String version = Helm.version();
 ```
 
 ## Development

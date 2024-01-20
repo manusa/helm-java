@@ -1,7 +1,6 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.HelmLib;
-import com.marcnuri.helm.jni.Result;
 
 public class VersionCommand extends HelmCommand<String> {
 

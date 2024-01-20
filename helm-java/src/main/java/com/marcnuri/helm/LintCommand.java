@@ -17,7 +17,10 @@ public class LintCommand extends HelmCommand<LintResult> {
     super(helmLib);
     this.path = path;
   }
-
+  /**
+   * Execute the lint command.
+   * @return a {@link LintResult} instance containing the linting result.
+   */
   @Override
   public LintResult call() {
     final Result result = run(hl -> hl.Lint(new LintOptions(path.normalize().toFile().getAbsolutePath(), strict ? 1 : 0, quiet ? 1 : 0)));

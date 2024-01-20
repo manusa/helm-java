@@ -12,10 +12,18 @@ public class LintResult {
     this.failed = failed;
   }
 
+  /**
+   * Linting messages.
+   * @return a {@link List} of {@link String} containing the linting messages.
+   */
   public List<String> getMessages() {
     return messages;
   }
 
+  /**
+   * Whether the linting process failed.
+   * @return {@code true} if the linting process failed, {@code false} otherwise.
+   */
   public boolean isFailed() {
     return failed;
   }
