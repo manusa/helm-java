@@ -10,6 +10,8 @@ public interface HelmLib extends Library {
 
   Result Show(ShowOptions options);
 
+  Result Package(PackageOptions options);
+
   Result Version();
 
   void Free(Result result);

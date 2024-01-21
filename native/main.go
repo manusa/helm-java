@@ -18,8 +18,17 @@ struct CreateOptions {
 
 struct LintOptions {
 	char* path;
-	int  strict;
-	int  quiet;
+	int   strict;
+	int   quiet;
+};
+
+struct PackageOptions {
+	char* path;
+	char* destination;
+	int   sign;
+	char* key;
+	char* keyring;
+	char* passhraseFile;
 };
 
 struct ShowOptions {
@@ -91,6 +100,21 @@ func Lint(options *C.struct_LintOptions) C.Result {
 	})
 }
 
+//export Package
+func Package(options *C.struct_PackageOptions) C.Result {
+	return runCommand(func() (string, error) {
+		err := helm.Package(&helm.PackageOptions{
+			Path:           C.GoString(options.path),
+			Destination:    C.GoString(options.destination),
+			Sign:           options.sign == 1,
+			Key:            C.GoString(options.key),
+			Keyring:        C.GoString(options.keyring),
+			PassphraseFile: C.GoString(options.passhraseFile),
+		})
+		return "", err
+	})
+}
+
 //export Show
 func Show(options *C.struct_ShowOptions) C.Result {
 	return runCommand(func() (string, error) {
@@ -149,6 +173,12 @@ func main() {
 	})
 	fmt.Println(lint)
 	Free(lint)
+	pkg := Package(&C.struct_PackageOptions{
+		path:        C.CString("/tmp/test"),
+		destination: C.CString("/tmp/test"),
+	})
+	fmt.Println(pkg)
+	Free(pkg)
 	show := Show(&C.struct_ShowOptions{
 		path:         C.CString("/tmp/test"),
 		outputFormat: C.CString("all"),

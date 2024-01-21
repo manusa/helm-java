@@ -41,6 +41,22 @@ result.isFailed(); // true if linting failed
 result.getMessages(); // list of linting messages
 ```
 
+### Package
+
+Equivalent of [`helm package`](https://helm.sh/docs/helm/helm_package/).
+
+Package a chart directory into a chart archive.
+
+``` java
+Path result = new Helm(Paths.get("path", "to", "chart");).package()
+  .destination(Paths.get("path", "to", "destination")) // Optionally specify a target directory
+  .sign() // Optionally enable signing
+  .withKey("KEY_UID") // Optionally specify a key UID (required if signing)
+  .withKeyring(Paths.get("path", "to", "keyring")) // Optionally specify a keyring (required if signing)
+  .withPassphraseFile(Paths.get("path", "to", "passphrase")) // Optionally specify a file containing the passphrase for the signing key
+  .call();
+```
+
 ### Show
 
 Equivalent of [`helm show`](https://helm.sh/docs/helm/helm_show/).
@@ -48,6 +64,8 @@ Equivalent of [`helm show`](https://helm.sh/docs/helm/helm_show/).
 Show information about a chart.
 
 #### Show all
+
+Equivalent of [`helm show all`](https://helm.sh/docs/helm/helm_show_all/).
 
 Show **all** information about a chart.
 
@@ -59,6 +77,8 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
 
 #### Show chart
 
+Equivalent of [`helm show chart`](https://helm.sh/docs/helm/helm_show_chart/).
+
 Show the chart's definition.
 
 ``` java
@@ -68,6 +88,8 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
 ```
 
 #### Show CRDs
+
+Equivalent of [`helm show crds`](https://helm.sh/docs/helm/helm_show_crds/).
 
 Show the chart's CRDs.
 
@@ -79,6 +101,8 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
 
 #### Show README
 
+Equivalent of [`helm show readme`](https://helm.sh/docs/helm/helm_show_readme/).
+
 Show the chart's README.
 
 ``` java
@@ -88,6 +112,8 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
 ```
 
 #### Show values
+
+Equivalent of [`helm show values`](https://helm.sh/docs/helm/helm_show_values/).
 
 Show the chart's values.
 
