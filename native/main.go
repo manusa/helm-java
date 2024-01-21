@@ -31,6 +31,12 @@ struct PackageOptions {
 	char* passhraseFile;
 };
 
+struct RepoServerOptions {
+	char* glob;
+	char* username;
+	char* password;
+};
+
 struct ShowOptions {
 	char* path;
 	char* outputFormat;
@@ -125,10 +131,14 @@ func Show(options *C.struct_ShowOptions) C.Result {
 	})
 }
 
-//export TestRepoServerStart
-func TestRepoServerStart() C.Result {
+//export RepoTempServerStart
+func RepoTempServerStart(options *C.struct_RepoServerOptions) C.Result {
 	return runCommand(func() (string, error) {
-		srv, err := helm.TestRepoServerStart()
+		srv, err := helm.RepoTempServerStart(&helm.RepoServerOptions{
+			Glob:     C.GoString(options.glob),
+			Username: C.GoString(options.username),
+			Password: C.GoString(options.password),
+		})
 		if srv != nil {
 			return srv.URL(), err
 		}
@@ -136,18 +146,18 @@ func TestRepoServerStart() C.Result {
 	})
 }
 
-//export TestRepoServerStop
-func TestRepoServerStop(url *C.char) C.Result {
+//export RepoServerStop
+func RepoServerStop(url *C.char) C.Result {
 	return runCommand(func() (string, error) {
-		helm.TestRepoServerStop(C.GoString(url))
+		helm.RepoServerStop(C.GoString(url))
 		return "", nil
 	})
 }
 
-//export TestRepoServerStopAll
-func TestRepoServerStopAll() C.Result {
+//export RepoServerStopAll
+func RepoServerStopAll() C.Result {
 	return runCommand(func() (string, error) {
-		helm.TestRepoServerStopAll()
+		helm.RepoServerStopAll()
 		return "", nil
 	})
 }

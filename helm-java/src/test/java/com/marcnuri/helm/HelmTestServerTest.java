@@ -1,5 +1,6 @@
 package com.marcnuri.helm;
 
+import com.marcnuri.helm.jni.RepoServerOptions;
 import com.marcnuri.helm.jni.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -15,12 +16,12 @@ class HelmTestServerTest {
 
   @AfterEach
   void tearDown() {
-    Helm.HelmLibHolder.INSTANCE.TestRepoServerStopAll();
+    Helm.HelmLibHolder.INSTANCE.RepoServerStopAll();
   }
 
   @Test
   void testRepoServerStart() throws Exception {
-    final Result result = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    final Result result = Helm.HelmLibHolder.INSTANCE.RepoTempServerStart(new RepoServerOptions());
     final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
     uc.setRequestMethod("GET");
     uc.connect();
@@ -29,8 +30,8 @@ class HelmTestServerTest {
 
   @Test
   void testRepoServerStartMultipleTimesReturnsMultipleFunctionalUrls() throws Exception {
-    final Result result1 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
-    final Result result2 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    final Result result1 = Helm.HelmLibHolder.INSTANCE.RepoTempServerStart(new RepoServerOptions());
+    final Result result2 = Helm.HelmLibHolder.INSTANCE.RepoTempServerStart(new RepoServerOptions());
     for (Result result : new Result[]{result1, result2}) {
       final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
       uc.setRequestMethod("GET");
@@ -41,9 +42,9 @@ class HelmTestServerTest {
 
   @Test
   void testRepoServerStopAllStopsAllInstances() throws Exception {
-    final Result result1 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
-    final Result result2 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
-    Helm.HelmLibHolder.INSTANCE.TestRepoServerStopAll();
+    final Result result1 = Helm.HelmLibHolder.INSTANCE.RepoTempServerStart(new RepoServerOptions());
+    final Result result2 = Helm.HelmLibHolder.INSTANCE.RepoTempServerStart(new RepoServerOptions());
+    Helm.HelmLibHolder.INSTANCE.RepoServerStopAll();
     for (Result result : new Result[]{result1, result2}) {
       final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
       uc.setRequestMethod("GET");
