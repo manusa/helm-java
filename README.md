@@ -1,7 +1,6 @@
 # Helm Client for Java
 
-This is a Helm client for Java.
-Run Helm commands directly from Java with this library without the need for a Helm CLI.
+Run Helm commands directly from Java with this client library without the need for a Helm CLI.
 
 It allows you to execute Helm commands directly from Java without requiring a separate Helm installation.
 Despite this, it still leverages the native Helm libraries, which are written in Go, to function.
@@ -21,7 +20,9 @@ Creates a chart directory along with the common files and directories used in a 
 
 ``` java
 Helm.create()
+  // Name of the chart to create
   .withName("test")
+  // Path to the directory where the new chart directory will be created
   .withDir(Paths.get("/tmp"))
   .call();
 ```
@@ -34,8 +35,10 @@ Examine a chart for possible issues.
 
 ``` java
 LintResult result = new Helm(Paths.get("path", "to", "chart")).lint()
-  .strict() // Optionally enable strict mode (fail on lint warnings)
-  .quiet() // Optionally enable quiet mode (only show warnings and errors)
+  // Optionally enable strict mode (fail on lint warnings)
+  .strict()
+  // Optionally enable quiet mode (only show warnings and errors) 
+  .quiet()
   .call();
 result.isFailed(); // true if linting failed
 result.getMessages(); // list of linting messages
@@ -49,11 +52,16 @@ Package a chart directory into a chart archive.
 
 ``` java
 Path result = new Helm(Paths.get("path", "to", "chart");).package()
-  .destination(Paths.get("path", "to", "destination")) // Optionally specify a target directory
-  .sign() // Optionally enable signing
-  .withKey("KEY_UID") // Optionally specify a key UID (required if signing)
-  .withKeyring(Paths.get("path", "to", "keyring")) // Optionally specify a keyring (required if signing)
-  .withPassphraseFile(Paths.get("path", "to", "passphrase")) // Optionally specify a file containing the passphrase for the signing key
+  // Optionally specify a target directory
+  .destination(Paths.get("path", "to", "destination"))
+  // Optionally enable signing
+  .sign()
+  // Optionally specify a key UID (required if signing)
+  .withKey("KEY_UID")
+  // Optionally specify a keyring (required if signing)
+  .withKeyring(Paths.get("path", "to", "keyring"))
+  // Optionally specify a file containing the passphrase for the signing key
+  .withPassphraseFile(Paths.get("path", "to", "passphrase"))
   .call();
 ```
 
