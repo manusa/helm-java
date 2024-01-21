@@ -2,7 +2,10 @@ module github.com/manusa/helm-java/native
 
 go 1.21.2
 
-require helm.sh/helm/v3 v3.14.0
+require (
+	github.com/orcaman/concurrent-map/v2 v2.0.1
+	helm.sh/helm/v3 v3.14.0
+)
 
 require (
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect

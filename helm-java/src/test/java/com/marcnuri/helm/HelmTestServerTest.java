@@ -4,21 +4,23 @@ import com.marcnuri.helm.jni.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HelmTestServerTest {
 
   @AfterEach
   void tearDown() {
-    Helm.HelmLibHolder.INSTANCE.TestServerStop();
+    Helm.HelmLibHolder.INSTANCE.TestRepoServerStopAll();
   }
 
   @Test
-  void testServerStart() throws Exception {
-    final Result result = Helm.HelmLibHolder.INSTANCE.TestServerStart();
+  void testRepoServerStart() throws Exception {
+    final Result result = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
     final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
     uc.setRequestMethod("GET");
     uc.connect();
@@ -26,19 +28,27 @@ class HelmTestServerTest {
   }
 
   @Test
-  void testServerStartMultipleTimesReturnsError() {
-    Helm.HelmLibHolder.INSTANCE.TestServerStart();
-    final Result result = Helm.HelmLibHolder.INSTANCE.TestServerStart();
-    assertThat(result.err).isEqualTo("server already started, only one instance allowed");
+  void testRepoServerStartMultipleTimesReturnsMultipleFunctionalUrls() throws Exception {
+    final Result result1 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    final Result result2 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    for (Result result : new Result[]{result1, result2}) {
+      final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
+      uc.setRequestMethod("GET");
+      uc.connect();
+      assertThat(uc.getResponseCode()).isEqualTo(200);
+    }
   }
 
   @Test
-  void testServerStartMultipleTimesReturnsStartedServerInfo() throws Exception {
-    Helm.HelmLibHolder.INSTANCE.TestServerStart();
-    final Result result = Helm.HelmLibHolder.INSTANCE.TestServerStart();
-    final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
-    uc.setRequestMethod("GET");
-    uc.connect();
-    assertThat(uc.getResponseCode()).isEqualTo(200);
+  void testRepoServerStopAllStopsAllInstances() throws Exception {
+    final Result result1 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    final Result result2 = Helm.HelmLibHolder.INSTANCE.TestRepoServerStart();
+    Helm.HelmLibHolder.INSTANCE.TestRepoServerStopAll();
+    for (Result result : new Result[]{result1, result2}) {
+      final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
+      uc.setRequestMethod("GET");
+      assertThatThrownBy(uc::connect).isInstanceOf(ConnectException.class);
+    }
   }
+
 }
