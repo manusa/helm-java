@@ -125,10 +125,10 @@ func Show(options *C.struct_ShowOptions) C.Result {
 	})
 }
 
-//export TestServerStart
-func TestServerStart() C.Result {
+//export TestRepoServerStart
+func TestRepoServerStart() C.Result {
 	return runCommand(func() (string, error) {
-		srv, err := helm.TestServerStart()
+		srv, err := helm.TestRepoServerStart()
 		if srv != nil {
 			return srv.URL(), err
 		}
@@ -136,10 +136,18 @@ func TestServerStart() C.Result {
 	})
 }
 
-//export TestServerStop
-func TestServerStop() C.Result {
+//export TestRepoServerStop
+func TestRepoServerStop(url *C.char) C.Result {
 	return runCommand(func() (string, error) {
-		helm.TestServerStop()
+		helm.TestRepoServerStop(C.GoString(url))
+		return "", nil
+	})
+}
+
+//export TestRepoServerStopAll
+func TestRepoServerStopAll() C.Result {
+	return runCommand(func() (string, error) {
+		helm.TestRepoServerStopAll()
 		return "", nil
 	})
 }

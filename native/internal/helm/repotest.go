@@ -1,28 +1,32 @@
 package helm
 
 import (
-	"errors"
+	"github.com/orcaman/concurrent-map/v2"
 	"helm.sh/helm/v3/pkg/repo/repotest"
 	"testing"
 )
 
-var server *repotest.Server
+var servers = cmap.New[*repotest.Server]()
 
-func TestServerStart() (*repotest.Server, error) {
-	if server != nil {
-		return server, errors.New("server already started, only one instance allowed")
-	}
-	srv, err := repotest.NewTempServerWithCleanup(&testing.T{}, "")
+func TestRepoServerStart() (*repotest.Server, error) {
+	server, err := repotest.NewTempServerWithCleanup(&testing.T{}, "")
 	if err != nil {
 		return nil, err
 	}
-	server = srv
+	servers.Set(server.URL(), server)
 	return server, nil
 }
 
-func TestServerStop() {
-	if server != nil {
+func TestRepoServerStop(url string) {
+	if server, _ := servers.Get(url); server != nil {
 		server.Stop()
-		server = nil
+		servers.Remove(url)
 	}
+}
+
+func TestRepoServerStopAll() {
+	for server := range servers.IterBuffered() {
+		server.Val.Stop()
+	}
+	servers.Clear()
 }
