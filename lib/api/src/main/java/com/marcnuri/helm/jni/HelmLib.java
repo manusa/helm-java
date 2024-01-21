@@ -12,11 +12,11 @@ public interface HelmLib extends Library {
 
   Result Show(ShowOptions options);
 
-  Result TestRepoServerStart();
+  Result RepoTempServerStart(RepoServerOptions options);
 
-  Result TestRepoServerStop(String url);
+  Result RepoServerStop(String url);
 
-  Result TestRepoServerStopAll();
+  Result RepoServerStopAll();
 
   Result Version();
 

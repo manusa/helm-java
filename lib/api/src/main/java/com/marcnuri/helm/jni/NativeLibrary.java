@@ -29,7 +29,7 @@ public interface NativeLibrary {
       Files.copy(stream, tempBinary, StandardCopyOption.REPLACE_EXISTING);
       final HelmLib helmLib = Native.load(tempBinary.toAbsolutePath().toString(), HelmLib.class);
       // Cleanup any resources that might have been left behind
-      Runtime.getRuntime().addShutdownHook(new Thread(helmLib::TestRepoServerStopAll));
+      Runtime.getRuntime().addShutdownHook(new Thread(helmLib::RepoServerStopAll));
       return helmLib;
     } catch (IOException exception) {
       throw new IllegalStateException("Unable to load native library " + getBinaryName(), exception);

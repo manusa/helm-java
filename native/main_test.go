@@ -21,7 +21,7 @@ func TestCreate(t *testing.T) {
 }
 
 func testServerStart(t *testing.T, serverInfoChannel chan *repotest.Server, stopChannel chan bool) {
-	srv, err := helm.TestRepoServerStart()
+	srv, err := helm.RepoTempServerStart(&helm.RepoServerOptions{})
 	if err != nil {
 		t.Errorf("Expected server to be started")
 	}
@@ -29,7 +29,7 @@ func testServerStart(t *testing.T, serverInfoChannel chan *repotest.Server, stop
 	for {
 		select {
 		case <-stopChannel:
-			helm.TestRepoServerStop(srv.URL())
+			helm.RepoServerStop(srv.URL())
 			return
 		default:
 			time.Sleep(10 * time.Millisecond)
@@ -56,7 +56,7 @@ func TestTestServerStartMultipleInstances(t *testing.T) {
 	serverInfoChannel := make(chan *repotest.Server)
 	stopChannel := make(chan bool)
 	defer func() { stopChannel <- true }()
-	defer helm.TestRepoServerStopAll()
+	defer helm.RepoServerStopAll()
 	go testServerStart(t, serverInfoChannel, stopChannel)
 	srv1 := <-serverInfoChannel
 	go testServerStart(t, serverInfoChannel, stopChannel)
@@ -79,7 +79,7 @@ func TestTestServerStop(t *testing.T) {
 	go testServerStart(t, serverInfoChannel, stopChannel)
 	time.Sleep(100 * time.Millisecond)
 	serverInfo := <-serverInfoChannel
-	helm.TestRepoServerStop(serverInfo.URL())
+	helm.RepoServerStop(serverInfo.URL())
 	_, err := http.Get(serverInfo.URL())
 	if err == nil {
 		t.Errorf("Expected server to be stopped")
@@ -87,9 +87,9 @@ func TestTestServerStop(t *testing.T) {
 }
 
 func TestTestServerStopAll(t *testing.T) {
-	srv1, _ := helm.TestRepoServerStart()
-	srv2, _ := helm.TestRepoServerStart()
-	helm.TestRepoServerStopAll()
+	srv1, _ := helm.RepoTempServerStart(&helm.RepoServerOptions{})
+	srv2, _ := helm.RepoTempServerStart(&helm.RepoServerOptions{})
+	helm.RepoServerStopAll()
 	_, err := http.Get(srv1.URL())
 	_, err2 := http.Get(srv2.URL())
 	if err == nil || err2 == nil {
