@@ -37,6 +37,15 @@ public class Helm {
   }
 
   /**
+   * This command packages a chart into a versioned chart archive file.
+   * If a path is given, this will look at that path for a chart (which must contain a Chart.yaml file) and then package that directory.
+   * @return the {@link PackageCommand} callable command.
+   */
+  public PackageCommand packageIt() {
+    return new PackageCommand(HelmLibHolder.INSTANCE, this, path);
+  }
+
+  /**
    * This command shows information about a chart.
    * @return the {@link ShowCommand} command.
    */
