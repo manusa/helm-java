@@ -125,6 +125,25 @@ func Show(options *C.struct_ShowOptions) C.Result {
 	})
 }
 
+//export TestServerStart
+func TestServerStart() C.Result {
+	return runCommand(func() (string, error) {
+		srv, err := helm.TestServerStart()
+		if srv != nil {
+			return srv.URL(), err
+		}
+		return "", err
+	})
+}
+
+//export TestServerStop
+func TestServerStop() C.Result {
+	return runCommand(func() (string, error) {
+		helm.TestServerStop()
+		return "", nil
+	})
+}
+
 //export Version
 func Version() C.Result {
 	return runCommand(func() (string, error) {

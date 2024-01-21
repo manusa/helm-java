@@ -8,9 +8,13 @@ public interface HelmLib extends Library {
 
   Result Lint(LintOptions options);
 
+  Result Package(PackageOptions options);
+
   Result Show(ShowOptions options);
 
-  Result Package(PackageOptions options);
+  Result TestServerStart();
+
+  Result TestServerStop();
 
   Result Version();
 
