@@ -60,7 +60,7 @@
     <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
     <version.maven-gpg>3.1.0</version.maven-gpg>
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
-    <version.maven-surefire-plugin>3.2.2</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
     <version.sonatype-staging>1.6.13</version.sonatype-staging>
   </properties>
 
