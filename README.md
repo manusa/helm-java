@@ -51,7 +51,7 @@ Equivalent of [`helm package`](https://helm.sh/docs/helm/helm_package/).
 Package a chart directory into a chart archive.
 
 ``` java
-Path result = new Helm(Paths.get("path", "to", "chart");).package()
+Path result = new Helm(Paths.get("path", "to", "chart")).package()
   // Optionally specify a target directory
   .destination(Paths.get("path", "to", "destination"))
   // Optionally enable signing
@@ -62,6 +62,33 @@ Path result = new Helm(Paths.get("path", "to", "chart");).package()
   .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally specify a file containing the passphrase for the signing key
   .withPassphraseFile(Paths.get("path", "to", "passphrase"))
+  .call();
+```
+
+### Push
+
+Equivalent of [`helm push`](https://helm.sh/docs/helm/helm_push/).
+
+Upload a chart to a registry.
+
+``` java
+Helm.push()
+  // Location of the packaged chart (.tgz) to push
+  .withChart(Paths.get("path", "to", "chart", "package"))
+  // URI of the remote registry to push the chart to
+  .withRemote("oci://remote-server.example.com:12345");
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 

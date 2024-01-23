@@ -10,13 +10,19 @@ public interface HelmLib extends Library {
 
   Result Package(PackageOptions options);
 
-  Result Show(ShowOptions options);
+  Result Push(PushOptions options);
 
-  Result RepoTempServerStart(RepoServerOptions options);
+  Result RegistryLogin(RegistryLoginOptions options);
+
+  Result RepoServerStart(RepoServerOptions options);
+
+  Result RepoOciServerStart(RepoServerOptions options);
 
   Result RepoServerStop(String url);
 
   Result RepoServerStopAll();
+
+  Result Show(ShowOptions options);
 
   Result Version();
 
