@@ -31,6 +31,29 @@ struct PackageOptions {
 	char* passhraseFile;
 };
 
+struct PushOptions {
+	char* chart;
+	char* remote;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecureSkipTlsVerify;
+	int   plainHttp;
+	int   debug;
+};
+
+struct RegistryLoginOptions {
+	char* hostname;
+	char* username;
+	char* password;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecure;
+	int   plainHttp;
+	int   debug;
+};
+
 struct RepoServerOptions {
 	char* glob;
 	char* username;
@@ -52,6 +75,10 @@ import (
 	"unsafe"
 )
 
+// Run the given function and return the result as a C struct.
+// The returned C struct contains the text representation of the result or the function execution error.
+// This function replaces the stdout and stderr streams to be able to capture them and return them in the C.Result struct.
+// The original stdout and stderr streams are restored after the function execution.
 func runCommand(f func() (string, error)) C.Result {
 	oldOut := os.Stdout
 	oldErr := os.Stderr
@@ -121,26 +148,60 @@ func Package(options *C.struct_PackageOptions) C.Result {
 	})
 }
 
-//export Show
-func Show(options *C.struct_ShowOptions) C.Result {
+//export Push
+func Push(options *C.struct_PushOptions) C.Result {
 	return runCommand(func() (string, error) {
-		return helm.Show(&helm.ShowOptions{
-			Path:         C.GoString(options.path),
-			OutputFormat: C.GoString(options.outputFormat),
+		return helm.Push(&helm.PushOptions{
+			Chart:                 C.GoString(options.chart),
+			Remote:                C.GoString(options.remote),
+			CertFile:              C.GoString(options.certFile),
+			KeyFile:               C.GoString(options.keyFile),
+			CaFile:                C.GoString(options.caFile),
+			InsecureSkipTlsVerify: options.insecureSkipTlsVerify == 1,
+			PlainHttp:             options.plainHttp == 1,
+			Debug:                 options.debug == 1,
 		})
 	})
 }
 
-//export RepoTempServerStart
-func RepoTempServerStart(options *C.struct_RepoServerOptions) C.Result {
+//export RegistryLogin
+func RegistryLogin(options *C.struct_RegistryLoginOptions) C.Result {
 	return runCommand(func() (string, error) {
-		srv, err := helm.RepoTempServerStart(&helm.RepoServerOptions{
+		return helm.RegistryLogin(&helm.RegistryLoginOptions{
+			Hostname:  C.GoString(options.hostname),
+			Username:  C.GoString(options.username),
+			Password:  C.GoString(options.password),
+			CertFile:  C.GoString(options.certFile),
+			KeyFile:   C.GoString(options.keyFile),
+			CaFile:    C.GoString(options.caFile),
+			Insecure:  options.insecure == 1,
+			PlainHttp: options.plainHttp == 1,
+			Debug:     options.debug == 1,
+		})
+	})
+}
+
+//export RepoServerStart
+func RepoServerStart(options *C.struct_RepoServerOptions) C.Result {
+	return runCommand(func() (string, error) {
+		srv, err := helm.RepoServerStart(&helm.RepoServerOptions{
 			Glob:     C.GoString(options.glob),
 			Username: C.GoString(options.username),
 			Password: C.GoString(options.password),
 		})
 		if srv != nil {
 			return srv.URL(), err
+		}
+		return "", err
+	})
+}
+
+//export RepoOciServerStart
+func RepoOciServerStart(options *C.struct_RepoServerOptions) C.Result {
+	return runCommand(func() (string, error) {
+		srv, err := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+		if srv != nil {
+			return srv.RegistryURL, err
 		}
 		return "", err
 	})
@@ -159,6 +220,16 @@ func RepoServerStopAll() C.Result {
 	return runCommand(func() (string, error) {
 		helm.RepoServerStopAll()
 		return "", nil
+	})
+}
+
+//export Show
+func Show(options *C.struct_ShowOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Show(&helm.ShowOptions{
+			Path:         C.GoString(options.path),
+			OutputFormat: C.GoString(options.outputFormat),
+		})
 	})
 }
 
@@ -196,6 +267,9 @@ func toCString(str string) *C.char {
 func main() {
 	// NO OP
 	//Test
+	test := RepoOciServerStart(&C.struct_RepoServerOptions{})
+	Free(test)
+	RepoServerStopAll()
 	Free(C.Result{})
 	create := Create(&C.struct_CreateOptions{
 		name: C.CString("test"),

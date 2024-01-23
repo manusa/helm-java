@@ -11,7 +11,8 @@ public class Helm {
   static final class HelmLibHolder {
     static final HelmLib INSTANCE = NativeLibrary.getInstance().load();
 
-    private HelmLibHolder() {}
+    private HelmLibHolder() {
+    }
   }
 
   private final Path path;
@@ -22,6 +23,7 @@ public class Helm {
 
   /**
    * This command creates a chart directory along with the common files and directories used in a chart.
+   *
    * @return the {@link CreateCommand} callable command.
    */
   public static CreateCommand create() {
@@ -30,6 +32,7 @@ public class Helm {
 
   /**
    * This command examines a chart for possible issues.
+   *
    * @return the {@link LintCommand} callable command.
    */
   public LintCommand lint() {
@@ -39,6 +42,7 @@ public class Helm {
   /**
    * This command packages a chart into a versioned chart archive file.
    * If a path is given, this will look at that path for a chart (which must contain a Chart.yaml file) and then package that directory.
+   *
    * @return the {@link PackageCommand} callable command.
    */
   public PackageCommand packageIt() {
@@ -46,7 +50,17 @@ public class Helm {
   }
 
   /**
+   * This command uploads a chart to a registry.
+   *
+   * @return the {@link PushCommand} callable command.
+   */
+  public static PushCommand push() {
+    return new PushCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
    * This command shows information about a chart.
+   *
    * @return the {@link ShowCommand} command.
    */
   public ShowCommand show() {
@@ -55,6 +69,7 @@ public class Helm {
 
   /**
    * This command returns the underlying Helm library version
+   *
    * @return the {@link VersionCommand} callable command.
    */
   public static VersionCommand version() {

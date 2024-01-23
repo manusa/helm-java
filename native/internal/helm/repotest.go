@@ -4,10 +4,12 @@ import (
 	"github.com/orcaman/concurrent-map/v2"
 	"helm.sh/helm/v3/pkg/repo/repotest"
 	"net/http"
+	"os"
 	"testing"
 )
 
 var servers = cmap.New[*repotest.Server]()
+var ociServers = cmap.New[*repotest.OCIServer]()
 
 type RepoServerOptions struct {
 	Glob     string
@@ -15,7 +17,7 @@ type RepoServerOptions struct {
 	Password string
 }
 
-func RepoTempServerStart(options *RepoServerOptions) (*repotest.Server, error) {
+func RepoServerStart(options *RepoServerOptions) (*repotest.Server, error) {
 	server, err := repotest.NewTempServerWithCleanup(&testing.T{}, options.Glob)
 	if err != nil {
 		return nil, err
@@ -34,16 +36,44 @@ func RepoTempServerStart(options *RepoServerOptions) (*repotest.Server, error) {
 	return server, nil
 }
 
+func RepoOciServerStart(options *RepoServerOptions) (*repotest.OCIServer, error) {
+	tdir, err := os.MkdirTemp("", "helm-repotest-")
+	server, err := repotest.NewOCIServer(&testing.T{}, tdir)
+	if err != nil {
+		return nil, err
+	}
+	go server.ListenAndServe()
+	ociServers.Set(server.RegistryURL, server)
+	return server, nil
+}
+
+func serverStop(srv *repotest.Server) {
+	srv.Stop()
+	_ = os.RemoveAll(srv.Root())
+}
+
+func ociServerStop(srv *repotest.OCIServer) {
+	// srv.Stop() //TODO can't be stopped for now ¯\_(ツ)_/¯
+	_ = os.RemoveAll(srv.Dir)
+}
+
 func RepoServerStop(url string) {
 	if server, _ := servers.Get(url); server != nil {
-		server.Stop()
+		serverStop(server)
 		servers.Remove(url)
+	}
+	if ociServer, _ := ociServers.Get(url); ociServer != nil {
+		ociServerStop(ociServer)
+		ociServers.Remove(url)
 	}
 }
 
 func RepoServerStopAll() {
 	for server := range servers.IterBuffered() {
-		server.Val.Stop()
+		serverStop(server.Val)
+	}
+	for server := range ociServers.IterBuffered() {
+		ociServerStop(server.Val)
 	}
 	servers.Clear()
 }
