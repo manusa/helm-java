@@ -2,9 +2,10 @@ package helm
 
 import (
 	"bytes"
+	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/registry"
-	"os"
+	"strings"
 )
 
 type RegistryLoginOptions struct {
@@ -39,9 +40,7 @@ func RegistryLogin(options *RegistryLoginOptions) (string, error) {
 		action.WithCAFile(options.CaFile),
 		action.WithInsecure(options.Insecure),
 	)
-	// Write debug messages to stdout
-	_, _ = os.Stdout.Write(registryClientOut.Bytes())
-	return out.String(), err
+	return appendToOutOrErr(registryClientOut, out.String(), err)
 }
 
 func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, plainHttp, debug bool) (*registry.Client, *bytes.Buffer, error) {
@@ -64,4 +63,17 @@ func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, 
 		registryClient, err = registry.NewClient(opts...)
 	}
 	return registryClient, out, err
+}
+
+func appendToOutOrErr(registryClientOut *bytes.Buffer, out string, err error) (string, error) {
+	registryClientOutString := registryClientOut.String()
+	if err != nil && len(err.Error()) > 0 && len(registryClientOutString) > 0 {
+		err = errors.Errorf("%s\n---\n%s", err, registryClientOutString)
+	}
+	if err == nil && len(out) > 0 && len(registryClientOutString) > 0 {
+		out = strings.Join([]string{out, "---", registryClientOutString}, "\n")
+	} else if err == nil && len(out) == 0 && len(registryClientOutString) > 0 {
+		out = registryClientOutString
+	}
+	return out, err
 }

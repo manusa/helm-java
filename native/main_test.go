@@ -68,7 +68,7 @@ func TestPushUnauthorized(t *testing.T) {
 	if !strings.Contains(err.Error(), "push access denied, repository does not exist or may require authorization") {
 		t.Errorf("Expected push to fail with message, got %s", err.Error())
 	}
-	if !strings.Contains(out, "level=debug") || !strings.Contains(out, "msg=Unauthorized") {
+	if !strings.Contains(err.Error(), "level=debug") || !strings.Contains(err.Error(), "msg=Unauthorized") {
 		t.Errorf("Expected out to contain debug info, got %s", out)
 	}
 }
