@@ -10,13 +10,32 @@ import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.ServiceLoader;
 
+import static com.marcnuri.helm.jni.RemoteJarLoader.remoteJar;
+
 public interface NativeLibrary {
 
   static NativeLibrary getInstance() {
-    for (NativeLibrary nativeLibrary : ServiceLoader.load(NativeLibrary.class)) {
+    NativeLibrary nativeLibrary;
+    ClassLoader remoteJar;
+    if (
+      // Load from ClassPath (should work on Maven)
+      (nativeLibrary = serviceProviderLibrary(null)) != null ||
+        // Load from remote JAR (should work on Gradle if not air-gapped)
+        ((remoteJar = remoteJar()) != null && (nativeLibrary = serviceProviderLibrary(remoteJar)) != null)
+    ) {
       return nativeLibrary;
     }
+    // Load remote JAR (fallback for Gradle)
     throw new IllegalStateException("No NativeLibrary implementation found, please add one of the supported dependencies to your project");
+  }
+
+  static NativeLibrary serviceProviderLibrary(ClassLoader classLoader) {
+    for (NativeLibrary nativeLibrary : ServiceLoader.load(
+      NativeLibrary.class, classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader)
+    ) {
+      return nativeLibrary;
+    }
+    return null;
   }
 
   String getBinaryName();
@@ -45,4 +64,5 @@ public interface NativeLibrary {
       throw new IllegalStateException("Unable to create temporary directory", exception);
     }
   }
+
 }
