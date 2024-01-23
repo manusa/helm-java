@@ -2,7 +2,9 @@ package helm
 
 import (
 	"github.com/orcaman/concurrent-map/v2"
+	"github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/repo/repotest"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -18,10 +20,12 @@ type RepoServerOptions struct {
 }
 
 func RepoServerStart(options *RepoServerOptions) (*repotest.Server, error) {
+	logrus.SetOutput(io.Discard)
 	server, err := repotest.NewTempServerWithCleanup(&testing.T{}, options.Glob)
 	if err != nil {
 		return nil, err
 	}
+	logrus.SetLevel(logrus.ErrorLevel)
 	if len(options.Username) > 0 && len(options.Password) > 0 {
 		server.Stop()
 		server.WithMiddleware(func(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +41,7 @@ func RepoServerStart(options *RepoServerOptions) (*repotest.Server, error) {
 }
 
 func RepoOciServerStart(options *RepoServerOptions) (*repotest.OCIServer, error) {
+	logrus.SetOutput(io.Discard)
 	tdir, err := os.MkdirTemp("", "helm-repotest-")
 	server, err := repotest.NewOCIServer(&testing.T{}, tdir)
 	if err != nil {
