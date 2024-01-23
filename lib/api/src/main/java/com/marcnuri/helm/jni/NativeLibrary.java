@@ -25,7 +25,6 @@ public interface NativeLibrary {
     ) {
       return nativeLibrary;
     }
-    // Load remote JAR (fallback for Gradle)
     throw new IllegalStateException("No NativeLibrary implementation found, please add one of the supported dependencies to your project");
   }
 
