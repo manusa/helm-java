@@ -28,6 +28,6 @@ func Show(options *ShowOptions) (string, error) {
 	if format == "" {
 		return "", fmt.Errorf("invalid output format: %s", options.OutputFormat)
 	}
-	client := action.NewShowWithConfig(format, &action.Configuration{})
+	client := action.NewShowWithConfig(format, NewCfg(&CfgOptions{}))
 	return client.Run(options.Path)
 }

@@ -16,6 +16,24 @@ struct CreateOptions {
 	char* dir;
 };
 
+struct InstallOptions {
+	char* name;
+	char* chart;
+	char* namespace;
+	int   createNamespace;
+	char* description;
+	int   devel;
+	int   dryRun;
+	char* dryRunOption;
+	char* kubeConfig;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecureSkipTLSverify;
+	int   plainHttp;
+	int   debug;
+};
+
 struct LintOptions {
 	char* path;
 	int   strict;
@@ -116,6 +134,29 @@ func Create(options *C.struct_CreateOptions) C.Result {
 			Dir:  C.GoString(options.dir),
 		})
 		return "", ex
+	})
+}
+
+//export Install
+func Install(options *C.struct_InstallOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Install(&helm.InstallOptions{
+			Name:                  C.GoString(options.name),
+			Chart:                 C.GoString(options.chart),
+			Namespace:             C.GoString(options.namespace),
+			CreateNamespace:       options.createNamespace == 1,
+			Description:           C.GoString(options.description),
+			Devel:                 options.devel == 1,
+			DryRun:                options.dryRun == 1,
+			DryRunOption:          C.GoString(options.dryRunOption),
+			KubeConfig:            C.GoString(options.kubeConfig),
+			CertFile:              C.GoString(options.certFile),
+			KeyFile:               C.GoString(options.keyFile),
+			CaFile:                C.GoString(options.caFile),
+			InsecureSkipTLSverify: options.insecureSkipTLSverify == 1,
+			PlainHttp:             options.plainHttp == 1,
+			Debug:                 options.debug == 1,
+		})
 	})
 }
 

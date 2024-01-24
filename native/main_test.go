@@ -22,37 +22,26 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestRegistryLoginInvalidCredentials(t *testing.T) {
-	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
-	_, err := helm.RegistryLogin(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-		Username: "username",
-		Password: "invalid",
+func TestInstallDry(t *testing.T) {
+	create, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
 	})
-	if err == nil || !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") {
-		t.Error("Expected login to fail")
-	}
-}
-
-func TestRegistryLogout(t *testing.T) {
-	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
-	_, err := helm.RegistryLogin(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-		Username: "username",
-		Password: "password",
+	out, err := helm.Install(&helm.InstallOptions{
+		Chart:        create,
+		Name:         "test",
+		Namespace:    "a-namespace",
+		DryRun:       true,
+		DryRunOption: "client",
+		ClientOnly:   true,
 	})
 	if err != nil {
-		t.Error("Expected initial login to succeed")
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
 	}
-	var out string
-	out, err = helm.RegistryLogout(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-	})
-	if err != nil {
-		t.Errorf("Expected logout to succeed, got %s", err)
-	}
-	if !strings.Contains(out, "Removing login credentials for") {
-		t.Errorf("Expected logout to succeed, got %s", out)
+	if !strings.Contains(out, "NAME: test") {
+		t.Errorf("Expected install to succeed, got %s", out)
+		return
 	}
 }
 
@@ -119,6 +108,40 @@ func TestRegistryLogin(t *testing.T) {
 	})
 	if err != nil {
 		t.Errorf("Expected login to succeed, got %s", err)
+	}
+}
+
+func TestRegistryLoginInvalidCredentials(t *testing.T) {
+	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	_, err := helm.RegistryLogin(&helm.RegistryOptions{
+		Hostname: srv.RegistryURL,
+		Username: "username",
+		Password: "invalid",
+	})
+	if err == nil || !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") {
+		t.Error("Expected login to fail")
+	}
+}
+
+func TestRegistryLogout(t *testing.T) {
+	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	_, err := helm.RegistryLogin(&helm.RegistryOptions{
+		Hostname: srv.RegistryURL,
+		Username: "username",
+		Password: "password",
+	})
+	if err != nil {
+		t.Error("Expected initial login to succeed")
+	}
+	var out string
+	out, err = helm.RegistryLogout(&helm.RegistryOptions{
+		Hostname: srv.RegistryURL,
+	})
+	if err != nil {
+		t.Errorf("Expected logout to succeed, got %s", err)
+	}
+	if !strings.Contains(out, "Removing login credentials for") {
+		t.Errorf("Expected logout to succeed, got %s", out)
 	}
 }
 
