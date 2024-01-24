@@ -22,6 +22,8 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+      - name: Go Test
+        run: make test-go
       - name: Maven Version (Check for Profile Selection debugging)
         run: mvn -version
       - name: Build
