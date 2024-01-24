@@ -42,7 +42,7 @@ struct PushOptions {
 	int   debug;
 };
 
-struct RegistryLoginOptions {
+struct RegistryOptions {
 	char* hostname;
 	char* username;
 	char* password;
@@ -165,12 +165,27 @@ func Push(options *C.struct_PushOptions) C.Result {
 }
 
 //export RegistryLogin
-func RegistryLogin(options *C.struct_RegistryLoginOptions) C.Result {
+func RegistryLogin(options *C.struct_RegistryOptions) C.Result {
 	return runCommand(func() (string, error) {
-		return helm.RegistryLogin(&helm.RegistryLoginOptions{
+		return helm.RegistryLogin(&helm.RegistryOptions{
 			Hostname:  C.GoString(options.hostname),
 			Username:  C.GoString(options.username),
 			Password:  C.GoString(options.password),
+			CertFile:  C.GoString(options.certFile),
+			KeyFile:   C.GoString(options.keyFile),
+			CaFile:    C.GoString(options.caFile),
+			Insecure:  options.insecure == 1,
+			PlainHttp: options.plainHttp == 1,
+			Debug:     options.debug == 1,
+		})
+	})
+}
+
+//export RegistryLogout
+func RegistryLogout(options *C.struct_RegistryOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.RegistryLogout(&helm.RegistryOptions{
+			Hostname:  C.GoString(options.hostname),
 			CertFile:  C.GoString(options.certFile),
 			KeyFile:   C.GoString(options.keyFile),
 			CaFile:    C.GoString(options.caFile),

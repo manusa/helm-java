@@ -98,7 +98,7 @@ Equivalent of [`helm registry`](https://helm.sh/docs/helm/helm_registry/).
 
 Log in to or log out from a registry.
 
-### Registry login
+#### Registry login
 
 Equivalent of [`helm registry login`](https://helm.sh/docs/helm/helm_registry_login/).
 
@@ -107,7 +107,7 @@ Log in to a registry.
 ``` java
 Helm.login()
   // The host to log in to.
-  .withHost(Paths.get("path", "to", "chart", "package"))
+  .withHost("host")
   // Registry username
   .withUsername("username");
   // Registry password or identity token.
@@ -122,6 +122,21 @@ Helm.login()
   .insecureSkipTlsVerify()
   // Optionally use insecure HTTP connections for the chart upload
   .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
+  .call();
+```
+
+#### Registry logout
+
+Equivalent of [`helm registry logout`](https://helm.sh/docs/helm/helm_registry_logout/).
+
+Log out from a registry.
+
+``` java
+Helm.logout()
+  // The host to log out from.
+  .withHost("host")
   // Optionally enable debug mode to print out verbose information
   .debug()
   .call();

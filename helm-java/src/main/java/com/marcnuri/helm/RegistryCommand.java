@@ -1,7 +1,7 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.HelmLib;
-import com.marcnuri.helm.jni.RegistryLoginOptions;
+import com.marcnuri.helm.jni.RegistryOptions;
 
 import java.nio.file.Path;
 
@@ -13,8 +13,22 @@ public class RegistryCommand {
     this.helmLib = helmLib;
   }
 
+  /**
+   * This command logs in to a Helm registry.
+   *
+   * @return the {@link LoginCommand} subcommand.
+   */
   public LoginCommand login() {
     return new LoginCommand(helmLib);
+  }
+
+  /**
+   * This command logs out from a Helm registry.
+   *
+   * @return the {@link LogoutCommand} subcommand.
+   */
+  public LogoutCommand logout() {
+    return new LogoutCommand(helmLib);
   }
 
   public static final class LoginCommand extends RegistrySubcommand<LoginCommand> {
@@ -28,7 +42,7 @@ public class RegistryCommand {
 
     @Override
     public String call() {
-      return run(hl -> hl.RegistryLogin(new RegistryLoginOptions(
+      return run(hl -> hl.RegistryLogin(new RegistryOptions(
         host,
         username,
         password,
@@ -64,6 +78,27 @@ public class RegistryCommand {
     }
   }
 
+  public static final class LogoutCommand extends RegistrySubcommand<LogoutCommand> {
+
+    LogoutCommand(HelmLib helmLib) {
+      super(helmLib);
+    }
+
+    @Override
+    public String call() {
+      return run(hl -> hl.RegistryLogout(new RegistryOptions(
+        host,
+        null,
+        null,
+        certFile == null ? null : certFile.normalize().toFile().getAbsolutePath(),
+        keyFile == null ? null : keyFile.normalize().toFile().getAbsolutePath(),
+        caFile == null ? null : caFile.normalize().toFile().getAbsolutePath(),
+        insecureSkipTlsVerify ? 1 : 0,
+        plainHttp ? 1 : 0,
+        debug ? 1 : 0
+      ))).out;
+    }
+  }
 
   private abstract static class RegistrySubcommand<T extends RegistrySubcommand> extends HelmCommand<String> {
 

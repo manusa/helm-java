@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type RegistryLoginOptions struct {
+type RegistryOptions struct {
 	Hostname  string
 	Username  string
 	Password  string
@@ -21,7 +21,7 @@ type RegistryLoginOptions struct {
 	Debug     bool
 }
 
-func RegistryLogin(options *RegistryLoginOptions) (string, error) {
+func RegistryLogin(options *RegistryOptions) (string, error) {
 	registryClient, registryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
@@ -46,6 +46,29 @@ func RegistryLogin(options *RegistryLoginOptions) (string, error) {
 		action.WithCAFile(options.CaFile),
 		action.WithInsecure(options.Insecure),
 	)
+	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
+}
+
+func RegistryLogout(options *RegistryOptions) (string, error) {
+	registryClient, registryClientOut, err := newRegistryClient(
+		options.CertFile,
+		options.KeyFile,
+		options.CaFile,
+		options.Insecure,
+		options.PlainHttp,
+		options.Debug,
+	)
+	if err != nil {
+		return "", err
+	}
+	debugBuffer := bytes.NewBuffer(make([]byte, 0))
+	if options.Debug {
+		// out is ignored in (a *RegistryLogout) Run
+		// Manually set the logrus (which is used) output to out
+		logrus.SetOutput(debugBuffer)
+	}
+	err = action.NewRegistryLogout(&action.Configuration{RegistryClient: registryClient}).Run(
+		debugBuffer /* ignored */, options.Hostname)
 	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
 }
 
