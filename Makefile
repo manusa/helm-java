@@ -19,6 +19,10 @@ clean:
 	mvn clean
 	rm -f native/out/*.h native/out/*.so native/out/*.dylib native/out/*.dll
 
+.PHONY: test-go
+test-go:
+	cd native && go test ./...
+
 .PHONY: build-native
 build-native:
 	cd native && go build $(COMMON_BUILD_ARGS) -o ./out/helm-$(NATIVE_NAME)
