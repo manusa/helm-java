@@ -3,7 +3,7 @@ package com.marcnuri.helm.jni;
 import com.sun.jna.Structure;
 
 @Structure.FieldOrder({"hostname", "username", "password", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
-public class RegistryLoginOptions extends Structure {
+public class RegistryOptions extends Structure {
   public String hostname;
   public String username;
   public String password;
@@ -14,7 +14,7 @@ public class RegistryLoginOptions extends Structure {
   public int plainHttp;
   public int debug;
 
-  public RegistryLoginOptions(String hostname, String username, String password, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify, int plainHttp, int debug) {
+  public RegistryOptions(String hostname, String username, String password, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify, int plainHttp, int debug) {
     this.hostname = hostname;
     this.username = username;
     this.password = password;

@@ -12,7 +12,9 @@ public interface HelmLib extends Library {
 
   Result Push(PushOptions options);
 
-  Result RegistryLogin(RegistryLoginOptions options);
+  Result RegistryLogin(RegistryOptions options);
+
+  Result RegistryLogout(RegistryOptions options);
 
   Result RepoServerStart(RepoServerOptions options);
 
