@@ -59,6 +59,15 @@ public class Helm {
   }
 
   /**
+   * This command allows you to log in to or out from a Helm registry.
+   *
+   * @return the {@link RegistryCommand} command.
+   */
+  public static RegistryCommand registry() {
+    return new RegistryCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
    * This command shows information about a chart.
    *
    * @return the {@link ShowCommand} command.

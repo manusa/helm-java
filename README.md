@@ -92,6 +92,41 @@ Helm.push()
   .call();
 ```
 
+### Registry
+
+Equivalent of [`helm registry`](https://helm.sh/docs/helm/helm_registry/).
+
+Log in to or log out from a registry.
+
+### Registry login
+
+Equivalent of [`helm registry login`](https://helm.sh/docs/helm/helm_registry_login/).
+
+Log in to a registry.
+
+``` java
+Helm.login()
+  // The host to log in to.
+  .withHost(Paths.get("path", "to", "chart", "package"))
+  // Registry username
+  .withUsername("username");
+  // Registry password or identity token.
+  .withPassword("password");
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
+  .call();
+```
+
 ### Show
 
 Equivalent of [`helm show`](https://helm.sh/docs/helm/helm_show/).

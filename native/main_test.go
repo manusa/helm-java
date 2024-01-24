@@ -22,6 +22,18 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestRegistryLoginInvalidCredentials(t *testing.T) {
+	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	_, err := helm.RegistryLogin(&helm.RegistryLoginOptions{
+		Hostname: srv.RegistryURL,
+		Username: "username",
+		Password: "invalid",
+	})
+	if err == nil || !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") {
+		t.Error("Expected login to fail")
+	}
+}
+
 func TestPush(t *testing.T) {
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	dir := t.TempDir()
