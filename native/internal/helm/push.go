@@ -28,7 +28,7 @@ func Push(options *PushOptions) (string, error) {
 		return "", err
 	}
 	client := action.NewPushWithOpts(
-		action.WithPushConfig(&action.Configuration{RegistryClient: registryClient}),
+		action.WithPushConfig(NewCfg(&CfgOptions{registryClient: registryClient})),
 		action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CaFile),
 		action.WithInsecureSkipTLSVerify(options.InsecureSkipTlsVerify),
 		action.WithPlainHTTP(options.PlainHttp),
