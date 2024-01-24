@@ -1,6 +1,5 @@
 package com.marcnuri.helm;
 
-import com.marcnuri.helm.jni.RegistryLoginOptions;
 import com.marcnuri.helm.jni.RepoServerOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +55,7 @@ class HelmPushTest {
 
   @Test
   void pushAuthorized() {
-    Helm.HelmLibHolder.INSTANCE.RegistryLogin(new RegistryLoginOptions(remoteServer, "username", "password", null, null, null, 0, 0, 0));
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
@@ -67,7 +66,7 @@ class HelmPushTest {
 
   @Test
   void pushWithDebugShowsDebugMessages() {
-    Helm.HelmLibHolder.INSTANCE.RegistryLogin(new RegistryLoginOptions(remoteServer, "username", "password", null, null, null, 0, 0, 1));
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))

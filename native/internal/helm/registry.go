@@ -3,6 +3,7 @@ package helm
 import (
 	"bytes"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/registry"
 	"strings"
@@ -32,15 +33,20 @@ func RegistryLogin(options *RegistryLoginOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	out := bytes.NewBuffer(make([]byte, 0))
+	debugBuffer := bytes.NewBuffer(make([]byte, 0))
+	if options.Debug {
+		// out is ignored in (a *RegistryLogin) Run
+		// Manually set the logrus (which is used) output to out
+		logrus.SetOutput(debugBuffer)
+	}
 	err = action.NewRegistryLogin(&action.Configuration{RegistryClient: registryClient}).Run(
-		out, options.Hostname, options.Username, options.Password,
+		debugBuffer /* ignored */, options.Hostname, options.Username, options.Password,
 		action.WithCertFile(options.CertFile),
 		action.WithKeyFile(options.KeyFile),
 		action.WithCAFile(options.CaFile),
 		action.WithInsecure(options.Insecure),
 	)
-	return appendToOutOrErr(registryClientOut, out.String(), err)
+	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
 }
 
 func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, plainHttp, debug bool) (*registry.Client, *bytes.Buffer, error) {
@@ -65,15 +71,20 @@ func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, 
 	return registryClient, out, err
 }
 
-func appendToOutOrErr(registryClientOut *bytes.Buffer, out string, err error) (string, error) {
-	registryClientOutString := registryClientOut.String()
-	if err != nil && len(err.Error()) > 0 && len(registryClientOutString) > 0 {
-		err = errors.Errorf("%s\n---\n%s", err, registryClientOutString)
+func appendToOutOrErr(debugInfo *bytes.Buffer, out string, err error) (string, error) {
+	debugInfoString := debugInfo.String()
+	if len(debugInfoString) == 0 {
+		return out, err
 	}
-	if err == nil && len(out) > 0 && len(registryClientOutString) > 0 {
-		out = strings.Join([]string{out, "---", registryClientOutString}, "\n")
-	} else if err == nil && len(out) == 0 && len(registryClientOutString) > 0 {
-		out = registryClientOutString
+	// Error
+	if err != nil && len(err.Error()) > 0 {
+		err = errors.Errorf("%s\n---\n%s", err, debugInfoString)
+	}
+	// Out
+	if err == nil && len(out) > 0 {
+		out = strings.Join([]string{out, "---", debugInfoString}, "\n")
+	} else if err == nil && len(out) == 0 {
+		out = debugInfoString
 	}
 	return out, err
 }
