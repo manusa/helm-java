@@ -8,7 +8,9 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"time"
+	"helm.sh/helm/v3/pkg/strvals"
+	"net/url"
+	"slices"
 )
 
 type InstallOptions struct {
@@ -22,6 +24,7 @@ type InstallOptions struct {
 	Devel                 bool
 	DryRun                bool
 	DryRunOption          string
+	Values                string
 	KubeConfig            string
 	CertFile              string
 	KeyFile               string
@@ -96,27 +99,45 @@ func Install(options *InstallOptions) (string, error) {
 			// TODO support DependencyUpdate option and try to update dependencies
 			return "", invalidDependencies
 		}
-
 	}
 	// Dry Run options
 	if invalidDryRun := validateDryRunOptionFlag(client.DryRunOption); invalidDryRun != nil {
 		return "", invalidDryRun
 	}
 	ctx := context.Background()
-	// TODO: Support for values
-	// Run
-	release, err := client.RunWithContext(ctx, chartRequested, make(map[string]interface{}))
-	// Generate report
-	out := ""
-	if release != nil {
-		out = fmt.Sprintf("NAME: %s\nLAST DEPLOYED: %s\nNAMESPACE: %s\nSTATUS: %s\nREVISION: %d\n",
-			release.Name,
-			release.Info.LastDeployed.Format(time.ANSIC),
-			release.Namespace,
-			release.Info.Status.String(),
-			release.Version)
+	// Values
+	var values, invalidValues = parseValues(options.Values)
+	if invalidValues != nil {
+		return "", invalidValues
 	}
+	// Run
+	release, err := client.RunWithContext(ctx, chartRequested, values)
+	// Generate report
+	out := Status(release, options.Debug)
 	return appendToOutOrErr(concat(registryClientOut, kubeOut), out, err)
+}
+
+var escapedChars = []rune("\"'\\={[,.]}")
+
+func parseValues(values string) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	if values != "" {
+		params, err := url.ParseQuery(values)
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range params {
+			escapedValue := bytes.NewBuffer(make([]byte, 0))
+			for _, char := range value[0] {
+				if slices.Contains(escapedChars, char) {
+					escapedValue.WriteString("\\")
+				}
+				escapedValue.WriteRune(char)
+			}
+			_ = strvals.ParseInto(fmt.Sprintf("%s=%s", key, escapedValue), result)
+		}
+	}
+	return result, nil
 }
 
 // https://github.com/helm/helm/blob/ef02cafdd0a0be75b1f83f1b2c9ca4d1ac3edda5/cmd/helm/install.go#L309-L318

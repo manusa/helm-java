@@ -3,7 +3,12 @@ package com.marcnuri.helm;
 import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.InstallOptions;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class InstallCommand extends HelmCommand<String> {
 
@@ -16,6 +21,7 @@ public class InstallCommand extends HelmCommand<String> {
   private String description;
   private boolean devel;
   private boolean dryRun;
+  private final Map<String, String> values;
   private String dryRunOption;
   private Path kubeConfig;
   private Path certFile;
@@ -33,6 +39,7 @@ public class InstallCommand extends HelmCommand<String> {
   public InstallCommand(HelmLib helmLib, Path chart) {
     super(helmLib);
     this.chart = toString(chart);
+    this.values = new LinkedHashMap<>();
   }
 
   @Override
@@ -48,6 +55,7 @@ public class InstallCommand extends HelmCommand<String> {
       toInt(devel),
       toInt(dryRun),
       dryRunOption,
+      encodeValues(),
       toString(kubeConfig),
       toString(certFile),
       toString(keyFile),
@@ -168,6 +176,18 @@ public class InstallCommand extends HelmCommand<String> {
   }
 
   /**
+   * Set values for the chart.
+   *
+   * @param key the key.
+   * @param value the value for this key.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand set(String key, String value) {
+    this.values.put(key, value);
+    return this;
+  }
+
+  /**
    * Set the path ./kube/config file to use.
    *
    * @param kubeConfig the path to kube config file.
@@ -253,5 +273,22 @@ public class InstallCommand extends HelmCommand<String> {
   public InstallCommand clientOnly() {
     this.clientOnly = true;
     return this;
+  }
+
+  private String encodeValues() {
+    final StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, String> entry : values.entrySet()) {
+      if (sb.length() > 0) {
+        sb.append("&");
+      }
+      try {
+        sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()))
+          .append("=")
+          .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+      } catch (UnsupportedEncodingException e) {
+        throw new IllegalArgumentException("Invalid chart value: " + entry.getKey() + "=" + entry.getValue(), e);
+      }
+    }
+    return sb.toString();
   }
 }

@@ -21,7 +21,7 @@ clean:
 
 .PHONY: test-go
 test-go:
-	cd native && go test ./...
+	cd native && go clean -testcache && go test ./...
 
 .PHONY: build-native
 build-native:
