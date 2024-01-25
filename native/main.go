@@ -27,6 +27,7 @@ struct InstallOptions {
 	int   devel;
 	int   dryRun;
 	char* dryRunOption;
+	char* values;
 	char* kubeConfig;
 	char* certFile;
 	char* keyFile;
@@ -154,6 +155,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Devel:                 options.devel == 1,
 			DryRun:                options.dryRun == 1,
 			DryRunOption:          C.GoString(options.dryRunOption),
+			Values:                C.GoString(options.values),
 			KubeConfig:            C.GoString(options.kubeConfig),
 			CertFile:              C.GoString(options.certFile),
 			KeyFile:               C.GoString(options.keyFile),

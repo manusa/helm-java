@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/registry"
+	"helm.sh/helm/v3/pkg/release"
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 type CfgOptions struct {
@@ -25,7 +29,7 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	actionConfig := new(action.Configuration)
 	log := func(format string, v ...interface{}) {
 		if options.KubeOut != nil {
-			_, _ = options.KubeOut.Write([]byte(fmt.Sprintf(format, v...)))
+			_, _ = options.KubeOut.Write([]byte(fmt.Sprintf(format, v...) + "\n"))
 		}
 	}
 	if options.namespace != "" {
@@ -37,6 +41,33 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	}
 	actionConfig.RegistryClient = options.RegistryClient
 	return actionConfig
+}
+
+func Status(release *release.Release, debug bool) string {
+	if release == nil {
+		return ""
+	}
+	out := bytes.NewBuffer(make([]byte, 0))
+	_, _ = fmt.Fprintf(out, "NAME: %s\n", release.Name)
+	if !release.Info.LastDeployed.IsZero() {
+		_, _ = fmt.Fprintf(out, "LAST DEPLOYED: %s\n", release.Info.LastDeployed.Format(time.ANSIC))
+	}
+	_, _ = fmt.Fprintf(out, "NAMESPACE: %s\n", release.Namespace)
+	_, _ = fmt.Fprintf(out, "STATUS: %s\n", release.Info.Status.String())
+	_, _ = fmt.Fprintf(out, "REVISION: %d\n", release.Version)
+	if debug {
+		_, _ = fmt.Fprintln(out, "USER-SUPPLIED VALUES:")
+		_ = output.EncodeYAML(out, release.Config)
+		_, _ = fmt.Fprintln(out)
+		_, _ = fmt.Fprintln(out, "COMPUTED VALUES:")
+		cfg, _ := chartutil.CoalesceValues(release.Chart, release.Config)
+		_ = output.EncodeYAML(out, cfg.AsMap())
+		_, _ = fmt.Fprintln(out)
+	}
+	if len(release.Info.Notes) > 0 {
+		_, _ = fmt.Fprintf(out, "NOTES:\n%s\n", strings.TrimSpace(release.Info.Notes))
+	}
+	return out.String()
 }
 
 func concat(buffers ...*bytes.Buffer) *bytes.Buffer {

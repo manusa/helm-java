@@ -45,6 +45,28 @@ func TestInstallDry(t *testing.T) {
 	}
 }
 
+func TestInstallValues(t *testing.T) {
+	create, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
+	})
+	out, err := helm.Install(&helm.InstallOptions{
+		Chart:      create,
+		Name:       "test",
+		Values:     "corner=%22%27%5C%3D%7B%5B%2C.%5D%7D%C2%A1%21%C2%BF%3F-_test%3D1%2Cother%3D2",
+		Debug:      true,
+		ClientOnly: true,
+	})
+	if err != nil {
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "USER-SUPPLIED VALUES:") || !strings.Contains(out, "corner: '\"''\\={[,.]}¡!¿?-_test=1,other=2'") {
+		t.Errorf("Expected install to contain specific values, got %s", out)
+		return
+	}
+}
+
 func TestPush(t *testing.T) {
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	dir := t.TempDir()

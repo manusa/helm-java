@@ -12,10 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HelmInstallTest {
 
+  @TempDir
+  private Path tempDir;
   private Helm helm;
 
   @BeforeEach
-  void setUp(@TempDir Path tempDir) {
+  void setUp() {
     helm = Helm.create().withName("test").withDir(tempDir).call();
   }
 
@@ -32,7 +34,8 @@ class HelmInstallTest {
         "NAME: test\n",
         "LAST DEPLOYED: ",
         "STATUS: deployed",
-        "REVISION: 1"
+        "REVISION: 1",
+        "NOTES:"
       );
     }
 
@@ -98,6 +101,27 @@ class HelmInstallTest {
         "STATUS: pending-install"
       );
     }
+
+    @Test
+    void withValues() {
+      final String out = helm.install()
+        .clientOnly()
+        .debug()
+        .withName("test")
+        .set("corner", "\"'\\={[,.]}!?-_test=1,other=2")
+        .set("bool", "true")
+        .set("int", "1")
+        .set("float", "1.1")
+        .call();
+      assertThat(out).contains(
+        "NAME: test\n",
+        "USER-SUPPLIED VALUES:\n",
+        "corner: '\"''\\={[,.]}!?-_test=1,other=2'\n",
+        "bool: true\n",
+        "int: 1\n",
+        "float: \"1.1\"" // helm.sh/helm/v3/pkg/strvals does not support floats
+      );
+    }
   }
 
   @Nested
@@ -120,6 +144,18 @@ class HelmInstallTest {
       assertThatThrownBy(install::call)
         .hasMessage("release name \"\": no name provided");
     }
+
+//    @Test
+//    void withDevelopmentVersionInChart() throws IOException {
+//      final Path chartYaml = tempDir.resolve("test").resolve("Chart.yaml");
+//      final String chart = new String(Files.readAllBytes(chartYaml), StandardCharsets.UTF_8);
+//      Files.write(chartYaml, chart.replace("version: 0.1.0", "version: 0.1.0-SNAPSHOT").getBytes(StandardCharsets.UTF_8));
+//      final InstallCommand install = helm.install()
+//        .clientOnly()
+//        .withName("development-version");
+//      assertThatThrownBy(install::call)
+//        .hasMessage("release name \"\": no name provided");
+//    }
   }
 
 

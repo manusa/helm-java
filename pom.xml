@@ -64,6 +64,7 @@
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
     <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
     <version.sonatype-staging>1.6.13</version.sonatype-staging>
+    <version.test-containers>1.19.3</version.test-containers>
   </properties>
 
   <modules>
@@ -136,6 +137,12 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${version.assertj}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>k3s</artifactId>
+        <version>${version.test-containers}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
