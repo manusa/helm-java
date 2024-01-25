@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
@@ -12,6 +13,8 @@ import (
 
 type InstallOptions struct {
 	Name                  string
+	GenerateName          bool
+	NameTemplate          string
 	Chart                 string
 	Namespace             string
 	CreateNamespace       bool
@@ -42,12 +45,27 @@ func Install(options *InstallOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	client := action.NewInstall(NewCfg(&CfgOptions{
-		registryClient: registryClient,
+	kubeOut := bytes.NewBuffer(make([]byte, 0))
+	cfgOptions := &CfgOptions{
+		RegistryClient: registryClient,
 		KubeConfig:     options.KubeConfig,
 		namespace:      options.Namespace,
-	}))
-	client.ReleaseName = options.Name
+	}
+	if options.Debug {
+		cfgOptions.KubeOut = kubeOut
+	}
+	client := action.NewInstall(NewCfg(cfgOptions))
+	client.GenerateName = options.GenerateName
+	client.NameTemplate = options.NameTemplate
+	var name, chartReference string
+	if options.GenerateName {
+		// Generate name if applicable
+		name, chartReference, _ = client.NameAndChart([]string{options.Chart})
+	} else {
+		name = options.Name
+		chartReference = options.Chart
+	}
+	client.ReleaseName = name
 	client.Namespace = options.Namespace
 	client.CreateNamespace = options.CreateNamespace
 	client.Description = options.Description
@@ -64,7 +82,7 @@ func Install(options *InstallOptions) (string, error) {
 	client.CaFile = options.CaFile
 	client.InsecureSkipTLSverify = options.InsecureSkipTLSverify
 	client.PlainHTTP = options.PlainHttp
-	chartRequested, err := loader.Load(options.Chart)
+	chartRequested, err := loader.Load(chartReference)
 	if err != nil {
 		return "", err
 	}
@@ -80,13 +98,15 @@ func Install(options *InstallOptions) (string, error) {
 		}
 
 	}
-
+	// Dry Run options
 	if invalidDryRun := validateDryRunOptionFlag(client.DryRunOption); invalidDryRun != nil {
 		return "", invalidDryRun
 	}
 	ctx := context.Background()
 	// TODO: Support for values
+	// Run
 	release, err := client.RunWithContext(ctx, chartRequested, make(map[string]interface{}))
+	// Generate report
 	out := ""
 	if release != nil {
 		out = fmt.Sprintf("NAME: %s\nLAST DEPLOYED: %s\nNAMESPACE: %s\nSTATUS: %s\nREVISION: %d\n",
@@ -96,7 +116,7 @@ func Install(options *InstallOptions) (string, error) {
 			release.Info.Status.String(),
 			release.Version)
 	}
-	return appendToOutOrErr(registryClientOut, out, err)
+	return appendToOutOrErr(concat(registryClientOut, kubeOut), out, err)
 }
 
 // https://github.com/helm/helm/blob/ef02cafdd0a0be75b1f83f1b2c9ca4d1ac3edda5/cmd/helm/install.go#L309-L318

@@ -23,7 +23,7 @@ public class LintCommand extends HelmCommand<LintResult> {
    */
   @Override
   public LintResult call() {
-    final Result result = run(hl -> hl.Lint(new LintOptions(path.normalize().toFile().getAbsolutePath(), strict ? 1 : 0, quiet ? 1 : 0)));
+    final Result result = run(hl -> hl.Lint(new LintOptions(path.normalize().toFile().getAbsolutePath(), toInt(strict), toInt(quiet))));
     if (result.out == null || result.out.isEmpty()) {
       throw new IllegalStateException("Lint command returned no output");
     }

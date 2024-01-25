@@ -3,6 +3,7 @@ package com.marcnuri.helm;
 import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.Result;
 
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -21,5 +22,13 @@ public abstract class HelmCommand<T> implements Callable<T> {
       throw new IllegalStateException(result.err);
     }
     return result;
+  }
+
+  String toString(Path path) {
+    return path == null ? null : path.normalize().toFile().getAbsolutePath();
+  }
+
+  int toInt(boolean value) {
+    return value ? 1 : 0;
   }
 }

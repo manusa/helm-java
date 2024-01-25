@@ -152,3 +152,26 @@ func TestInstallCreateNamespace(t *testing.T) {
 		return
 	}
 }
+
+func TestInstallDebug(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
+	})
+	out, err := Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test",
+		Debug:      true,
+	})
+	if err != nil {
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "---\ncreating 3 resource(s)") {
+		t.Errorf("Expected install to succeed, got %s", out)
+		return
+	}
+}

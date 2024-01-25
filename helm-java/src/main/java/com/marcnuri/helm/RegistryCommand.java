@@ -46,12 +46,12 @@ public class RegistryCommand {
         host,
         username,
         password,
-        certFile == null ? null : certFile.normalize().toFile().getAbsolutePath(),
-        keyFile == null ? null : keyFile.normalize().toFile().getAbsolutePath(),
-        caFile == null ? null : caFile.normalize().toFile().getAbsolutePath(),
-        insecureSkipTlsVerify ? 1 : 0,
-        plainHttp ? 1 : 0,
-        debug ? 1 : 0
+        toString(certFile),
+        toString(keyFile),
+        toString(caFile),
+        toInt(insecureSkipTlsVerify),
+        toInt(plainHttp),
+        toInt(debug)
       ))).out;
     }
 
@@ -90,17 +90,17 @@ public class RegistryCommand {
         host,
         null,
         null,
-        certFile == null ? null : certFile.normalize().toFile().getAbsolutePath(),
-        keyFile == null ? null : keyFile.normalize().toFile().getAbsolutePath(),
-        caFile == null ? null : caFile.normalize().toFile().getAbsolutePath(),
-        insecureSkipTlsVerify ? 1 : 0,
-        plainHttp ? 1 : 0,
-        debug ? 1 : 0
+        toString(certFile),
+        toString(keyFile),
+        toString(caFile),
+        toInt(insecureSkipTlsVerify),
+        toInt(plainHttp),
+        toInt(debug)
       ))).out;
     }
   }
 
-  private abstract static class RegistrySubcommand<T extends RegistrySubcommand> extends HelmCommand<String> {
+  private abstract static class RegistrySubcommand<T extends RegistrySubcommand<T>> extends HelmCommand<String> {
 
     String host;
     Path certFile;

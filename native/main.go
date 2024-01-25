@@ -18,6 +18,8 @@ struct CreateOptions {
 
 struct InstallOptions {
 	char* name;
+	int   generateName;
+	char* nameTemplate;
 	char* chart;
 	char* namespace;
 	int   createNamespace;
@@ -32,6 +34,7 @@ struct InstallOptions {
 	int   insecureSkipTLSverify;
 	int   plainHttp;
 	int   debug;
+	int   clientOnly;
 };
 
 struct LintOptions {
@@ -142,6 +145,8 @@ func Install(options *C.struct_InstallOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Install(&helm.InstallOptions{
 			Name:                  C.GoString(options.name),
+			GenerateName:          options.generateName == 1,
+			NameTemplate:          C.GoString(options.nameTemplate),
 			Chart:                 C.GoString(options.chart),
 			Namespace:             C.GoString(options.namespace),
 			CreateNamespace:       options.createNamespace == 1,
@@ -156,6 +161,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			InsecureSkipTLSverify: options.insecureSkipTLSverify == 1,
 			PlainHttp:             options.plainHttp == 1,
 			Debug:                 options.debug == 1,
+			ClientOnly:            options.clientOnly == 1,
 		})
 	})
 }

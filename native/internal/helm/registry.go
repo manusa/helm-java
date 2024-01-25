@@ -2,11 +2,9 @@ package helm
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/registry"
-	"strings"
 )
 
 type RegistryOptions struct {
@@ -39,7 +37,7 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		// Manually set the logrus (which is used) output to out
 		logrus.SetOutput(debugBuffer)
 	}
-	err = action.NewRegistryLogin(NewCfg(&CfgOptions{registryClient: registryClient})).Run(
+	err = action.NewRegistryLogin(NewCfg(&CfgOptions{RegistryClient: registryClient})).Run(
 		debugBuffer /* ignored */, options.Hostname, options.Username, options.Password,
 		action.WithCertFile(options.CertFile),
 		action.WithKeyFile(options.KeyFile),
@@ -67,7 +65,7 @@ func RegistryLogout(options *RegistryOptions) (string, error) {
 		// Manually set the logrus (which is used) output to out
 		logrus.SetOutput(debugBuffer)
 	}
-	err = action.NewRegistryLogout(NewCfg(&CfgOptions{registryClient: registryClient})).Run(
+	err = action.NewRegistryLogout(NewCfg(&CfgOptions{RegistryClient: registryClient})).Run(
 		debugBuffer /* ignored */, options.Hostname)
 	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
 }
@@ -92,22 +90,4 @@ func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, 
 		registryClient, err = registry.NewClient(opts...)
 	}
 	return registryClient, out, err
-}
-
-func appendToOutOrErr(debugInfo *bytes.Buffer, out string, err error) (string, error) {
-	debugInfoString := debugInfo.String()
-	if len(debugInfoString) == 0 {
-		return out, err
-	}
-	// Error
-	if err != nil && len(err.Error()) > 0 {
-		err = errors.Errorf("%s\n---\n%s", err, debugInfoString)
-	}
-	// Out
-	if err == nil && len(out) > 0 {
-		out = strings.Join([]string{out, "---", debugInfoString}, "\n")
-	} else if err == nil && len(out) == 0 {
-		out = debugInfoString
-	}
-	return out, err
 }
