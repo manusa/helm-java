@@ -30,6 +30,25 @@ public class Helm {
     return new CreateCommand(HelmLibHolder.INSTANCE);
   }
 
+
+  /**
+   * This commands installs the referenced chart archive.
+   *
+   * @return the {@link InstallCommand} callable command.
+   */
+  public static InstallCommand install(String chart) {
+    return new InstallCommand(HelmLibHolder.INSTANCE).withChart(chart);
+  }
+
+  /**
+   * This commands installs the current chart.
+   *
+   * @return the {@link InstallCommand} callable command.
+   */
+  public InstallCommand install() {
+    return new InstallCommand(HelmLibHolder.INSTANCE, path);
+  }
+
   /**
    * This command examines a chart for possible issues.
    *

@@ -6,6 +6,8 @@ public interface HelmLib extends Library {
 
   Result Create(CreateOptions options);
 
+  Result Install(InstallOptions options);
+
   Result Lint(LintOptions options);
 
   Result Package(PackageOptions options);

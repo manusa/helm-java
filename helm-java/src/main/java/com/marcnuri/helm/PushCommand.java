@@ -26,12 +26,12 @@ public class PushCommand extends HelmCommand<String> {
     return run(hl -> hl.Push(new PushOptions(
       chart.normalize().toFile().getAbsolutePath(),
       remote.toString(),
-      certFile == null ? null : certFile.normalize().toFile().getAbsolutePath(),
-      keyFile == null ? null : keyFile.normalize().toFile().getAbsolutePath(),
-      caFile == null ? null : caFile.normalize().toFile().getAbsolutePath(),
-      insecureSkipTlsVerify ? 1 : 0,
-      plainHttp ? 1 : 0,
-      debug ? 1 : 0
+      toString(certFile),
+      toString(keyFile),
+      toString(caFile),
+      toInt(insecureSkipTlsVerify),
+      toInt(plainHttp),
+      toInt(debug)
     ))).out;
   }
 

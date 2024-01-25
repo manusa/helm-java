@@ -30,11 +30,11 @@ public class PackageCommand extends HelmCommand<Helm> {
   public Helm call() {
     run(hl -> hl.Package(new PackageOptions(
       path.normalize().toFile().getAbsolutePath(),
-      destination == null ? null : destination.normalize().toFile().getAbsolutePath(),
-      sign ? 1 : 0,
+      toString(destination),
+      toInt(sign),
       key,
-      keyring == null ? null : keyring.normalize().toFile().getAbsolutePath(),
-      passphraseFile == null ? null : passphraseFile.normalize().toFile().getAbsolutePath()
+      toString(keyring),
+      toString(passphraseFile)
     )));
     return helm;
   }
