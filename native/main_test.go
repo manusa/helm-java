@@ -68,6 +68,7 @@ func TestInstallValues(t *testing.T) {
 }
 
 func TestPush(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	dir := t.TempDir()
 	create, _ := helm.Create(&helm.CreateOptions{
@@ -95,7 +96,8 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushUnauthorized(t *testing.T) {
-	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	defer helm.RepoServerStopAll()
+	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{Password: "not-known"})
 	dir := t.TempDir()
 	create, _ := helm.Create(&helm.CreateOptions{
 		Name: "test",
@@ -110,7 +112,8 @@ func TestPushUnauthorized(t *testing.T) {
 	if err == nil {
 		t.Error("Expected push to fail")
 	}
-	if !strings.Contains(err.Error(), "push access denied, repository does not exist or may require authorization") {
+	if !strings.Contains(err.Error(), "push access denied, repository does not exist or may require authorization") &&
+		!(strings.Contains(err.Error(), "unexpected status from HEAD request") && strings.Contains(err.Error(), "401 Unauthorized")) {
 		t.Errorf("Expected push to fail with message, got %s", err.Error())
 	}
 	if !strings.Contains(err.Error(), "level=debug") || !strings.Contains(err.Error(), "msg=Unauthorized") {
@@ -119,6 +122,7 @@ func TestPushUnauthorized(t *testing.T) {
 }
 
 func TestRegistryLogin(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	srv, err := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	if err != nil {
 		t.Errorf("Expected server to be started")
@@ -134,6 +138,7 @@ func TestRegistryLogin(t *testing.T) {
 }
 
 func TestRegistryLoginInvalidCredentials(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	_, err := helm.RegistryLogin(&helm.RegistryOptions{
 		Hostname: srv.RegistryURL,
@@ -146,6 +151,7 @@ func TestRegistryLoginInvalidCredentials(t *testing.T) {
 }
 
 func TestRegistryLogout(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	_, err := helm.RegistryLogin(&helm.RegistryOptions{
 		Hostname: srv.RegistryURL,
@@ -185,6 +191,7 @@ func repoServerStartAsync(t *testing.T, serverInfoChannel chan *repotest.Server,
 }
 
 func TestRepoServerStart(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	serverInfoChannel := make(chan *repotest.Server)
 	stopChannel := make(chan bool)
 	defer func() { stopChannel <- true }()
@@ -201,6 +208,7 @@ func TestRepoServerStart(t *testing.T) {
 }
 
 func TestRepoServerStartMultipleInstances(t *testing.T) {
+	defer helm.RepoServerStopAll()
 	serverInfoChannel := make(chan *repotest.Server)
 	stopChannel := make(chan bool)
 	defer func() { stopChannel <- true }()

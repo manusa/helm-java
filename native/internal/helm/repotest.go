@@ -1,22 +1,37 @@
 package helm
 
 import (
+	"context"
+	"fmt"
+	"github.com/distribution/distribution/v3/configuration"
+	"github.com/distribution/distribution/v3/registry"
 	"github.com/orcaman/concurrent-map/v2"
+	"github.com/phayes/freeport"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"helm.sh/helm/v3/pkg/repo/repotest"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
+	"time"
 )
 
-var servers = cmap.New[*repotest.Server]()
-var ociServers = cmap.New[*repotest.OCIServer]()
+var servers = cmap.New[*ActiveServer]()
 
 type RepoServerOptions struct {
 	Glob     string
 	Username string
 	Password string
+}
+
+type ActiveServer struct {
+	id        string
+	server    *repotest.Server
+	ociServer *repotest.OCIServer
+	dir       string
 }
 
 func RepoServerStart(options *RepoServerOptions) (*repotest.Server, error) {
@@ -36,30 +51,78 @@ func RepoServerStart(options *RepoServerOptions) (*repotest.Server, error) {
 		})
 		server.Start()
 	}
-	servers.Set(server.URL(), server)
+	servers.Set(server.URL(), &ActiveServer{
+		id:     server.URL(),
+		server: server,
+		dir:    server.Root(),
+	})
 	return server, nil
 }
 
 func RepoOciServerStart(options *RepoServerOptions) (*repotest.OCIServer, error) {
 	logrus.SetOutput(io.Discard)
-	tdir, err := os.MkdirTemp("", "helm-repotest-")
-	server, err := repotest.NewOCIServer(&testing.T{}, tdir)
-	if err != nil {
-		return nil, err
+	if options.Username == "" {
+		options.Username = "username"
+	}
+	if options.Password == "" {
+		options.Password = "password"
+	}
+	var err error
+	var testDir string
+	if testDir, err = os.MkdirTemp("", "helm-repotest-"); err != nil {
+		return nil, errors.Wrap(err, "Error creating temp dir")
+	}
+	var pwBytes []byte
+	if pwBytes, err = bcrypt.GenerateFromPassword([]byte(options.Password), bcrypt.DefaultCost); err != nil {
+		return nil, errors.Wrap(err, "Error generating password hash")
+	}
+	htpasswdPath := filepath.Join(testDir, "authtest.htpasswd")
+	if err = os.WriteFile(htpasswdPath, []byte(fmt.Sprintf("%s:%s\n", options.Username, string(pwBytes))), 0644); err != nil {
+		return nil, errors.Wrap(err, "Error writing htpasswd file")
+	}
+	var port int
+	if port, err = freeport.GetFreePort(); err != nil {
+		return nil, errors.Wrap(err, "Error getting free port")
+	}
+	config := &configuration.Configuration{}
+	config.HTTP.Addr = fmt.Sprintf(":%d", port)
+	config.HTTP.DrainTimeout = time.Duration(1) * time.Second
+	config.Storage = map[string]configuration.Parameters{"inmemory": map[string]interface{}{}}
+	config.Auth = configuration.Auth{
+		"htpasswd": configuration.Parameters{
+			"realm": "localhost",
+			"path":  htpasswdPath,
+		},
+	}
+	var reg *registry.Registry
+	if reg, err = registry.NewRegistry(context.Background(), config); err != nil {
+		return nil, errors.Wrap(err, "Error creating registry")
+	}
+	server := &repotest.OCIServer{
+		Registry:     reg,
+		RegistryURL:  fmt.Sprintf("localhost:%d", port),
+		TestUsername: options.Username,
+		TestPassword: options.Password,
+		Dir:          testDir,
 	}
 	go server.ListenAndServe()
-	ociServers.Set(server.RegistryURL, server)
+	servers.Set(server.RegistryURL, &ActiveServer{
+		id:        server.RegistryURL,
+		ociServer: server,
+		dir:       server.Dir,
+	})
 	return server, nil
 }
 
-func serverStop(srv *repotest.Server) {
-	srv.Stop()
-	_ = os.RemoveAll(srv.Root())
-}
-
-func ociServerStop(srv *repotest.OCIServer) {
-	// srv.Stop() //TODO can't be stopped for now ¯\_(ツ)_/¯
-	_ = os.RemoveAll(srv.Dir)
+func serverStop(server *ActiveServer) {
+	if server.server != nil {
+		server.server.Stop()
+	}
+	if server.ociServer != nil {
+		// server.ociServer.Stop() //TODO can't be stopped for now ¯\_(ツ)_/¯
+	}
+	_ = os.RemoveAll(server.dir)
+	_ = os.RemoveAll(server.id)
 }
 
 func RepoServerStop(url string) {
@@ -67,18 +130,11 @@ func RepoServerStop(url string) {
 		serverStop(server)
 		servers.Remove(url)
 	}
-	if ociServer, _ := ociServers.Get(url); ociServer != nil {
-		ociServerStop(ociServer)
-		ociServers.Remove(url)
-	}
 }
 
 func RepoServerStopAll() {
 	for server := range servers.IterBuffered() {
 		serverStop(server.Val)
-	}
-	for server := range ociServers.IterBuffered() {
-		ociServerStop(server.Val)
 	}
 	servers.Clear()
 }

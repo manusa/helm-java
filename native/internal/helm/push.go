@@ -27,12 +27,13 @@ func Push(options *PushOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	client := action.NewPushWithOpts(
+	pushOptions := []action.PushOpt{
 		action.WithPushConfig(NewCfg(&CfgOptions{RegistryClient: registryClient})),
 		action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CaFile),
 		action.WithInsecureSkipTLSVerify(options.InsecureSkipTlsVerify),
 		action.WithPlainHTTP(options.PlainHttp),
-	)
+	}
+	client := action.NewPushWithOpts(pushOptions...)
 	var out string
 	out, err = client.Run(options.Chart, options.Remote)
 	// Append debug messages to out or err

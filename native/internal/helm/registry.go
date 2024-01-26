@@ -80,7 +80,7 @@ func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, 
 			out, certFile, keyFile, caFile, insecureSkipTlsverify, "", debug)
 	} else {
 		opts := []registry.ClientOption{
-			registry.ClientOptEnableCache(true),
+			registry.ClientOptEnableCache(false),
 			registry.ClientOptWriter(out),
 			registry.ClientOptDebug(debug),
 		}
