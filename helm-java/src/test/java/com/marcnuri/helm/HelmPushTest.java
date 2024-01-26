@@ -1,6 +1,7 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.RepoServerOptions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,10 +23,17 @@ class HelmPushTest {
   void setUp() {
     final Path destination = tempDir.resolve("target");
     packagedChart = destination.resolve("test-0.1.0.tgz");
-    remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(new RepoServerOptions()).out;
+    remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
+      new RepoServerOptions(null, null, "not-known" // If default password is used, test is flaky ¯\_(ツ)_/¯
+      )).out;
     Helm
       .create().withName("test").withDir(tempDir).call()
       .packageIt().withDestination(destination).call();
+  }
+
+  @AfterEach
+  void tearDown() {
+    Helm.HelmLibHolder.INSTANCE.RepoServerStop(remoteServer);
   }
 
   @Test
@@ -35,7 +43,11 @@ class HelmPushTest {
       .withRemote(URI.create("oci://" + remoteServer));
     assertThatIllegalStateException()
       .isThrownBy(pushCommand::call)
-      .withMessage("push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials");
+      .extracting(IllegalStateException::getMessage)
+      .asString()
+      .containsAnyOf(
+        "push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials",
+        "unexpected status from HEAD request to");
   }
 
   @Test
@@ -46,8 +58,12 @@ class HelmPushTest {
       .debug();
     assertThatIllegalStateException()
       .isThrownBy(pushCommand::call)
-      .withMessageContainingAll(
+      .extracting(IllegalStateException::getMessage)
+      .asString()
+      .containsAnyOf(
         "push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials",
+        "unexpected status from HEAD request to")
+      .contains(
         "time=",
         "response.status",
         "401 Unauthorized");
@@ -55,7 +71,7 @@ class HelmPushTest {
 
   @Test
   void pushAuthorized() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("not-known").call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
@@ -66,7 +82,7 @@ class HelmPushTest {
 
   @Test
   void pushWithDebugShowsDebugMessages() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("not-known").call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))

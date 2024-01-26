@@ -263,7 +263,11 @@ func RepoServerStart(options *C.struct_RepoServerOptions) C.Result {
 //export RepoOciServerStart
 func RepoOciServerStart(options *C.struct_RepoServerOptions) C.Result {
 	return runCommand(func() (string, error) {
-		srv, err := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+		srv, err := helm.RepoOciServerStart(&helm.RepoServerOptions{
+			Glob:     C.GoString(options.glob),
+			Username: C.GoString(options.username),
+			Password: C.GoString(options.password),
+		})
 		if srv != nil {
 			return srv.RegistryURL, err
 		}
