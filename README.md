@@ -27,6 +27,54 @@ Helm.create()
   .call();
 ```
 
+### Install
+
+Equivalent of [`helm install`](https://helm.sh/docs/helm/helm_install/).
+
+Installs a chart archive.
+
+``` java
+// Instantiate the command with chart reference
+InstallCommand = Helm.install("chart/reference");
+// Instatiate the command with chart archive
+InstallCommand = new Helm(Paths.get("path", "to", "chart")).install;
+installCommand
+  // Name of the release to install
+  .withName("release-name")
+  // Optionally generate a release name (and omit the name parameter)
+  .generateName()
+  // Optionally specify a template for the name generation
+  .withNameTemplate("a-chart-{{randAlpha 6 | lower}}")
+  // Optionally specify the Kubernetes namespace to install the release into
+  .withNamespace("namespace")
+  // Optionally create the namespace if not present
+  .createNamespace()
+  // Optionally specify a custom description for the release
+  .withDescription("the-description)
+  // Optionally enable the use of development versions too
+  .devel()
+  // Optionally enable dry run mode to simulate an install
+  .dryRun()
+  // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
+  .withDryRunOption("client")
+  // Optionally set typed values for the chart (can be repeated)
+  .set("key", "value")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally verify certificates of HTTPS-enabled servers using this CA bundle
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally allow insecure plain HTTP connections for the chart download
+  .plainHttp()
+  // Optionally enable verbose output
+  .debug()
+```
+
 ### Lint
 
 Equivalent of [`helm lint`](https://helm.sh/docs/helm/helm_lint/).

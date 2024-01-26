@@ -129,7 +129,7 @@ class HelmInstallTest {
 
     @Test
     void withMissingChart() {
-      final InstallCommand install = helm.install().clientOnly().withName("test").withChart(null);
+      final InstallCommand install = Helm.install(null).clientOnly().withName("test");
       assertThatThrownBy(install::call)
         .message()
         .containsAnyOf(

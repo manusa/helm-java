@@ -43,7 +43,7 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	return actionConfig
 }
 
-func Status(release *release.Release, debug bool) string {
+func StatusReport(release *release.Release, showDescription bool, debug bool) string {
 	if release == nil {
 		return ""
 	}
@@ -55,6 +55,9 @@ func Status(release *release.Release, debug bool) string {
 	_, _ = fmt.Fprintf(out, "NAMESPACE: %s\n", release.Namespace)
 	_, _ = fmt.Fprintf(out, "STATUS: %s\n", release.Info.Status.String())
 	_, _ = fmt.Fprintf(out, "REVISION: %d\n", release.Version)
+	if showDescription {
+		_, _ = fmt.Fprintf(out, "DESCRIPTION: %s\n", release.Info.Description)
+	}
 	if debug {
 		_, _ = fmt.Fprintln(out, "USER-SUPPLIED VALUES:")
 		_ = output.EncodeYAML(out, release.Config)
