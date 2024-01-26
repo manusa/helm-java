@@ -113,7 +113,7 @@ func Install(options *InstallOptions) (string, error) {
 	// Run
 	release, err := client.RunWithContext(ctx, chartRequested, values)
 	// Generate report
-	out := Status(release, options.Debug)
+	out := StatusReport(release, false, options.Debug)
 	return appendToOutOrErr(concat(registryClientOut, kubeOut), out, err)
 }
 

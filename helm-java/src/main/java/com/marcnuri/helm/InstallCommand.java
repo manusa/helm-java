@@ -105,7 +105,7 @@ public class InstallCommand extends HelmCommand<String> {
    * @param chart the reference of the chart to install.
    * @return this {@link InstallCommand} instance.
    */
-  public InstallCommand withChart(String chart) {
+  InstallCommand withChart(String chart) {
     this.chart = chart;
     return this;
   }
@@ -182,8 +182,8 @@ public class InstallCommand extends HelmCommand<String> {
    * @param value the value for this key.
    * @return this {@link InstallCommand} instance.
    */
-  public InstallCommand set(String key, String value) {
-    this.values.put(key, value);
+  public InstallCommand set(String key, Object value) {
+    this.values.put(key, value == null ? "" : value.toString());
     return this;
   }
 

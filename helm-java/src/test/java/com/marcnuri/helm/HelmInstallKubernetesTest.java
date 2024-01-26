@@ -93,6 +93,8 @@ class HelmInstallKubernetesTest {
         "creating 3 resource(s)"
       );
     }
+
+    // TODO: Add withDescription test when we can check the status (status command implementation)
   }
 
   @Nested
