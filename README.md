@@ -56,7 +56,7 @@ installCommand
   // Optionally enable dry run mode to simulate an install
   .dryRun()
   // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
-  .withDryRunOption("client")
+  .withDryRunOption(DryRun.CLIENT)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
@@ -253,6 +253,33 @@ Show the chart's values.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .values()
+  .call();
+```
+
+### Uninstall
+
+Equivalent of [`helm uninstall`](https://helm.sh/docs/helm/helm_uninstall/).
+
+This command takes a release name and uninstalls the release.
+
+``` java
+String result = Helm.uninstall("chart/reference")
+  // Optionally enable dry run mode to simulate an uninstall
+  .dryRun()
+  // Optionally prevent hooks from running during uninstallation
+  .noHooks()
+  // Optionally treat "release not found" as a successful uninstall
+  .ignoreNotFound()
+  // Optionally remove all associated resources and mark the release as deleted, but retain the release history
+  .keepHistory()
+  // Optionally select the deletion cascading strategy for the dependents. If unset, defaults to background
+  .withCascade(Cascade.BACKGROUND)
+  // Optionally specify the Kubernetes namespace to uninstall the release from
+  .withNamespace("namespace")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally enable verbose output
+  .debug()
   .call();
 ```
 

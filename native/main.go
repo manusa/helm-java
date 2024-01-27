@@ -86,6 +86,18 @@ struct ShowOptions {
 	char* path;
 	char* outputFormat;
 };
+
+struct UninstallOptions {
+	char* releaseName;
+	int   dryRun;
+	int   noHooks;
+	int   ignoreNotFound;
+	int   keepHistory;
+	char* cascade;
+	char* namespace;
+	char* kubeConfig;
+	int   debug;
+};
 */
 import "C"
 import (
@@ -301,6 +313,23 @@ func Show(options *C.struct_ShowOptions) C.Result {
 	})
 }
 
+//export Uninstall
+func Uninstall(options *C.struct_UninstallOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Uninstall(&helm.UninstallOptions{
+			ReleaseName:    C.GoString(options.releaseName),
+			DryRun:         options.dryRun == 1,
+			NoHooks:        options.noHooks == 1,
+			IgnoreNotFound: options.ignoreNotFound == 1,
+			KeepHistory:    options.keepHistory == 1,
+			Cascade:        C.GoString(options.cascade),
+			Namespace:      C.GoString(options.namespace),
+			KubeConfig:     C.GoString(options.kubeConfig),
+			Debug:          options.debug == 1,
+		})
+	})
+}
+
 //export Version
 func Version() C.Result {
 	return runCommand(func() (string, error) {
@@ -334,36 +363,4 @@ func toCString(str string) *C.char {
 
 func main() {
 	// NO OP
-	//Test
-	test := RepoOciServerStart(&C.struct_RepoServerOptions{})
-	Free(test)
-	RepoServerStopAll()
-	Free(C.Result{})
-	create := Create(&C.struct_CreateOptions{
-		name: C.CString("test"),
-		dir:  C.CString("/tmp"),
-	})
-	fmt.Println(create)
-	Free(create)
-	lint := Lint(&C.struct_LintOptions{
-		path:   C.CString("/tmp/test"),
-		strict: 1,
-		quiet:  1,
-	})
-	fmt.Println(lint)
-	Free(lint)
-	pkg := Package(&C.struct_PackageOptions{
-		path:        C.CString("/tmp/test"),
-		destination: C.CString("/tmp/test"),
-	})
-	fmt.Println(pkg)
-	Free(pkg)
-	show := Show(&C.struct_ShowOptions{
-		path:         C.CString("/tmp/test"),
-		outputFormat: C.CString("all"),
-	})
-	fmt.Println(show)
-	Free(show)
-	version := Version()
-	fmt.Println(version)
 }

@@ -28,6 +28,8 @@ public interface HelmLib extends Library {
 
   Result Show(ShowOptions options);
 
+  Result Uninstall(UninstallOptions options);
+
   Result Version();
 
   void Free(Result result);

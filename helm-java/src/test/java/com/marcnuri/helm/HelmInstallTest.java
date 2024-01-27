@@ -94,7 +94,7 @@ class HelmInstallTest {
         .clientOnly()
         .withName("test")
         .dryRun()
-        .withDryRunOption("client")
+        .withDryRunOption(InstallCommand.DryRun.CLIENT)
         .call();
       assertThat(out).contains(
         "NAME: test",
