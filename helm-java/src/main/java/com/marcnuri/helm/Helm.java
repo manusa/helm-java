@@ -30,10 +30,10 @@ public class Helm {
     return new CreateCommand(HelmLibHolder.INSTANCE);
   }
 
-
   /**
    * This commands installs the referenced chart archive.
    *
+   * @param chart the chart to install.
    * @return the {@link InstallCommand} callable command.
    */
   public static InstallCommand install(String chart) {
@@ -93,6 +93,16 @@ public class Helm {
    */
   public ShowCommand show() {
     return new ShowCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
+   * This command takes a release name and uninstalls the release.
+   *
+   * @param releaseName the name of the release to uninstall.
+   * @return the {@link UninstallCommand} callable command.
+   */
+  public static UninstallCommand uninstall(String releaseName) {
+    return new UninstallCommand(HelmLibHolder.INSTANCE, releaseName);
   }
 
   /**

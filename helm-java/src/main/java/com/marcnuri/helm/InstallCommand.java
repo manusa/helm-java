@@ -8,9 +8,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class InstallCommand extends HelmCommand<String> {
+
+  public enum DryRun {
+    NONE, CLIENT, SERVER
+  }
 
   private String name;
   private boolean generateName;
@@ -21,8 +26,8 @@ public class InstallCommand extends HelmCommand<String> {
   private String description;
   private boolean devel;
   private boolean dryRun;
+  private DryRun dryRunOption;
   private final Map<String, String> values;
-  private String dryRunOption;
   private Path kubeConfig;
   private Path certFile;
   private Path keyFile;
@@ -54,7 +59,7 @@ public class InstallCommand extends HelmCommand<String> {
       description,
       toInt(devel),
       toInt(dryRun),
-      dryRunOption,
+      dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
       encodeValues(),
       toString(kubeConfig),
       toString(certFile),
@@ -170,7 +175,7 @@ public class InstallCommand extends HelmCommand<String> {
    * @param dryRunOption the dry run option/mode.
    * @return this {@link InstallCommand} instance.
    */
-  public InstallCommand withDryRunOption(String dryRunOption) {
+  public InstallCommand withDryRunOption(DryRun dryRunOption) {
     this.dryRunOption = dryRunOption;
     return this;
   }

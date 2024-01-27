@@ -175,3 +175,61 @@ func TestInstallDebug(t *testing.T) {
 		return
 	}
 }
+
+func TestUninstall(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-uninstall",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-uninstall",
+	})
+	out, err := Uninstall(&UninstallOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-uninstall",
+	})
+	if err != nil {
+		t.Errorf("Expected uninstall to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "release \"test-uninstall\" uninstalled\n") {
+		t.Errorf("Expected uninstall to succeed, got %s", out)
+		return
+	}
+}
+
+func TestUninstallDebug(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-uninstall-debug",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-uninstall-debug",
+	})
+	out, err := Uninstall(&UninstallOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-uninstall-debug",
+		Debug:       true,
+	})
+	if err != nil {
+		t.Errorf("Expected uninstall to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "release \"test-uninstall-debug\" uninstalled\n") &&
+		!strings.Contains(out, "uninstall: Deleting test-uninstall-debug\n") &&
+		!strings.Contains(out, "Starting delete for \"test-uninstall-debug\" Service\n") &&
+		!strings.Contains(out, "Starting delete for \"test-uninstall-debug\" Deployment\n") &&
+		!strings.Contains(out, "Starting delete for \"test-uninstall-debug\" ServiceAccount\n") &&
+		!strings.Contains(out, "purge requested for test-uninstall-debug") {
+		t.Errorf("Expected uninstall to log debug messages, got %s", out)
+		return
+	}
+}
