@@ -16,6 +16,14 @@ struct CreateOptions {
 	char* dir;
 };
 
+struct DependencyOptions  {
+	char* path;
+	char* keyring;
+	int   skipRefresh;
+	int   verify;
+	int   debug;
+};
+
 struct InstallOptions {
 	char* name;
 	int   generateName;
@@ -152,6 +160,19 @@ func Create(options *C.struct_CreateOptions) C.Result {
 			Dir:  C.GoString(options.dir),
 		})
 		return "", ex
+	})
+}
+
+//export DependencyUpdate
+func DependencyUpdate(options *C.struct_DependencyOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.DependencyUpdate(&helm.DependencyOptions{
+			Path:        C.GoString(options.path),
+			Keyring:     C.GoString(options.keyring),
+			SkipRefresh: options.skipRefresh == 1,
+			Verify:      options.verify == 1,
+			Debug:       options.debug == 1,
+		})
 	})
 }
 

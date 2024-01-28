@@ -31,6 +31,15 @@ public class Helm {
   }
 
   /**
+   * This command allows you to manage a chart's dependencies.
+   *
+   * @return the {@link DependencyCommand} command.
+   */
+  public DependencyCommand dependency() {
+    return new DependencyCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
    * This commands installs the referenced chart archive.
    *
    * @param chart the chart to install.
