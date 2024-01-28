@@ -11,6 +11,7 @@ import com.sun.jna.Structure;
   "createNamespace",
   "description",
   "devel",
+  "dependencyUpdate",
   "dryRun",
   "dryRunOption",
   "values",
@@ -34,6 +35,7 @@ public class InstallOptions extends Structure {
   public int createNamespace;
   public String description;
   public int devel;
+  public int dependencyUpdate;
   public int dryRun;
   public String dryRunOption;
   public String values;
@@ -56,6 +58,7 @@ public class InstallOptions extends Structure {
     int createNamespace,
     String description,
     int devel,
+    int dependencyUpdate,
     int dryRun,
     String dryRunOption,
     String values,
@@ -77,6 +80,7 @@ public class InstallOptions extends Structure {
     this.createNamespace = createNamespace;
     this.description = description;
     this.devel = devel;
+    this.dependencyUpdate = dependencyUpdate;
     this.dryRun = dryRun;
     this.dryRunOption = dryRunOption;
     this.values = values;

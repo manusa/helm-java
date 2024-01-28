@@ -27,6 +27,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
   private boolean createNamespace;
   private String description;
   private boolean devel;
+  private boolean dependencyUpdate;
   private boolean dryRun;
   private DryRun dryRunOption;
   private final Map<String, String> values;
@@ -61,6 +62,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
       toInt(createNamespace),
       description,
       toInt(devel),
+      toInt(dependencyUpdate),
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
       encodeValues(),
@@ -158,6 +160,16 @@ public class InstallCommand extends HelmCommand<InstallResult> {
    */
   public InstallCommand devel() {
     this.devel = true;
+    return this;
+  }
+
+  /**
+   * Update dependencies if they are missing before installing the chart.
+   *
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand dependencyUpdate() {
+    this.dependencyUpdate = true;
     return this;
   }
 

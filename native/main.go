@@ -25,6 +25,7 @@ struct InstallOptions {
 	int   createNamespace;
 	char* description;
 	int   devel;
+	int   dependencyUpdate;
 	int   dryRun;
 	char* dryRunOption;
 	char* values;
@@ -166,6 +167,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			CreateNamespace:       options.createNamespace == 1,
 			Description:           C.GoString(options.description),
 			Devel:                 options.devel == 1,
+			DependencyUpdate:      options.dependencyUpdate == 1,
 			DryRun:                options.dryRun == 1,
 			DryRunOption:          C.GoString(options.dryRunOption),
 			Values:                C.GoString(options.values),
