@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -18,14 +19,15 @@ class HelmPushTest {
   private Path tempDir;
   private Path packagedChart;
   private String remoteServer;
+  private String password;
 
   @BeforeEach
   void setUp() {
     final Path destination = tempDir.resolve("target");
     packagedChart = destination.resolve("test-0.1.0.tgz");
+    password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
     remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
-      new RepoServerOptions(null, null, "not-known" // If default password is used, test is flaky ¯\_(ツ)_/¯
-      )).out;
+      new RepoServerOptions(null, null, password)).out;
     Helm
       .create().withName("test").withDir(tempDir).call()
       .packageIt().withDestination(destination).call();
@@ -71,7 +73,7 @@ class HelmPushTest {
 
   @Test
   void pushAuthorized() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("not-known").call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
@@ -82,7 +84,7 @@ class HelmPushTest {
 
   @Test
   void pushWithDebugShowsDebugMessages() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("not-known").call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))

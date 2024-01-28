@@ -53,6 +53,8 @@ installCommand
   .withDescription("the-description")
   // Optionally enable the use of development versions too
   .devel()
+  // Optionally update dependencies if they are missing before installing the chart
+  .dependencyUpdate()
   // Optionally enable dry run mode to simulate an install
   .dryRun()
   // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
