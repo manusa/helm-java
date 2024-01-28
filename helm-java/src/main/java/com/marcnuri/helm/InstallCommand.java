@@ -11,7 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class InstallCommand extends HelmCommand<String> {
+import static com.marcnuri.helm.InstallResult.parse;
+
+public class InstallCommand extends HelmCommand<InstallResult> {
 
   public enum DryRun {
     NONE, CLIENT, SERVER
@@ -48,8 +50,8 @@ public class InstallCommand extends HelmCommand<String> {
   }
 
   @Override
-  public String call() {
-    return run(hl -> hl.Install(new InstallOptions(
+  public InstallResult call() {
+    return parse(run(hl -> hl.Install(new InstallOptions(
       name,
       toInt(generateName),
       nameTemplate,
@@ -69,7 +71,7 @@ public class InstallCommand extends HelmCommand<String> {
       toInt(plainHttp),
       toInt(debug),
       toInt(clientOnly)
-    ))).out;
+    ))));
   }
 
   /**
@@ -183,7 +185,7 @@ public class InstallCommand extends HelmCommand<String> {
   /**
    * Set values for the chart.
    *
-   * @param key the key.
+   * @param key   the key.
    * @param value the value for this key.
    * @return this {@link InstallCommand} instance.
    */

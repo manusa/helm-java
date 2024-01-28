@@ -50,7 +50,7 @@ installCommand
   // Optionally create the namespace if not present
   .createNamespace()
   // Optionally specify a custom description for the release
-  .withDescription("the-description)
+  .withDescription("the-description")
   // Optionally enable the use of development versions too
   .devel()
   // Optionally enable dry run mode to simulate an install

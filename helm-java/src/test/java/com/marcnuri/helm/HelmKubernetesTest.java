@@ -54,46 +54,52 @@ class HelmKubernetesTest {
 
       @Test
       void withName() {
-        final String out = helm.install()
+        final InstallResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("test")
           .call();
-        assertThat(out).contains(
-          "NAME: test\n",
-          "LAST DEPLOYED: ",
-          "STATUS: deployed",
-          "REVISION: 1"
-        );
+        assertThat(result)
+          .extracting(InstallResult::getOutput).asString()
+          .contains(
+            "NAME: test\n",
+            "LAST DEPLOYED: ",
+            "STATUS: deployed",
+            "REVISION: 1"
+          );
       }
 
       @Test
       void withDebug() {
-        final String out = helm.install()
+        final InstallResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("with-debug")
           .debug()
           .call();
-        assertThat(out).contains(
-          "NAME: with-debug\n",
-          "---\n",
-          "creating 3 resource(s)"
-        );
+        assertThat(result)
+          .extracting(InstallResult::getOutput).asString()
+          .contains(
+            "NAME: with-debug\n",
+            "---\n",
+            "creating 3 resource(s)"
+          );
       }
 
       @Test
       void withNamespaceAndCreateNamespace() {
-        final String out = helm.install()
+        final InstallResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("created-namespace")
           .withNamespace("to-be-created")
           .createNamespace()
           .debug().call();
-        assertThat(out).contains(
-          "NAME: created-namespace\n",
-          "---\n",
-          "creating 1 resource(s)",
-          "creating 3 resource(s)"
-        );
+        assertThat(result)
+          .extracting(InstallResult::getOutput).asString()
+          .contains(
+            "NAME: created-namespace\n",
+            "---\n",
+            "creating 1 resource(s)",
+            "creating 3 resource(s)"
+          );
       }
 
       // TODO: Add withDescription test when we can check the status (status command implementation)
