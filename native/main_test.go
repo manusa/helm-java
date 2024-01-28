@@ -67,6 +67,45 @@ func TestInstallValues(t *testing.T) {
 	}
 }
 
+func TestInstallDependencyUpdate(t *testing.T) {
+	chart, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
+	})
+	dependency, _ := helm.Create(&helm.CreateOptions{
+		Name: "dependency",
+		Dir:  t.TempDir(),
+	})
+	chartYaml, _ := os.OpenFile(path.Join(chart, "Chart.yaml"), os.O_APPEND|os.O_WRONLY, 0666)
+	_, _ = chartYaml.WriteString("\ndependencies:\n" +
+		"  - name: dependency\n" +
+		"    version: 0.1.0\n" +
+		"    repository: file://" + dependency + "\n")
+	_ = chartYaml.Close()
+	out, err := helm.Install(&helm.InstallOptions{
+		Chart:            chart,
+		Name:             "test",
+		DependencyUpdate: true,
+		ClientOnly:       true,
+	})
+	if err != nil {
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test") {
+		t.Errorf("Expected install to succeed, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "Saving 1 charts") || !strings.Contains(out, "Deleting outdated charts") {
+		t.Errorf("Expected install update dependencies, got %s", out)
+		return
+	}
+	_, err = os.Stat(path.Join(chart, "Chart.lock"))
+	if err != nil {
+		t.Error("Expected install to create lock file")
+	}
+}
+
 func TestPush(t *testing.T) {
 	defer helm.RepoServerStopAll()
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
