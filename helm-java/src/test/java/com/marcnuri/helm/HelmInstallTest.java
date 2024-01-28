@@ -26,85 +26,89 @@ class HelmInstallTest {
 
     @Test
     void withName() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .withName("test")
         .call();
-      assertThat(out).contains(
-        "NAME: test\n",
-        "LAST DEPLOYED: ",
-        "STATUS: deployed",
-        "REVISION: 1",
-        "NOTES:"
-      );
+      assertThat(result)
+        .returns("test", InstallResult::getName)
+        .returns("deployed", InstallResult::getStatus)
+        .returns("1", InstallResult::getRevision)
+        .extracting(InstallResult::getOutput).asString()
+        .contains(
+          "NAME: test\n",
+          "LAST DEPLOYED: ",
+          "STATUS: deployed",
+          "REVISION: 1",
+          "NOTES:"
+        );
     }
 
     @Test
     void withPackagedChart(@TempDir Path destination) {
       helm.packageIt().withDestination(destination).call();
-      final String out = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
+      final InstallResult result = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
         .clientOnly()
         .withName("test")
         .call();
-      assertThat(out).contains("NAME: test");
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("name", "test");
     }
 
     @Test
     void withGenerateName() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .withName("test") // Should be ignored (omitted/not failure)
         .generateName()
         .call();
-      assertThat(out).contains(
-        "NAME: test-",
-        "STATUS: deployed"
-      );
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("status", "deployed")
+        .extracting(InstallResult::getName).asString()
+        .startsWith("test-");
     }
 
     @Test
     void withGenerateNameAndNameTemplate() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .generateName()
         .withNameTemplate("a-chart-{{randAlpha 6 | lower}}")
         .call();
-      assertThat(out).contains(
-        "NAME: a-chart-",
-        "STATUS: deployed"
-      );
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("status", "deployed")
+        .extracting(InstallResult::getName).asString()
+        .startsWith("a-chart-");
     }
 
     @Test
     void withNamespace() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .withName("test")
         .withNamespace("test-namespace")
         .call();
-      assertThat(out).contains(
-        "NAME: test\n",
-        "NAMESPACE: test-namespace"
-      );
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("name", "test")
+        .returns("test-namespace", InstallResult::getNamespace);
     }
 
     @Test
     void withDryRun() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .withName("test")
         .dryRun()
         .withDryRunOption(InstallCommand.DryRun.CLIENT)
         .call();
-      assertThat(out).contains(
-        "NAME: test",
-        "STATUS: pending-install"
-      );
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("name", "test")
+        .hasFieldOrPropertyWithValue("status", "pending-install");
     }
 
     @Test
     void withValues() {
-      final String out = helm.install()
+      final InstallResult result = helm.install()
         .clientOnly()
         .debug()
         .withName("test")
@@ -113,14 +117,16 @@ class HelmInstallTest {
         .set("int", "1")
         .set("float", "1.1")
         .call();
-      assertThat(out).contains(
-        "NAME: test\n",
-        "USER-SUPPLIED VALUES:\n",
-        "corner: '\"''\\={[,.]}!?-_test=1,other=2'\n",
-        "bool: true\n",
-        "int: 1\n",
-        "float: \"1.1\"" // helm.sh/helm/v3/pkg/strvals does not support floats
-      );
+      assertThat(result)
+        .extracting(InstallResult::getOutput).asString()
+        .contains(
+          "NAME: test\n",
+          "USER-SUPPLIED VALUES:\n",
+          "corner: '\"''\\={[,.]}!?-_test=1,other=2'\n",
+          "bool: true\n",
+          "int: 1\n",
+          "float: \"1.1\"" // helm.sh/helm/v3/pkg/strvals does not support floats
+        );
     }
   }
 
