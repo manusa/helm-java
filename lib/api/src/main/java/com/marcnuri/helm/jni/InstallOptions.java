@@ -20,6 +20,7 @@ import com.sun.jna.Structure;
   "caFile",
   "insecureSkipTLSverify",
   "plainHttp",
+  "keyring",
   "debug",
   "clientOnly"
 })
@@ -42,6 +43,7 @@ public class InstallOptions extends Structure {
   public String caFile;
   public int insecureSkipTLSverify;
   public int plainHttp;
+  public String keyring;
   public int debug;
   public int clientOnly;
 
@@ -63,6 +65,7 @@ public class InstallOptions extends Structure {
     String caFile,
     int insecureSkipTLSverify,
     int plainHttp,
+    String keyring,
     int debug,
     int clientOnly
   ) {
@@ -83,6 +86,7 @@ public class InstallOptions extends Structure {
     this.caFile = caFile;
     this.insecureSkipTLSverify = insecureSkipTLSverify;
     this.plainHttp = plainHttp;
+    this.keyring = keyring;
     this.debug = debug;
     this.clientOnly = clientOnly;
   }

@@ -71,6 +71,8 @@ installCommand
   .insecureSkipTlsVerify()
   // Optionally allow insecure plain HTTP connections for the chart download
   .plainHttp()
+  // Optionally specify a keyring (used for verification)
+  .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally enable verbose output
   .debug()
 ```

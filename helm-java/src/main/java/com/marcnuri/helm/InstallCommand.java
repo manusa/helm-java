@@ -36,6 +36,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
   private Path caFile;
   private boolean insecureSkipTlsVerify;
   private boolean plainHttp;
+  private Path keyring;
   private boolean debug;
   private boolean clientOnly;
 
@@ -69,6 +70,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
       toString(caFile),
       toInt(insecureSkipTlsVerify),
       toInt(plainHttp),
+      toString(keyring),
       toInt(debug),
       toInt(clientOnly)
     ))));
@@ -255,6 +257,17 @@ public class InstallCommand extends HelmCommand<InstallResult> {
    */
   public InstallCommand plainHttp() {
     this.plainHttp = true;
+    return this;
+  }
+
+  /**
+   * Location of a public keyring (default "~/.gnupg/pubring.gpg").
+   *
+   * @param keyring a {@link Path} with the keyring location.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand withKeyring(Path keyring) {
+    this.keyring = keyring;
     return this;
   }
 

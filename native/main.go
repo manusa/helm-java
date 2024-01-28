@@ -34,6 +34,7 @@ struct InstallOptions {
 	char* caFile;
 	int   insecureSkipTLSverify;
 	int   plainHttp;
+	char* keyring;
 	int   debug;
 	int   clientOnly;
 };
@@ -174,6 +175,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			CaFile:                C.GoString(options.caFile),
 			InsecureSkipTLSverify: options.insecureSkipTLSverify == 1,
 			PlainHttp:             options.plainHttp == 1,
+			Keyring:               C.GoString(options.keyring),
 			Debug:                 options.debug == 1,
 			ClientOnly:            options.clientOnly == 1,
 		})

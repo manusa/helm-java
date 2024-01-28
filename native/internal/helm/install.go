@@ -22,6 +22,7 @@ type InstallOptions struct {
 	CreateNamespace       bool
 	Description           string
 	Devel                 bool
+	DependencyUpdate      bool
 	DryRun                bool
 	DryRunOption          string
 	Values                string
@@ -31,6 +32,7 @@ type InstallOptions struct {
 	CaFile                string
 	InsecureSkipTLSverify bool
 	PlainHttp             bool
+	Keyring               string
 	Debug                 bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly bool
@@ -93,12 +95,9 @@ func Install(options *InstallOptions) (string, error) {
 		return "", notInstallable
 	}
 	// Dependency management
-	if req := chartRequested.Metadata.Dependencies; req != nil {
-		if invalidDependencies := action.CheckDependencies(chartRequested, req); invalidDependencies != nil {
-			invalidDependencies = errors.Wrap(invalidDependencies, "An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies")
-			// TODO support DependencyUpdate option and try to update dependencies
-			return "", invalidDependencies
-		}
+	chartRequested, updateOutput, err := updateDependencies(options, chartRequested, chartReference)
+	if err != nil {
+		return "", err
 	}
 	// Dry Run options
 	if invalidDryRun := validateDryRunOptionFlag(client.DryRunOption); invalidDryRun != nil {
@@ -114,7 +113,7 @@ func Install(options *InstallOptions) (string, error) {
 	release, err := client.RunWithContext(ctx, chartRequested, values)
 	// Generate report
 	out := StatusReport(release, false, options.Debug)
-	return appendToOutOrErr(concat(registryClientOut, kubeOut), out, err)
+	return appendToOutOrErr(concat(cStr(updateOutput), cBuf(registryClientOut), cBuf(kubeOut)), out, err)
 }
 
 var escapedChars = []rune("\"'\\={[,.]}")
@@ -167,4 +166,34 @@ func validateDryRunOptionFlag(dryRunOptionFlagValue string) error {
 		return errors.New("Invalid dry-run flag. Flag must one of the following: false, true, none, client, server")
 	}
 	return nil
+}
+
+func updateDependencies(options *InstallOptions, chart *chart.Chart, chartReference string) (*chart.Chart, string, error) {
+	dependencies := chart.Metadata.Dependencies
+	if dependencies == nil {
+		return chart, "", nil
+	}
+	invalidDependencies := action.CheckDependencies(chart, dependencies)
+	if invalidDependencies == nil {
+		return chart, "", nil
+	}
+	// Dependencies are invalid, try to update them
+	invalidDependencies = errors.Wrap(invalidDependencies, "An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies")
+	if options.DependencyUpdate {
+		updateOutput, updateError := DependencyUpdate(&DependencyOptions{
+			Path:        chartReference,
+			Keyring:     options.Keyring,
+			SkipRefresh: false,
+			Debug:       options.Debug,
+		})
+		if updateError != nil {
+			return nil, updateOutput, errors.Wrap(updateError, "An error occurred while updating chart dependencies")
+		}
+		reloadedChart, reloadError := loader.Load(chartReference)
+		if reloadError != nil {
+			return nil, updateOutput, errors.Wrap(reloadError, "An error occurred while reloading chart dependencies")
+		}
+		return reloadedChart, updateOutput, nil
+	}
+	return chart, "", invalidDependencies
 }

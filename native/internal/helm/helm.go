@@ -73,13 +73,32 @@ func StatusReport(release *release.Release, showDescription bool, debug bool) st
 	return out.String()
 }
 
-func concat(buffers ...*bytes.Buffer) *bytes.Buffer {
+type concatArgs struct {
+	buffer *bytes.Buffer
+	string string
+}
+
+func cBuf(buffer *bytes.Buffer) *concatArgs {
+	return &concatArgs{buffer: buffer}
+}
+
+func cStr(str string) *concatArgs {
+	return &concatArgs{string: str}
+}
+
+func concat(args ...*concatArgs) *bytes.Buffer {
 	var result bytes.Buffer
-	for _, buffer := range buffers {
+	for _, concat := range args {
+		if (concat.buffer == nil || concat.buffer.Len() == 0) && len(concat.string) == 0 {
+			continue
+		}
 		if result.Len() > 0 {
 			result.WriteString("---\n")
 		}
-		result.Write(buffer.Bytes())
+		if concat.buffer != nil {
+			result.Write(concat.buffer.Bytes())
+		}
+		result.WriteString(concat.string)
 	}
 	return &result
 }
