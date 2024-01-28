@@ -27,6 +27,32 @@ Helm.create()
   .call();
 ```
 
+### Dependency
+
+Equivalent of [`helm dependency`](https://helm.sh/docs/helm/helm_dependency/).
+
+Manage a chart's dependencies.
+
+#### Dependency update
+
+Equivalent of [`helm dependency update`](https://helm.sh/docs/helm/helm_dependency_update/).
+
+
+Update chart's on-disk dependencies (`charts/`) to mirror the contents of Chart.yaml.
+
+``` java
+new Helm(Paths.get("path", "to", "chart")).package()
+  // Optionally specify a keyring containing public keys (used for verification)
+  .keyring(Paths.get("path", "to", "keyring"))
+  // Optionally skip refreshing the local repository cache
+  .skipRefresh()
+  // Optionally verify the packages against signatures
+  .verify()
+  // Optionally enable verbose output
+  .debug()
+  .call();
+```
+
 ### Install
 
 Equivalent of [`helm install`](https://helm.sh/docs/helm/helm_install/).
@@ -77,6 +103,7 @@ installCommand
   .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally enable verbose output
   .debug()
+  .call();
 ```
 
 ### Lint
