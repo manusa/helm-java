@@ -1,13 +1,13 @@
-name: Release to SNAPSHOTS Maven Central
+name: Release to Maven Central
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 2 * * *' # Every day at 2am
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  snapshots:
-    name: Snapshots
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
