@@ -368,3 +368,35 @@ String version = Helm.version();
     - `linux-amd64`: contains the Java native access library for linux/amd64
     - `linux-arm64`: contains the Java native access library for linux/arm64
     - `windows-amd64`: contains the Java native access library for windows/amd64
+
+### Release Process
+
+To release a new version automatically:
+
+```shell
+make release V=X.Y.Z V-S=X.Y-SNAPSHOT
+```
+
+To release a new version manually:
+
+1. Update the version in the `pom.xml` file.
+   ```shell
+   mvn versions:set -DnewVersion=X.Y.Z -DgenerateBackupPoms=false
+   ```
+2. Commit and tag the release with the  `pom.xml` version.
+   ```shell
+   git add .
+   git commit -m "[RELEASE] vX.Y.Z released"
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+3. Update the version in the `pom.xml` file to the next snapshot version.
+   ```shell
+   mvn versions:set -DnewVersion=X.Y-SNAPSHOT -DgenerateBackupPoms=false
+   ```
+4. Commit the changes with the following message:
+   ```shell
+   git add .
+   git commit -m "[RELEASE] v0.0.5 released, prepare for next development iteration"
+   git push origin master
+   ```
