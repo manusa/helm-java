@@ -18,6 +18,15 @@ public class DependencyCommand {
   }
 
   /**
+   * Rebuild the chart's on-disk dependencies (charts/) based on the Chart.lock file.
+   *
+   * @return the {@link DependencySubcommand} subcommand.
+   */
+  public DependencySubcommand<String> build() {
+    return new DependencySubcommand<>(helmLib, path, hl -> hl::DependencyBuild, r -> r.out);
+  }
+
+  /**
    * List the dependencies for the chart.
    *
    * @return the {@link DependencySubcommand} subcommand.
