@@ -154,7 +154,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
   }
 
   /**
-   * Use development versions, too. Equivalent to version '>0.0.0-0'. If --version is set, this is ignored.
+   * Use development versions, too. Equivalent to version '&gt;0.0.0-0'. If --version is set, this is ignored.
    *
    * @return this {@link InstallCommand} instance.
    */
