@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java-parent</artifactId>
-  <version>0.0.1</version>
+  <version>0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Helm Java :: Parent</name>
   <description>
