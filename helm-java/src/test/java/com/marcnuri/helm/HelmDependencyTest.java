@@ -36,6 +36,44 @@ class HelmDependencyTest {
   }
 
   @Nested
+  class Build {
+
+    @Test
+    // Internally just delegates to update
+    void withValidDependencyAndNoPreviousUpdate() {
+      final String result = helm.dependency().build().call();
+      assertThat(result)
+        .contains(
+          "Saving 1 charts",
+          "Deleting outdated charts"
+        );
+      assertThat(tempDir.resolve("test").resolve("Chart.lock"))
+        .exists()
+        .isNotEmptyFile()
+        .content().contains("name: the-dependency");
+    }
+
+    @Test
+    // Syncs the dependencies with the Chart.lock file
+    void withValidDependencyAndPreviousUpdate() throws IOException {
+      helm.dependency().update().call();
+      Files.walk(tempDir.resolve("test").resolve("charts"))
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
+      assertThat(tempDir.resolve("test").resolve("charts").resolve("the-dependency-0.1.0.tgz"))
+        .doesNotExist();
+      final String result = helm.dependency().build().call();
+      assertThat(result)
+        .contains(
+          "Saving 1 charts",
+          "Deleting outdated charts"
+        );
+    }
+
+  }
+
+  @Nested
   class List {
 
     @Test

@@ -33,6 +33,25 @@ Equivalent of [`helm dependency`](https://helm.sh/docs/helm/helm_dependency/).
 
 Manage a chart's dependencies.
 
+#### Dependency build
+
+Equivalent of [`helm dependency build`](https://helm.sh/docs/helm/helm_dependency_build/).
+
+Rebuild the chart's on-disk dependencies (`charts/`) based on the Chart.lock file.
+
+``` java
+new Helm(Paths.get("path", "to", "chart")).dependency().build()
+  // Optionally specify a keyring containing public keys (used for verification)
+  .keyring(Paths.get("path", "to", "keyring"))
+  // Optionally skip refreshing the local repository cache
+  .skipRefresh()
+  // Optionally verify the packages against signatures
+  .verify()
+  // Optionally enable verbose output
+  .debug()
+  .call();
+```
+
 #### Dependency list
 
 Equivalent of [`helm dependency list`](https://helm.sh/docs/helm/helm_dependency_list/).

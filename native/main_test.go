@@ -22,6 +22,40 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestDependencyBuildWithPreviousUpdate(t *testing.T) {
+	chart, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
+	})
+	dependency, _ := helm.Create(&helm.CreateOptions{
+		Name: "dependency",
+		Dir:  t.TempDir(),
+	})
+	chartYaml, _ := os.OpenFile(path.Join(chart, "Chart.yaml"), os.O_APPEND|os.O_WRONLY, 0666)
+	_, _ = chartYaml.WriteString("\ndependencies:\n" +
+		"  - name: dependency\n" +
+		"    version: 0.1.0\n" +
+		"    repository: file://" + dependency + "\n")
+	_ = chartYaml.Close()
+	_, _ = helm.DependencyUpdate(&helm.DependencyOptions{
+		Path: chart,
+	})
+	out, err := helm.DependencyBuild(&helm.DependencyOptions{
+		Path:  chart,
+		Debug: true,
+	})
+	if err != nil {
+		t.Errorf("Expected dependency update to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "Saving 1 charts") ||
+		!strings.Contains(out, "Deleting outdated charts") ||
+		!strings.Contains(out, "Archiving dependency from repo ") {
+		t.Errorf("Expected dependency update to update dependencies, got %s", out)
+		return
+	}
+}
+
 func TestDependencyList(t *testing.T) {
 	dir := t.TempDir()
 	chart, _ := helm.Create(&helm.CreateOptions{

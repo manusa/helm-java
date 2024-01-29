@@ -163,6 +163,19 @@ func Create(options *C.struct_CreateOptions) C.Result {
 	})
 }
 
+//export DependencyBuild
+func DependencyBuild(options *C.struct_DependencyOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.DependencyBuild(&helm.DependencyOptions{
+			Path:        C.GoString(options.path),
+			Keyring:     C.GoString(options.keyring),
+			SkipRefresh: options.skipRefresh == 1,
+			Verify:      options.verify == 1,
+			Debug:       options.debug == 1,
+		})
+	})
+}
+
 //export DependencyList
 func DependencyList(options *C.struct_DependencyOptions) C.Result {
 	return runCommand(func() (string, error) {
