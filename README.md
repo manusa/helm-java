@@ -33,15 +33,25 @@ Equivalent of [`helm dependency`](https://helm.sh/docs/helm/helm_dependency/).
 
 Manage a chart's dependencies.
 
+#### Dependency list
+
+Equivalent of [`helm dependency list`](https://helm.sh/docs/helm/helm_dependency_list/).
+
+List the dependencies for the given chart.
+
+``` java
+new Helm(Paths.get("path", "to", "chart")).dependency().list()
+  .getDependencies();
+```
+
 #### Dependency update
 
 Equivalent of [`helm dependency update`](https://helm.sh/docs/helm/helm_dependency_update/).
 
-
 Update chart's on-disk dependencies (`charts/`) to mirror the contents of Chart.yaml.
 
 ``` java
-new Helm(Paths.get("path", "to", "chart")).package()
+new Helm(Paths.get("path", "to", "chart")).dependency().update()
   // Optionally specify a keyring containing public keys (used for verification)
   .keyring(Paths.get("path", "to", "keyring"))
   // Optionally skip refreshing the local repository cache

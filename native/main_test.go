@@ -22,6 +22,43 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestDependencyList(t *testing.T) {
+	dir := t.TempDir()
+	chart, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  dir,
+	})
+	_, _ = helm.Create(&helm.CreateOptions{
+		Name: "unlisted",
+		Dir:  path.Join(dir, "test", "charts"),
+	})
+	chartYaml, _ := os.OpenFile(path.Join(chart, "Chart.yaml"), os.O_APPEND|os.O_WRONLY, 0666)
+	_, _ = chartYaml.WriteString("\ndependencies:\n" +
+		"  - name: dependency\n" +
+		"    version: 0.1.0\n" +
+		"    repository: file://../dependency\n")
+	_ = chartYaml.Close()
+	out, err := helm.DependencyList(&helm.DependencyOptions{
+		Path: chart,
+	})
+	if err != nil {
+		t.Errorf("Expected dependency update to succeed, got %s", err)
+		return
+	}
+	if strings.Index(out, "NAME      \tVERSION\tREPOSITORY          \tSTATUS") != 0 {
+		t.Errorf("Expected dependency list to show titles, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "dependency\t0.1.0  \tfile://../dependency\tmissing") {
+		t.Errorf("Expected dependency list to list dependencies, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "WARNING: \""+dir+"/test/charts/unlisted\" is not in Chart.yaml.\n") {
+		t.Errorf("Expected dependency list to warn on missing dependencies, got %s", out)
+		return
+	}
+}
+
 func TestDependencyUpdate(t *testing.T) {
 	chart, _ := helm.Create(&helm.CreateOptions{
 		Name: "test",
