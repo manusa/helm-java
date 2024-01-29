@@ -163,6 +163,15 @@ func Create(options *C.struct_CreateOptions) C.Result {
 	})
 }
 
+//export DependencyList
+func DependencyList(options *C.struct_DependencyOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.DependencyList(&helm.DependencyOptions{
+			Path: C.GoString(options.path),
+		})
+	})
+}
+
 //export DependencyUpdate
 func DependencyUpdate(options *C.struct_DependencyOptions) C.Result {
 	return runCommand(func() (string, error) {
