@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.marcnuri.helm-java</groupId>
     <artifactId>helm-java-parent</artifactId>
-    <version>0.0-SNAPSHOT</version>
+    <version>0.0.1</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>linux-arm64</artifactId>
