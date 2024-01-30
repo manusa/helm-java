@@ -8,23 +8,57 @@ As a result, you can expect the same behavior as you would get from using Helm d
 
 ## Getting started
 
-////// TODO ///////
+Add the dependency to your project:
 
-## Features
+```xml
+<dependency>
+  <groupId>com.marcnuri.helm-java</groupId>
+  <artifactId>helm-java</artifactId>
+  <version>0.0.1</version>
+</dependency>
+```
 
-### Create
+Start using it:
 
-Equivalent of [`helm create`](https://helm.sh/docs/helm/helm_create/).
+```java
+public static void main(String... args) {
+  new Helm(Paths.get("path", "to", "chart")).install().call();
+}
+```
 
-Creates a chart directory along with the common files and directories used in a chart.
+Check the features section for more examples and documentation.
 
-``` java
-Helm.create()
-  // Name of the chart to create
-  .withName("test")
-  // Path to the directory where the new chart directory will be created
-  .withDir(Paths.get("/tmp"))
-  .call();
+##Features
+
+###Create
+
+Equivalent of[`
+helm create`](https://helm.sh/docs/helm/helm_create/).
+
+Creates a
+chart directory
+along with
+the common
+files and
+directories used
+in a
+chart .
+
+```java
+Helm.
+
+create()
+// Name of the chart to create
+  .
+
+withName("test")
+// Path to the directory where the new chart directory will be created
+  .
+
+withDir(Paths.get("/tmp"))
+  .
+
+call();
 ```
 
 ### Dependency
