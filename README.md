@@ -28,37 +28,21 @@ public static void main(String... args) {
 
 Check the features section for more examples and documentation.
 
-##Features
+## Features
 
-###Create
+### Create
 
-Equivalent of[`
-helm create`](https://helm.sh/docs/helm/helm_create/).
+Equivalent of [`helm create`](https://helm.sh/docs/helm/helm_create/).
 
-Creates a
-chart directory
-along with
-the common
-files and
-directories used
-in a
-chart .
+Creates a chart directory along with the common files and directories used in a chart.
 
-```java
-Helm.
-
-create()
-// Name of the chart to create
-  .
-
-withName("test")
-// Path to the directory where the new chart directory will be created
-  .
-
-withDir(Paths.get("/tmp"))
-  .
-
-call();
+``` java
+Helm.create()
+  // Name of the chart to create
+  .withName("test")
+  // Path to the directory where the new chart directory will be created
+  .withDir(Paths.get("/tmp"))
+  .call();
 ```
 
 ### Dependency
