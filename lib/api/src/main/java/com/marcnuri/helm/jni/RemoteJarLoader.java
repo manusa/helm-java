@@ -67,7 +67,7 @@ class RemoteJarLoader {
         }
         final URL jarUrl = new URL(groupUrl + "/" + jarName);
         final Path jarFile = Paths.get(System.getProperty(TEMP_DIR), jarName);
-        return new URLClassLoader(new URL[]{cache(jarUrl, jarFile)});
+        return new URLClassLoader(new URL[]{cache(jarUrl, jarFile)}, NativeLibrary.class.getClassLoader());
       }
     } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException exception) {
       // NO OP
