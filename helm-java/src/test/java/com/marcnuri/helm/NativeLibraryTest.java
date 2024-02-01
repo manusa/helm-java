@@ -40,11 +40,10 @@ class NativeLibraryTest {
   }
 
   @Test
-  @Disabled("Can only be enabled once we do an initial stable release") // TODO
   void getReleaseInstanceFromRemoteJar() {
     final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
     // Use a PUBLISHED release version
-    System.setProperty("com.marcnuri.jkube-helm.version", "0.0.0");
+    System.setProperty("com.marcnuri.jkube-helm.version", "0.0.1");
     System.setProperty("com.marcnuri.jkube-helm.forceUpdate", "true");
     try {
       Thread.currentThread().setContextClassLoader(new URLClassLoader(new java.net.URL[0], null));
