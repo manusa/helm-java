@@ -392,7 +392,7 @@ String version = Helm.version();
 To release a new version automatically:
 
 ```shell
-make release V=X.Y.Z V-S=X.Y-SNAPSHOT
+make release V=X.Y.Z VS=X.Y
 ```
 
 To release a new version manually:

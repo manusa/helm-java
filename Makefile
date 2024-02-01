@@ -56,7 +56,7 @@ release:
 	@git commit -m "[RELEASE] Updated project version to v$(V)"
 	@git tag v$(V)
 	@git push origin v$(V)
-	@mvn versions:set -DnewVersion=$(VS) -DgenerateBackupPoms=false
+	@mvn versions:set -DnewVersion=$(VS)-SNAPSHOT -DgenerateBackupPoms=false
 	@git add .
 	@git commit -m "[RELEASE] v$(V) released, prepare for next development iteration"
 	@git push origin main
