@@ -97,6 +97,14 @@ struct ShowOptions {
 	char* outputFormat;
 };
 
+struct TestOptions {
+	char* releaseName;
+	char* namespace;
+	char* kubeConfig;
+	int   timeout;
+	int   debug;
+};
+
 struct UninstallOptions {
 	char* releaseName;
 	int   dryRun;
@@ -116,6 +124,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 	"unsafe"
 )
 
@@ -356,6 +365,20 @@ func Show(options *C.struct_ShowOptions) C.Result {
 		return helm.Show(&helm.ShowOptions{
 			Path:         C.GoString(options.path),
 			OutputFormat: C.GoString(options.outputFormat),
+		})
+	})
+}
+
+//export Test
+func Test(options *C.struct_TestOptions) C.Result {
+
+	return runCommand(func() (string, error) {
+		return helm.Test(&helm.TestOptions{
+			ReleaseName: C.GoString(options.releaseName),
+			Namespace:   C.GoString(options.namespace),
+			KubeConfig:  C.GoString(options.kubeConfig),
+			Timeout:     time.Duration(int(options.timeout)) * time.Second,
+			Debug:       options.debug == 1,
 		})
 	})
 }
