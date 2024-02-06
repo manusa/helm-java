@@ -6,6 +6,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -171,6 +172,46 @@ func TestInstallDebug(t *testing.T) {
 		return
 	}
 	if !strings.Contains(out, "---\ncreating 3 resource(s)") {
+		t.Errorf("Expected install to succeed, got %s", out)
+		return
+	}
+}
+
+func TestTest(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-test",
+		Dir:  t.TempDir(),
+	})
+	// Delete default test
+	_ = os.Remove(path.Join(create, "templates", "tests", "test-connection.yaml"))
+	// Create a simple test compatible with envtest
+	testYaml, _ := os.OpenFile(path.Join(create, "templates", "tests", "simple.test.yaml"), os.O_CREATE|os.O_WRONLY, 0666)
+	_, _ = testYaml.WriteString("" +
+		"apiVersion: v1\n" +
+		"kind: ConfigMap\n" +
+		"metadata:\n" +
+		"  name: test-connection\n" +
+		"  annotations:\n" +
+		"    helm.sh/hook: test\n" +
+		"data:\n" +
+		"  test: \"test\"\n")
+	_ = testYaml.Close()
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-test",
+	})
+	out, err := Test(&TestOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-test",
+	})
+	if err != nil {
+		t.Errorf("Expected test to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test-test") {
 		t.Errorf("Expected install to succeed, got %s", out)
 		return
 	}
