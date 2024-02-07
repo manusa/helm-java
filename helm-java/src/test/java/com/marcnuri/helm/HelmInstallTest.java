@@ -32,15 +32,15 @@ class HelmInstallTest {
 
     @Test
     void withName() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .withName("test")
         .call();
       assertThat(result)
-        .returns("test", InstallResult::getName)
-        .returns("deployed", InstallResult::getStatus)
-        .returns("1", InstallResult::getRevision)
-        .extracting(InstallResult::getOutput).asString()
+        .returns("test", ReleaseResult::getName)
+        .returns("deployed", ReleaseResult::getStatus)
+        .returns("1", ReleaseResult::getRevision)
+        .extracting(ReleaseResult::getOutput).asString()
         .contains(
           "NAME: test\n",
           "LAST DEPLOYED: ",
@@ -53,7 +53,7 @@ class HelmInstallTest {
     @Test
     void withPackagedChart(@TempDir Path destination) {
       helm.packageIt().withDestination(destination).call();
-      final InstallResult result = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
+      final ReleaseResult result = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
         .clientOnly()
         .withName("test")
         .call();
@@ -63,40 +63,40 @@ class HelmInstallTest {
 
     @Test
     void withGenerateName() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .withName("test") // Should be ignored (omitted/not failure)
         .generateName()
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("status", "deployed")
-        .extracting(InstallResult::getName).asString()
+        .extracting(ReleaseResult::getName).asString()
         .startsWith("test-");
     }
 
     @Test
     void withGenerateNameAndNameTemplate() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .generateName()
         .withNameTemplate("a-chart-{{randAlpha 6 | lower}}")
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("status", "deployed")
-        .extracting(InstallResult::getName).asString()
+        .extracting(ReleaseResult::getName).asString()
         .startsWith("a-chart-");
     }
 
     @Test
     void withNamespace() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .withName("test")
         .withNamespace("test-namespace")
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("name", "test")
-        .returns("test-namespace", InstallResult::getNamespace);
+        .returns("test-namespace", ReleaseResult::getNamespace);
     }
 
     @Test
@@ -109,14 +109,14 @@ class HelmInstallTest {
           "    version: 0.1.0\n" +
           "    repository: " + tempDir.resolve("the-dependency").toUri() +"\n").getBytes(StandardCharsets.UTF_8),
         StandardOpenOption.APPEND);
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .withName("dependency")
         .dependencyUpdate()
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("name", "dependency")
-        .extracting(InstallResult::getOutput).asString()
+        .extracting(ReleaseResult::getOutput).asString()
         .contains(
           "Saving 1 charts",
           "Deleting outdated charts"
@@ -129,7 +129,7 @@ class HelmInstallTest {
 
     @Test
     void withDryRun() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .withName("test")
         .dryRun()
@@ -142,7 +142,7 @@ class HelmInstallTest {
 
     @Test
     void withValues() {
-      final InstallResult result = helm.install()
+      final ReleaseResult result = helm.install()
         .clientOnly()
         .debug()
         .withName("test")
@@ -152,7 +152,7 @@ class HelmInstallTest {
         .set("float", "1.1")
         .call();
       assertThat(result)
-        .extracting(InstallResult::getOutput).asString()
+        .extracting(ReleaseResult::getOutput).asString()
         .contains(
           "NAME: test\n",
           "USER-SUPPLIED VALUES:\n",

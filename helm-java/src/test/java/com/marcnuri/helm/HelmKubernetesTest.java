@@ -53,12 +53,12 @@ class HelmKubernetesTest {
 
       @Test
       void withName() {
-        final InstallResult result = helm.install()
+        final ReleaseResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("test")
           .call();
         assertThat(result)
-          .extracting(InstallResult::getOutput).asString()
+          .extracting(ReleaseResult::getOutput).asString()
           .contains(
             "NAME: test\n",
             "LAST DEPLOYED: ",
@@ -69,13 +69,13 @@ class HelmKubernetesTest {
 
       @Test
       void withDebug() {
-        final InstallResult result = helm.install()
+        final ReleaseResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("with-debug")
           .debug()
           .call();
         assertThat(result)
-          .extracting(InstallResult::getOutput).asString()
+          .extracting(ReleaseResult::getOutput).asString()
           .contains(
             "NAME: with-debug\n",
             "---\n",
@@ -85,14 +85,14 @@ class HelmKubernetesTest {
 
       @Test
       void withWait() {
-        final InstallResult result = helm.install()
+        final ReleaseResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("with-wait")
           .waitReady()
           .debug()
           .call();
         assertThat(result)
-          .extracting(InstallResult::getOutput).asString()
+          .extracting(ReleaseResult::getOutput).asString()
           .contains(
             "beginning wait for 3 resources with timeout of 5m0s"
           );
@@ -100,14 +100,14 @@ class HelmKubernetesTest {
 
       @Test
       void withNamespaceAndCreateNamespace() {
-        final InstallResult result = helm.install()
+        final ReleaseResult result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("created-namespace")
           .withNamespace("to-be-created")
           .createNamespace()
           .debug().call();
         assertThat(result)
-          .extracting(InstallResult::getOutput).asString()
+          .extracting(ReleaseResult::getOutput).asString()
           .contains(
             "NAME: created-namespace\n",
             "---\n",
@@ -148,12 +148,12 @@ class HelmKubernetesTest {
           .withName("helm-test")
           .waitReady()
           .call();
-        final InstallResult result = Helm.test("helm-test")
+        final ReleaseResult result = Helm.test("helm-test")
           .withKubeConfig(kubeConfig)
           .call();
         assertThat(result)
           .hasFieldOrPropertyWithValue("name", "helm-test")
-          .extracting(InstallResult::getOutput).asString()
+          .extracting(ReleaseResult::getOutput).asString()
           .contains(
             "NAME: helm-test\n",
             "LAST DEPLOYED: ",

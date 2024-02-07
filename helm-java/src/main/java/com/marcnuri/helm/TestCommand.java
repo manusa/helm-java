@@ -5,9 +5,9 @@ import com.marcnuri.helm.jni.TestOptions;
 
 import java.nio.file.Path;
 
-import static com.marcnuri.helm.InstallResult.parse;
+import static com.marcnuri.helm.ReleaseResult.parse;
 
-public class TestCommand extends HelmCommand<InstallResult> {
+public class TestCommand extends HelmCommand<ReleaseResult> {
 
   private final String releaseName;
   private int timeout;
@@ -21,7 +21,7 @@ public class TestCommand extends HelmCommand<InstallResult> {
   }
 
   @Override
-  public InstallResult call() {
+  public ReleaseResult call() {
     return parse(run(hl -> hl.Test(new TestOptions(
       releaseName,
       timeout,
