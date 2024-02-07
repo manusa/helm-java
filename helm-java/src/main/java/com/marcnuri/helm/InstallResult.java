@@ -2,6 +2,7 @@ package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.Result;
 
+// TODO: Maybe rename to ReleaseResult
 public class InstallResult {
   private final String name;
   private final String namespace;

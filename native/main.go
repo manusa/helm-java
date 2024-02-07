@@ -100,9 +100,9 @@ struct ShowOptions {
 
 struct TestOptions {
 	char* releaseName;
+	int   timeout;
 	char* namespace;
 	char* kubeConfig;
-	int   timeout;
 	int   debug;
 };
 
@@ -373,13 +373,18 @@ func Show(options *C.struct_ShowOptions) C.Result {
 
 //export Test
 func Test(options *C.struct_TestOptions) C.Result {
-
+	var timeout time.Duration
+	if options.timeout > 0 {
+		timeout = time.Duration(int(options.timeout)) * time.Second
+	} else {
+		timeout = time.Duration(300) * time.Second
+	}
 	return runCommand(func() (string, error) {
 		return helm.Test(&helm.TestOptions{
 			ReleaseName: C.GoString(options.releaseName),
 			Namespace:   C.GoString(options.namespace),
 			KubeConfig:  C.GoString(options.kubeConfig),
-			Timeout:     time.Duration(int(options.timeout)) * time.Second,
+			Timeout:     timeout,
 			Debug:       options.debug == 1,
 		})
 	})

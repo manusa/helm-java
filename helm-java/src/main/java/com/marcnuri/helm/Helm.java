@@ -105,6 +105,16 @@ public class Helm {
   }
 
   /**
+   * This command runs the tests for a release.
+   *
+   * @param releaseName the name of the release to test.
+   * @return the {@link TestCommand} callable command.
+   */
+  public static TestCommand test(String releaseName) {
+    return new TestCommand(HelmLibHolder.INSTANCE, releaseName);
+  }
+
+  /**
    * This command takes a release name and uninstalls the release.
    *
    * @param releaseName the name of the release to uninstall.

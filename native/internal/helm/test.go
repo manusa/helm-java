@@ -7,9 +7,9 @@ import (
 
 type TestOptions struct {
 	ReleaseName string
+	Timeout     time.Duration
 	Namespace   string
 	KubeConfig  string
-	Timeout     time.Duration
 	Debug       bool
 }
 
