@@ -30,6 +30,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
   private boolean dependencyUpdate;
   private boolean dryRun;
   private DryRun dryRunOption;
+  private boolean wait;
   private final Map<String, String> values;
   private Path kubeConfig;
   private Path certFile;
@@ -65,6 +66,7 @@ public class InstallCommand extends HelmCommand<InstallResult> {
       toInt(dependencyUpdate),
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
+      toInt(wait),
       encodeValues(),
       toString(kubeConfig),
       toString(certFile),
@@ -193,6 +195,18 @@ public class InstallCommand extends HelmCommand<InstallResult> {
    */
   public InstallCommand withDryRunOption(DryRun dryRunOption) {
     this.dryRunOption = dryRunOption;
+    return this;
+  }
+
+  /**
+   * Waits until all Pods are in a ready state, PVCs are bound, Deployments have minimum
+   * (Desired minus maxUnavailable) Pods in ready state and Services have an IP address
+   * (and Ingress if a LoadBalancer) before marking the release as successful.
+   *
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand waitReady() {
+    this.wait = true;
     return this;
   }
 
