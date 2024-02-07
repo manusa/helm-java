@@ -2,15 +2,14 @@ package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.Result;
 
-// TODO: Maybe rename to ReleaseResult
-public class InstallResult {
+public class ReleaseResult {
   private final String name;
   private final String namespace;
   private final String status;
   private final String revision;
   private final String output;
 
-  private InstallResult(String name, String namespace, String status, String revision, String output) {
+  private ReleaseResult(String name, String namespace, String status, String revision, String output) {
     this.name = name;
     this.namespace = namespace;
     this.status = status;
@@ -38,7 +37,7 @@ public class InstallResult {
     return output;
   }
 
-  static InstallResult parse(Result result) {
+  static ReleaseResult parse(Result result) {
     if (result == null) {
       throw new IllegalArgumentException("Result cannot be null");
     }
@@ -46,7 +45,7 @@ public class InstallResult {
     if (out == null || out.isEmpty()) {
       throw new IllegalStateException("Result.out cannot be null or empty");
     }
-    return new InstallResult(
+    return new ReleaseResult(
       extract(out, "NAME"),
       extract(out, "NAMESPACE"),
       extract(out, "STATUS"),

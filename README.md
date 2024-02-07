@@ -111,7 +111,7 @@ Installs a chart archive.
 InstallCommand = Helm.install("chart/reference");
 // Instatiate the command with chart archive
 InstallCommand = new Helm(Paths.get("path", "to", "chart")).install;
-installCommand
+ReleaseResult result = installCommand
   // Name of the release to install
   .withName("release-name")
   // Optionally generate a release name (and omit the name parameter)
@@ -345,7 +345,7 @@ Equivalent of [`helm test`](https://helm.sh/docs/helm/helm_test/).
 This command runs the tests for a release.
 
 ``` java
-String result = Helm.test("chart/reference")
+ReleaseResult result = Helm.test("chart/reference")
   // Optionally specify the time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300)
   .withTimeout(int timeout)
   // Optionally specify the Kubernetes namespace to uninstall the release from
