@@ -11,6 +11,7 @@ import (
 	"helm.sh/helm/v3/pkg/strvals"
 	"net/url"
 	"slices"
+	"time"
 )
 
 type InstallOptions struct {
@@ -25,6 +26,8 @@ type InstallOptions struct {
 	DependencyUpdate      bool
 	DryRun                bool
 	DryRunOption          string
+	Wait                  bool
+	Timeout               time.Duration
 	Values                string
 	KubeConfig            string
 	CertFile              string
@@ -80,6 +83,11 @@ func Install(options *InstallOptions) (string, error) {
 		client.DryRunOption = "none"
 	} else {
 		client.DryRunOption = options.DryRunOption
+	}
+	client.Wait = options.Wait
+	// Timeout defaults to 5 minutes (used when wait is enabled)
+	if options.Timeout == 0 {
+		client.Timeout = 300 * time.Second
 	}
 	client.ClientOnly = options.ClientOnly
 	client.CertFile = options.CertFile

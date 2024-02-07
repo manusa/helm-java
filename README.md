@@ -132,6 +132,10 @@ installCommand
   .dryRun()
   // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
   .withDryRunOption(DryRun.CLIENT)
+  // Optionally wait until all Pods are in a ready state, PVCs are bound, Deployments have
+  // minimum (Desired minus maxUnavailable) Pods in ready state and Services have an IP
+  // address (and Ingress if a LoadBalancer) before marking the release as successful. 
+  .waitReady()
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
   // Optionally specify the path to the kubeconfig file to use for CLI requests

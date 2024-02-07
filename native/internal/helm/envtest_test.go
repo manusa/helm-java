@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/tools/setup-envtest/workflows"
 	"strings"
 	"testing"
+	"time"
 )
 
 func setupEnvTest() (func(), *os.File) {
@@ -173,6 +174,30 @@ func TestInstallDebug(t *testing.T) {
 	}
 	if !strings.Contains(out, "---\ncreating 3 resource(s)") {
 		t.Errorf("Expected install to succeed, got %s", out)
+		return
+	}
+}
+
+func TestInstallWaitFails(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-wait",
+		Dir:  t.TempDir(),
+	})
+	out, err := Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-wait",
+		Wait:       true,
+		Timeout:    1 * time.Millisecond,
+	})
+	if err == nil {
+		t.Errorf("Expected install to fail, got %s", out)
+		return
+	}
+	if !strings.Contains(err.Error(), " context deadline exceeded") {
+		t.Errorf("Expected install to fail, got %s", err.Error())
 		return
 	}
 }

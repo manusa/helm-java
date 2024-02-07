@@ -34,7 +34,6 @@ class HelmKubernetesTest {
     k3sContainer.start();
     kubeConfig = tempDir.resolve("config.yaml");
     Files.write(kubeConfig, k3sContainer.getKubeConfigYaml().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-
   }
 
   @AfterAll
@@ -81,6 +80,20 @@ class HelmKubernetesTest {
             "NAME: with-debug\n",
             "---\n",
             "creating 3 resource(s)"
+          );
+      }
+      @Test
+      void withWait() {
+        final InstallResult result = helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("with-wait")
+          .waitReady()
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(InstallResult::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m0s"
           );
       }
 

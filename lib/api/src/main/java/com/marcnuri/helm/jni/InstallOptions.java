@@ -14,6 +14,7 @@ import com.sun.jna.Structure;
   "dependencyUpdate",
   "dryRun",
   "dryRunOption",
+  "wait",
   "values",
   "kubeConfig",
   "certFile",
@@ -38,6 +39,7 @@ public class InstallOptions extends Structure {
   public int dependencyUpdate;
   public int dryRun;
   public String dryRunOption;
+  public int wait;
   public String values;
   public String kubeConfig;
   public String certFile;
@@ -61,6 +63,7 @@ public class InstallOptions extends Structure {
     int dependencyUpdate,
     int dryRun,
     String dryRunOption,
+    int wait,
     String values,
     String kubeConfig,
     String certFile,
@@ -83,6 +86,7 @@ public class InstallOptions extends Structure {
     this.dependencyUpdate = dependencyUpdate;
     this.dryRun = dryRun;
     this.dryRunOption = dryRunOption;
+    this.wait = wait;
     this.values = values;
     this.kubeConfig = kubeConfig;
     this.certFile = certFile;
