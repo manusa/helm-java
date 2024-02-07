@@ -82,6 +82,7 @@ class HelmKubernetesTest {
             "creating 3 resource(s)"
           );
       }
+
       @Test
       void withWait() {
         final InstallResult result = helm.install()
@@ -130,6 +131,59 @@ class HelmKubernetesTest {
         assertThatThrownBy(install::call)
           .message()
           .isEqualTo("create: failed to create: namespaces \"non-existent\" not found");
+      }
+    }
+  }
+
+  @Nested
+  class HelmTest {
+
+    @Nested
+    class Valid {
+
+      @Test
+      void withValidRelease() {
+        helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-test")
+          .waitReady()
+          .call();
+        final InstallResult result = Helm.test("helm-test")
+          .withKubeConfig(kubeConfig)
+          .call();
+        assertThat(result)
+          .hasFieldOrPropertyWithValue("name", "helm-test")
+          .extracting(InstallResult::getOutput).asString()
+          .contains(
+            "NAME: helm-test\n",
+            "LAST DEPLOYED: ",
+            "STATUS: deployed",
+            "REVISION: 1"
+          );
+      }
+    }
+
+    @Nested
+    class Invalid {
+
+      @Test
+      void missingRelease() {
+        final TestCommand testCommand = Helm.test("i-was-never-created")
+          .withKubeConfig(kubeConfig);
+        assertThatThrownBy(testCommand::call)
+          .message()
+          .isEqualTo("release: not found");
+      }
+
+      @Test
+      void lowTimeout() {
+        helm.install().withKubeConfig(kubeConfig).withName("test-low-timeout").call();
+        final TestCommand testCommand = Helm.test("test-low-timeout")
+          .withKubeConfig(kubeConfig)
+          .withTimeout(1);
+        assertThatThrownBy(testCommand::call)
+          .message()
+          .contains("* timed out waiting for the condition");
       }
     }
   }
