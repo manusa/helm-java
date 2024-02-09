@@ -96,6 +96,15 @@ public class Helm {
   }
 
   /**
+   * This command allows you to add, list, remove, update, and index chart repositories.
+   *
+   * @return the {@link RepoCommand} command.
+   */
+  public static RepoCommand repo() {
+    return new RepoCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
    * This command shows information about a chart.
    *
    * @return the {@link ShowCommand} command.

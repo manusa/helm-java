@@ -87,6 +87,10 @@ struct RegistryOptions {
 	int   debug;
 };
 
+struct RepoOptions {
+	char* repositoryConfig;
+};
+
 struct RepoServerOptions {
 	char* glob;
 	char* username;
@@ -311,6 +315,15 @@ func RegistryLogout(options *C.struct_RegistryOptions) C.Result {
 			Insecure:  options.insecure == 1,
 			PlainHttp: options.plainHttp == 1,
 			Debug:     options.debug == 1,
+		})
+	})
+}
+
+//export RepoList
+func RepoList(options *C.struct_RepoOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.RepoList(&helm.RepoOptions{
+			RepositoryConfig: C.GoString(options.repositoryConfig),
 		})
 	})
 }

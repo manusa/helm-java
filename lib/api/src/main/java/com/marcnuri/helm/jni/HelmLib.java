@@ -24,6 +24,8 @@ public interface HelmLib extends Library {
 
   Result RegistryLogout(RegistryOptions options);
 
+  Result RepoList(RepoOptions options);
+
   Result RepoServerStart(RepoServerOptions options);
 
   Result RepoOciServerStart(RepoServerOptions options);

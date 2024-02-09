@@ -235,7 +235,7 @@ Equivalent of [`helm registry login`](https://helm.sh/docs/helm/helm_registry_lo
 Log in to a registry.
 
 ``` java
-Helm.login()
+Helm.registry().login()
   // The host to log in to.
   .withHost("host")
   // Registry username
@@ -264,11 +264,31 @@ Equivalent of [`helm registry logout`](https://helm.sh/docs/helm/helm_registry_l
 Log out from a registry.
 
 ``` java
-Helm.logout()
+Helm.registry().logout()
   // The host to log out from.
   .withHost("host")
   // Optionally enable debug mode to print out verbose information
   .debug()
+  .call();
+```
+
+### Repo
+
+Equivalent of [`helm repo`](https://helm.sh/docs/helm/helm_repo/).
+
+Add, list, remove, update, and index chart repositories.
+
+#### Repo list
+
+Equivalent of [`helm repo list`](https://helm.sh/docs/helm/helm_repo_list/).
+
+List chart repositories.
+
+``` java
+Helm.repo().list()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig("host")
   .call();
 ```
 

@@ -316,6 +316,26 @@ func TestRegistryLogout(t *testing.T) {
 	}
 }
 
+func TestRepoList(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
+		"repositories:\n" +
+		"  - name: stable\n" +
+		"    url: https://charts.helm.sh/stable\n" +
+		"  - name: other\n" +
+		"    url: https://charts.example.com/other\n")
+	out, err := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile.Name()})
+	if err != nil {
+		t.Error("Expected repo list to succeed")
+	}
+	if !strings.Contains(out, "name=stable&url=https%3A%2F%2Fcharts.helm.sh%2Fstable\n") {
+		t.Errorf("Expected out to contain encoded 'stable' repo, got %s", out)
+	}
+	if !strings.Contains(out, "name=other&url=https%3A%2F%2Fcharts.example.com%2Fother\n") {
+		t.Errorf("Expected out to contain encoded 'other' repo, got %s", out)
+	}
+}
+
 func repoServerStartAsync(t *testing.T, serverInfoChannel chan *repotest.Server, stopChannel chan bool) {
 	srv, err := helm.RepoServerStart(&helm.RepoServerOptions{})
 	if err != nil {
