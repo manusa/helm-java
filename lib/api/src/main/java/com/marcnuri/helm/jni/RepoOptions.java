@@ -2,10 +2,11 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
-@Structure.FieldOrder({"repositoryConfig", "name", "url", "username", "password", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify"})
+@Structure.FieldOrder({"repositoryConfig", "name", "names", "url", "username", "password", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify"})
 public class RepoOptions extends Structure {
   public String repositoryConfig;
   public String name;
+  public String names;
   public String url;
   public String username;
   public String password;
@@ -14,9 +15,10 @@ public class RepoOptions extends Structure {
   public String caFile;
   public int insecureSkipTlsVerify;
 
-  public RepoOptions(String repositoryConfig, String name, String url, String username, String password, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify) {
+  public RepoOptions(String repositoryConfig, String name, String names, String url, String username, String password, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify) {
     this.repositoryConfig = repositoryConfig;
     this.name = name;
+    this.names = names;
     this.url = url;
     this.username = username;
     this.password = password;

@@ -405,6 +405,52 @@ func TestRepoList(t *testing.T) {
 	}
 }
 
+func TestRepoRemove(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
+		"repositories:\n" +
+		"  - name: stable\n" +
+		"    url: https://charts.helm.sh/stable\n" +
+		"  - name: other\n" +
+		"    url: https://charts.example.com/other\n")
+	err := helm.RepoRemove(&helm.RepoOptions{
+		RepositoryConfig: repositoryConfigFile.Name(),
+		Names:            "stable",
+	})
+	if err != nil {
+		t.Error("Expected repo remove to succeed")
+		return
+	}
+	out, _ := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile.Name()})
+	if strings.Contains(out, "name=stable") {
+		t.Errorf("Expected 'stable' repo to be removed, got %s", out)
+	}
+	if !strings.Contains(out, "name=other") {
+		t.Errorf("Expected 'other' repo to stay, got %s", out)
+	}
+}
+
+func TestRepoRemoveWithMissing(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
+		"repositories:\n" +
+		"  - name: stable\n" +
+		"    url: https://charts.helm.sh/stable\n" +
+		"  - name: other\n" +
+		"    url: https://charts.example.com/other\n")
+	err := helm.RepoRemove(&helm.RepoOptions{
+		RepositoryConfig: repositoryConfigFile.Name(),
+		Names:            "missing\nstable",
+	})
+	if err == nil {
+		t.Error("Expected repo remove to fail")
+		return
+	}
+	if !strings.Contains(err.Error(), "no repo named \"missing\" found") {
+		t.Errorf("Expected invalid repo error, got %s", err.Error())
+	}
+}
+
 func repoServerStartAsync(t *testing.T, serverInfoChannel chan *repotest.Server, stopChannel chan bool) {
 	srv, err := helm.RepoServerStart(&helm.RepoServerOptions{})
 	if err != nil {
