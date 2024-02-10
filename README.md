@@ -278,6 +278,36 @@ Equivalent of [`helm repo`](https://helm.sh/docs/helm/helm_repo/).
 
 Add, list, remove, update, and index chart repositories.
 
+#### Repo add
+
+Equivalent of [`helm repo add`](https://helm.sh/docs/helm/helm_repo_add/).
+
+Add a chart repository.
+
+``` java
+Helm.repo().add()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Name of the repository to add
+  .withName("repo-1")
+  // URL of the repository to add
+  .withUrl(URI.create("https://charts.helm.sh/stable"))
+  // Optionally specify a username for HTTP basic authentication
+  .withUsername("user")
+  // Optionally specify a password for HTTP basic authentication
+  .withPassword("pass")
+  // Optionally specify an SSL certificate file to identify the HTTPS client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the HTTPS client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally verify certificates of HTTPS-enabled servers using this CA bundle
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  .call()
+``` 
+
 #### Repo list
 
 Equivalent of [`helm repo list`](https://helm.sh/docs/helm/helm_repo_list/).
@@ -288,7 +318,7 @@ List chart repositories.
 Helm.repo().list()
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
-  .withRepositoryConfig("host")
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
   .call();
 ```
 
@@ -437,6 +467,8 @@ To release a new version automatically:
 ```shell
 make release V=X.Y.Z VS=X.Y
 ```
+- `V`: New version to release.
+- `VS`: New SNAPSHOT version for Maven.
 
 To release a new version manually:
 
