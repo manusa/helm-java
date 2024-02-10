@@ -306,7 +306,7 @@ Helm.repo().add()
   // Optionally skip TLS certificate checks of HTTPS-enabled servers
   .insecureSkipTlsVerify()
   .call()
-``` 
+```
 
 #### Repo list
 
@@ -319,6 +319,24 @@ Helm.repo().list()
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
   .withRepositoryConfig(Paths.get("path", "to", "config"))
+  .call();
+```
+
+#### Repo remove
+
+Equivalent of [`helm repo remove`](https://helm.sh/docs/helm/helm_repo_remove/).
+
+Remove one or more chart repositories.
+
+``` java
+Helm.repo().remove()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Add a repository name to the list of repos to remove
+  .withRepo("repo-1")
+  // Add another repository name to the list of repos to remove
+  .withRepo("repo-2")
   .call();
 ```
 

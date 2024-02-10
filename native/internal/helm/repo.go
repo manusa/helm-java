@@ -124,6 +124,9 @@ func RepoList(options *RepoOptions) (string, error) {
 }
 
 func RepoRemove(options *RepoOptions) error {
+	if len(options.Names) == 0 {
+		return nil
+	}
 	repoFile := repositoryConfig(options)
 	r, err := repo.LoadFile(repoFile)
 	if err != nil {
