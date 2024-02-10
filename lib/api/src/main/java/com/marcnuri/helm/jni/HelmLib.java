@@ -28,6 +28,8 @@ public interface HelmLib extends Library {
 
   Result RepoList(RepoOptions options);
 
+  Result RepoRemove(RepoOptions options);
+
   Result RepoServerStart(RepoServerOptions options);
 
   Result RepoOciServerStart(RepoServerOptions options);

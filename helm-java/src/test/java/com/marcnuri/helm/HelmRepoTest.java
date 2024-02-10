@@ -1,9 +1,11 @@
 package com.marcnuri.helm;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -95,5 +97,63 @@ class HelmRepoTest {
       final List<Repository> result = Helm.repo().list().withRepositoryConfig(repositoryConfig).call();
       assertThat(result).isEmpty();
     }
+  }
+
+  @Nested
+  class RepoRemove {
+
+    Path repositoryConfig;
+
+    @BeforeEach
+    void setUp(@TempDir Path tempDir) throws IOException {
+      repositoryConfig = tempDir.resolve("repositories.yaml");
+      Files.write(tempDir.resolve("repositories.yaml"),
+        ("repositories:\n" +
+          "  - name: repo-1\n" +
+          "    url: https://charts.example.com/repo-1?i=31&test\n" +
+          "    username: user-name\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n" +
+          "  - name: other\n" +
+          "    url: https://charts.example.sh/other\n" +
+          "    ignored: field"
+        ).getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.CREATE);
+    }
+
+    @Test
+    void withValidRepos() {
+      Helm.repo().remove()
+        .withRepositoryConfig(repositoryConfig)
+        .withRepo("repo-1")
+        .withRepo("stable")
+        .call();
+      final List<Repository> result = Helm.repo().list().withRepositoryConfig(repositoryConfig).call();
+      assertThat(result)
+        .extracting(Repository::getName)
+        .containsExactly("other");
+    }
+
+    @Test
+    void withNoRepos() {
+      Helm.repo().remove()
+        .withRepositoryConfig(repositoryConfig)
+        .call();
+      final List<Repository> result = Helm.repo().list().withRepositoryConfig(repositoryConfig).call();
+      assertThat(result)
+        .extracting(Repository::getName)
+        .containsExactly("repo-1", "stable", "other");
+    }
+
+    @Test
+    void withMissingRepo() {
+      final RepoCommand.WithRepo<Void> callable = Helm.repo().remove()
+        .withRepositoryConfig(repositoryConfig)
+        .withRepo("missing");
+      assertThatThrownBy(callable::call)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("no repo named \"missing\" found");
+    }
+
   }
 }

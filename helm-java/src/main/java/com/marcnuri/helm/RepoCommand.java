@@ -6,7 +6,9 @@ import com.marcnuri.helm.jni.Result;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -28,7 +30,7 @@ public class RepoCommand {
   }
 
   /**
-   * List chart repositories
+   * List chart repositories.
    *
    * @return the {@link WithRepositoryConfig} subcommand.
    */
@@ -36,12 +38,22 @@ public class RepoCommand {
     return new RepoCommand.RepoSubcommand<>(helmLib, hl -> hl::RepoList, Repository::parse);
   }
 
-  public static final class RepoSubcommand<T> extends HelmCommand<T> implements WithRepositoryConfig<T> {
+  /**
+   * Remove one or more chart repositories.
+   *
+   * @return the {@link WithRepo} subcommand.
+   */
+  public WithRepo<Void> remove() {
+    return new RepoCommand.RepoSubcommand<>(helmLib, hl -> hl::RepoRemove, r -> null);
+  }
+
+  public static final class RepoSubcommand<T> extends HelmCommand<T> implements WithRepositoryConfig<T>, WithRepo<T> {
 
     private final Function<HelmLib, Function<RepoOptions, Result>> callable;
     private final Function<Result, T> transformer;
     private Path repositoryConfig;
     private String name;
+    private final Set<String> names;
     private URI url;
     private String username;
     private String password;
@@ -55,6 +67,7 @@ public class RepoCommand {
       super(helmLib);
       this.callable = callable;
       this.transformer = transformer;
+      names = new LinkedHashSet<>();
     }
 
     @Override
@@ -62,7 +75,7 @@ public class RepoCommand {
       return transformer.apply(run(hl -> callable.apply(hl).apply(new RepoOptions(
         toString(repositoryConfig),
         name,
-        null,
+        String.join("\n", names),
         toString(url),
         username,
         password,
@@ -76,8 +89,18 @@ public class RepoCommand {
     /**
      * {@inheritDoc}
      */
+    @Override
     public RepoCommand.RepoSubcommand<T> withRepositoryConfig(Path repositoryConfig) {
       this.repositoryConfig = repositoryConfig;
+      return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RepoCommand.RepoSubcommand<T> withRepo(String repo) {
+      this.names.add(repo);
       return this;
     }
 
@@ -175,10 +198,26 @@ public class RepoCommand {
      * (default "~/.config/helm/repositories.yaml")
      *
      * @param repositoryConfig a {@link Path} to the repository configuration file.
-     * @return this {@link RepoCommand.RepoSubcommand} instance.
+     * @return this {@link WithRepositoryConfig} instance.
      */
     WithRepositoryConfig<T> withRepositoryConfig(Path repositoryConfig);
   }
+
+  public interface WithRepo<T> extends WithRepositoryConfig<T> {
+    /**
+     * {@inheritDoc}
+     */
+    WithRepo<T> withRepositoryConfig(Path repositoryConfig);
+
+    /**
+     * The name of the repository.
+     *
+     * @param repo a {@link String} with the name of a repo.
+     * @return this {@link WithRepo} instance.
+     */
+    WithRepo<T> withRepo(String repo);
+  }
+
   public interface RepoCallable<T> extends Callable<T> {
     @Override
     T call();
