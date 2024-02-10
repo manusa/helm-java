@@ -62,6 +62,7 @@ public class RepoCommand {
       return transformer.apply(run(hl -> callable.apply(hl).apply(new RepoOptions(
         toString(repositoryConfig),
         name,
+        null,
         toString(url),
         username,
         password,

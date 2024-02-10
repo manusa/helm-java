@@ -90,6 +90,7 @@ struct RegistryOptions {
 struct RepoOptions {
 	char* repositoryConfig;
 	char* name;
+	char* names;
 	char* url;
 	char* username;
 	char* password;
@@ -349,6 +350,16 @@ func RepoList(options *C.struct_RepoOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.RepoList(&helm.RepoOptions{
 			RepositoryConfig: C.GoString(options.repositoryConfig),
+		})
+	})
+}
+
+//export RepoRemove
+func RepoRemove(options *C.struct_RepoOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return "", helm.RepoRemove(&helm.RepoOptions{
+			RepositoryConfig: C.GoString(options.repositoryConfig),
+			Names:            C.GoString(options.names),
 		})
 	})
 }

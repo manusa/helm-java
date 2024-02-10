@@ -22,6 +22,7 @@ import (
 type RepoOptions struct {
 	RepositoryConfig      string
 	Name                  string
+	Names                 string
 	Url                   string
 	Username              string
 	Password              string
@@ -120,6 +121,23 @@ func RepoList(options *RepoOptions) (string, error) {
 		_, _ = fmt.Fprintln(out, values.Encode())
 	}
 	return out.String(), nil
+}
+
+func RepoRemove(options *RepoOptions) error {
+	repoFile := repositoryConfig(options)
+	r, err := repo.LoadFile(repoFile)
+	if err != nil {
+		return err
+	}
+	for _, name := range strings.Split(options.Names, "\n") {
+		if !r.Remove(name) {
+			return errors.Errorf("no repo named %q found", name)
+		}
+		if err := r.WriteFile(repoFile, 0600); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func repositoryConfig(options *RepoOptions) string {
