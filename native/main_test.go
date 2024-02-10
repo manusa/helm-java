@@ -316,6 +316,75 @@ func TestRegistryLogout(t *testing.T) {
 	}
 }
 
+func TestRepoAdd(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	defer os.Remove(repositoryConfigFile.Name())
+	err := helm.RepoAdd(&helm.RepoOptions{
+		Name:                  "helm",
+		Url:                   "https://charts.helm.sh/stable",
+		InsecureSkipTlsVerify: true,
+		RepositoryConfig:      repositoryConfigFile.Name(),
+	})
+	if err != nil {
+		t.Errorf("Expected repo add to succeed, got %s", err)
+		return
+	}
+	fileContent, _ := os.ReadFile(repositoryConfigFile.Name())
+	repositoryConfig := string(fileContent)
+	if !strings.Contains(repositoryConfig, " name: helm\n") {
+		t.Errorf("Expected file to contain 'helm' as name, got %s", repositoryConfig)
+	}
+	if !strings.Contains(repositoryConfig, " url: https://charts.helm.sh/stable\n") {
+		t.Errorf("Expected file to contain 'https://charts.helm.sh/stable' as url, got %s", repositoryConfig)
+	}
+}
+
+func TestRepoAddInvalidName(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	defer os.Remove(repositoryConfigFile.Name())
+	err := helm.RepoAdd(&helm.RepoOptions{
+		Name:             "helm/invalid",
+		Url:              "https://charts.helm.sh/stable",
+		RepositoryConfig: repositoryConfigFile.Name(),
+	})
+	if err == nil {
+		t.Error("Expected repo add to fail")
+		return
+	}
+	if !strings.Contains(err.Error(), "repository name (helm/invalid) contains '/'") {
+		t.Errorf("Expected invalid name error, got %s", err.Error())
+	}
+}
+
+func TestRepoAddInvalidPath(t *testing.T) {
+	err := helm.RepoAdd(&helm.RepoOptions{
+		Name:             "helm",
+		Url:              "https://charts.helm.sh/stable",
+		RepositoryConfig: "/invalid-path/invalid-file",
+	})
+	if err == nil {
+		t.Error("Expected repo add to fail")
+		return
+	}
+}
+
+func TestRepoAddInvalidRepo(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	defer os.Remove(repositoryConfigFile.Name())
+	err := helm.RepoAdd(&helm.RepoOptions{
+		Name:             "helm",
+		Url:              "https://localhost/stable",
+		RepositoryConfig: repositoryConfigFile.Name(),
+	})
+	if err == nil {
+		t.Error("Expected repo add to fail")
+		return
+	}
+	if !strings.Contains(err.Error(), "looks like \"https://localhost/stable\" is not a valid chart repository or cannot be reached") {
+		t.Errorf("Expected invalid repo error, got %s", err.Error())
+	}
+}
+
 func TestRepoList(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
@@ -328,10 +397,10 @@ func TestRepoList(t *testing.T) {
 	if err != nil {
 		t.Error("Expected repo list to succeed")
 	}
-	if !strings.Contains(out, "name=stable&url=https%3A%2F%2Fcharts.helm.sh%2Fstable\n") {
+	if !strings.Contains(out, "name=stable&password=&url=https%3A%2F%2Fcharts.helm.sh%2Fstable") {
 		t.Errorf("Expected out to contain encoded 'stable' repo, got %s", out)
 	}
-	if !strings.Contains(out, "name=other&url=https%3A%2F%2Fcharts.example.com%2Fother\n") {
+	if !strings.Contains(out, "name=other&password=&url=https%3A%2F%2Fcharts.example.com%2Fother") {
 		t.Errorf("Expected out to contain encoded 'other' repo, got %s", out)
 	}
 }

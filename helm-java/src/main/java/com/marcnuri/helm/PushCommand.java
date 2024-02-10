@@ -25,7 +25,7 @@ public class PushCommand extends HelmCommand<String> {
   public String call() {
     return run(hl -> hl.Push(new PushOptions(
       chart.normalize().toFile().getAbsolutePath(),
-      remote.toString(),
+      toString(remote),
       toString(certFile),
       toString(keyFile),
       toString(caFile),

@@ -3,6 +3,7 @@ package com.marcnuri.helm;
 import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.Result;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -26,6 +27,10 @@ public abstract class HelmCommand<T> implements Callable<T> {
 
   String toString(Path path) {
     return path == null ? null : path.normalize().toFile().getAbsolutePath();
+  }
+
+  String toString(URI uri) {
+    return uri == null ? null : uri.normalize().toString();
   }
 
   int toInt(boolean value) {
