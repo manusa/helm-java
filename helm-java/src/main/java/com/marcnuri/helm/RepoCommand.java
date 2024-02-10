@@ -4,6 +4,7 @@ import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.RepoOptions;
 import com.marcnuri.helm.jni.Result;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
@@ -30,6 +31,15 @@ public class RepoCommand {
     private final Function<HelmLib, Function<RepoOptions, Result>> callable;
     private final Function<Result, T> transformer;
     private Path repositoryConfig;
+    private String name;
+    private URI url;
+    private String username;
+    private String password;
+    private Path certFile;
+    private Path keyFile;
+    private Path caFile;
+    private boolean insecureSkipTlsVerify;
+
 
     RepoSubcommand(HelmLib helmLib, Function<HelmLib, Function<RepoOptions, Result>> callable, Function<Result, T> transformer) {
       super(helmLib);
@@ -40,7 +50,15 @@ public class RepoCommand {
     @Override
     public T call() {
       return transformer.apply(run(hl -> callable.apply(hl).apply(new RepoOptions(
-        toString(repositoryConfig)
+        toString(repositoryConfig),
+        name,
+        toString(url),
+        username,
+        password,
+        toString(certFile),
+        toString(keyFile),
+        toString(caFile),
+        toInt(insecureSkipTlsVerify)
       ))));
     }
 

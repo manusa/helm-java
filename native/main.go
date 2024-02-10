@@ -89,6 +89,14 @@ struct RegistryOptions {
 
 struct RepoOptions {
 	char* repositoryConfig;
+	char* name;
+	char* url;
+	char* username;
+	char* password;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecureSkipTlsVerify;
 };
 
 struct RepoServerOptions {
@@ -315,6 +323,23 @@ func RegistryLogout(options *C.struct_RegistryOptions) C.Result {
 			Insecure:  options.insecure == 1,
 			PlainHttp: options.plainHttp == 1,
 			Debug:     options.debug == 1,
+		})
+	})
+}
+
+//export RepoAdd
+func RepoAdd(options *C.struct_RepoOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return "", helm.RepoAdd(&helm.RepoOptions{
+			RepositoryConfig:      C.GoString(options.repositoryConfig),
+			Name:                  C.GoString(options.name),
+			Url:                   C.GoString(options.url),
+			Username:              C.GoString(options.username),
+			Password:              C.GoString(options.password),
+			CertFile:              C.GoString(options.certFile),
+			KeyFile:               C.GoString(options.keyFile),
+			CaFile:                C.GoString(options.caFile),
+			InsecureSkipTlsVerify: options.insecureSkipTlsVerify == 1,
 		})
 	})
 }
