@@ -16,7 +16,7 @@ type TestOptions struct {
 func Test(options *TestOptions) (string, error) {
 	cfgOptions := &CfgOptions{
 		KubeConfig: options.KubeConfig,
-		namespace:  options.Namespace,
+		Namespace:  options.Namespace,
 	}
 	client := action.NewReleaseTesting(NewCfg(cfgOptions))
 	client.Namespace = options.Namespace
