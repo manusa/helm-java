@@ -57,7 +57,7 @@ func Install(options *InstallOptions) (string, error) {
 	cfgOptions := &CfgOptions{
 		RegistryClient: registryClient,
 		KubeConfig:     options.KubeConfig,
-		namespace:      options.Namespace,
+		Namespace:      options.Namespace,
 	}
 	if options.Debug {
 		cfgOptions.KubeOut = kubeOut

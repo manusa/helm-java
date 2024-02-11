@@ -55,6 +55,19 @@ struct LintOptions {
 	int   quiet;
 };
 
+struct ListOptions {
+	int   all;
+	int   allNamespaces;
+	int   deployed;
+	int   failed;
+	int   pending;
+	int   superseded;
+	int   uninstalled;
+	int   uninstalling;
+	char* namespace;
+	char* kubeConfig;
+};
+
 struct PackageOptions {
 	char* path;
 	char* destination;
@@ -262,6 +275,24 @@ func Lint(options *C.struct_LintOptions) C.Result {
 		result = append(result, fmt.Sprintf("Failed: %v", failed))
 		report := strings.Join(result, "\n")
 		return report, nil
+	})
+}
+
+//export List
+func List(options *C.struct_ListOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.List(&helm.ListOptions{
+			All:           options.all == 1,
+			AllNamespaces: options.allNamespaces == 1,
+			Deployed:      options.deployed == 1,
+			Failed:        options.failed == 1,
+			Pending:       options.pending == 1,
+			Superseded:    options.superseded == 1,
+			Uninstalled:   options.uninstalled == 1,
+			Uninstalling:  options.uninstalling == 1,
+			Namespace:     C.GoString(options.namespace),
+			KubeConfig:    C.GoString(options.kubeConfig),
+		})
 	})
 }
 

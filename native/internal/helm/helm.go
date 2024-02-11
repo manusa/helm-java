@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/output"
@@ -19,7 +20,8 @@ import (
 type CfgOptions struct {
 	RegistryClient *registry.Client
 	KubeConfig     string
-	namespace      string
+	Namespace      string
+	AllNamespaces  bool
 	KubeOut        io.Writer
 }
 
@@ -32,10 +34,14 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 			_, _ = options.KubeOut.Write([]byte(fmt.Sprintf(format, v...) + "\n"))
 		}
 	}
-	if options.namespace != "" {
-		settings.SetNamespace(options.namespace)
+	if options.Namespace != "" {
+		settings.SetNamespace(options.Namespace)
 	}
-	err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), os.Getenv("HELM_DRIVER"), log)
+	effectiveNamespace := settings.Namespace()
+	if options.AllNamespaces {
+		effectiveNamespace = ""
+	}
+	err := actionConfig.Init(settings.RESTClientGetter(), effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
 		panic(err)
 	}
@@ -71,6 +77,26 @@ func StatusReport(release *release.Release, showDescription bool, debug bool) st
 		_, _ = fmt.Fprintf(out, "NOTES:\n%s\n", strings.TrimSpace(release.Info.Notes))
 	}
 	return out.String()
+}
+
+// https://github.com/helm/helm/blob/847369c184d93fc4d36e9ec86a388b60331ab37a/cmd/helm/history.go#L162
+func formatChartname(c *chart.Chart) string {
+	if c == nil || c.Metadata == nil {
+		// This is an edge case that has happened in prod, though we don't
+		// know how: https://github.com/helm/helm/issues/1347
+		return "MISSING"
+	}
+	return fmt.Sprintf("%s-%s", c.Name(), c.Metadata.Version)
+}
+
+// https://github.com/helm/helm/blob/847369c184d93fc4d36e9ec86a388b60331ab37a/cmd/helm/history.go#L171
+func formatAppVersion(c *chart.Chart) string {
+	if c == nil || c.Metadata == nil {
+		// This is an edge case that has happened in prod, though we don't
+		// know how: https://github.com/helm/helm/issues/1347
+		return "MISSING"
+	}
+	return c.AppVersion()
 }
 
 type concatArgs struct {

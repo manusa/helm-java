@@ -21,7 +21,7 @@ type UninstallOptions struct {
 func Uninstall(options *UninstallOptions) (string, error) {
 	cfgOptions := &CfgOptions{
 		KubeConfig: options.KubeConfig,
-		namespace:  options.Namespace,
+		Namespace:  options.Namespace,
 	}
 	kubeOut := bytes.NewBuffer(make([]byte, 0))
 	if options.Debug {
