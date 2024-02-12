@@ -6,6 +6,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type ListOptions struct {
@@ -49,7 +50,7 @@ func List(options *ListOptions) (string, error) {
 		values.Set("namespace", release.Namespace)
 		values.Set("revision", strconv.Itoa(release.Version))
 		if tspb := release.Info.LastDeployed; !tspb.IsZero() {
-			values.Set("updated", strconv.FormatInt(tspb.UnixMilli(), 10))
+			values.Set("lastDeployed", tspb.Format(time.RFC1123Z))
 		}
 		values.Set("status", release.Info.Status.String())
 		values.Set("chart", formatChartname(release.Chart))

@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,15 +33,18 @@ class HelmInstallTest {
 
     @Test
     void withName() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .withName("test")
         .call();
       assertThat(result)
-        .returns("test", ReleaseResult::getName)
-        .returns("deployed", ReleaseResult::getStatus)
-        .returns("1", ReleaseResult::getRevision)
-        .extracting(ReleaseResult::getOutput).asString()
+        .returns("test", Release::getName)
+        .returns("deployed", Release::getStatus)
+        .returns("1", Release::getRevision)
+        .satisfies(r -> assertThat(r.getLastDeployed()).matches(d -> d.toLocalDate().equals(LocalDate.now())))
+        .returns("test-0.1.0", Release::getChart)
+        .returns("1.16.0", Release::getAppVersion)
+        .extracting(Release::getOutput).asString()
         .contains(
           "NAME: test\n",
           "LAST DEPLOYED: ",
@@ -53,7 +57,7 @@ class HelmInstallTest {
     @Test
     void withPackagedChart(@TempDir Path destination) {
       helm.packageIt().withDestination(destination).call();
-      final ReleaseResult result = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
+      final Release result = Helm.install(destination.resolve("test-0.1.0.tgz").toFile().getAbsolutePath())
         .clientOnly()
         .withName("test")
         .call();
@@ -63,40 +67,40 @@ class HelmInstallTest {
 
     @Test
     void withGenerateName() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .withName("test") // Should be ignored (omitted/not failure)
         .generateName()
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("status", "deployed")
-        .extracting(ReleaseResult::getName).asString()
+        .extracting(Release::getName).asString()
         .startsWith("test-");
     }
 
     @Test
     void withGenerateNameAndNameTemplate() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .generateName()
         .withNameTemplate("a-chart-{{randAlpha 6 | lower}}")
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("status", "deployed")
-        .extracting(ReleaseResult::getName).asString()
+        .extracting(Release::getName).asString()
         .startsWith("a-chart-");
     }
 
     @Test
     void withNamespace() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .withName("test")
         .withNamespace("test-namespace")
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("name", "test")
-        .returns("test-namespace", ReleaseResult::getNamespace);
+        .returns("test-namespace", Release::getNamespace);
     }
 
     @Test
@@ -109,14 +113,14 @@ class HelmInstallTest {
           "    version: 0.1.0\n" +
           "    repository: " + tempDir.resolve("the-dependency").toUri() +"\n").getBytes(StandardCharsets.UTF_8),
         StandardOpenOption.APPEND);
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .withName("dependency")
         .dependencyUpdate()
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("name", "dependency")
-        .extracting(ReleaseResult::getOutput).asString()
+        .extracting(Release::getOutput).asString()
         .contains(
           "Saving 1 charts",
           "Deleting outdated charts"
@@ -129,7 +133,7 @@ class HelmInstallTest {
 
     @Test
     void withDryRun() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .withName("test")
         .dryRun()
@@ -142,7 +146,7 @@ class HelmInstallTest {
 
     @Test
     void withValues() {
-      final ReleaseResult result = helm.install()
+      final Release result = helm.install()
         .clientOnly()
         .debug()
         .withName("test")
@@ -152,7 +156,7 @@ class HelmInstallTest {
         .set("float", "1.1")
         .call();
       assertThat(result)
-        .extracting(ReleaseResult::getOutput).asString()
+        .extracting(Release::getOutput).asString()
         .contains(
           "NAME: test\n",
           "USER-SUPPLIED VALUES:\n",

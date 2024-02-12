@@ -174,6 +174,38 @@ result.isFailed(); // true if linting failed
 result.getMessages(); // list of linting messages
 ```
 
+### List
+
+Equivalent of [`helm list`](https://helm.sh/docs/helm/helm_list/).
+
+Lists all the releases for a specified namespace (uses current namespace context if namespace not specified).
+
+``` java
+Helm.list()
+  // Optionally specify the Kubernetes namespace to list the releases from
+  .withNamespace("namespace")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally show all releases without any filter applied
+  .all()
+  // Optionally show releases across all namespaces
+  .allNamespaces()
+  // Optionally show deployed releases
+  // If no other option is specified, this will be automatically enabled
+  .deployed()
+  // Optionally show failed releases
+  .failed()
+  // Optionally show pending releases
+  .pending()
+  // Optionally show superseded releases
+  .superseded()
+  // Optionally show uninstalled releases (if 'helm uninstall --keep-history' was used)
+  .uninstalled()
+  // Optionally show releases that are currently being uninstalled
+  .uninstalling()
+  .call();
+```
+
 ### Package
 
 Equivalent of [`helm package`](https://helm.sh/docs/helm/helm_package/).

@@ -56,11 +56,13 @@ func StatusReport(release *release.Release, showDescription bool, debug bool) st
 	out := bytes.NewBuffer(make([]byte, 0))
 	_, _ = fmt.Fprintf(out, "NAME: %s\n", release.Name)
 	if !release.Info.LastDeployed.IsZero() {
-		_, _ = fmt.Fprintf(out, "LAST DEPLOYED: %s\n", release.Info.LastDeployed.Format(time.ANSIC))
+		_, _ = fmt.Fprintf(out, "LAST DEPLOYED: %s\n", release.Info.LastDeployed.Format(time.RFC1123Z))
 	}
 	_, _ = fmt.Fprintf(out, "NAMESPACE: %s\n", release.Namespace)
 	_, _ = fmt.Fprintf(out, "STATUS: %s\n", release.Info.Status.String())
 	_, _ = fmt.Fprintf(out, "REVISION: %d\n", release.Version)
+	_, _ = fmt.Fprintf(out, "CHART: %s\n", formatChartname(release.Chart))
+	_, _ = fmt.Fprintf(out, "APP VERSION: %s\n", formatAppVersion(release.Chart))
 	if showDescription {
 		_, _ = fmt.Fprintf(out, "DESCRIPTION: %s\n", release.Info.Description)
 	}
