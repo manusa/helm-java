@@ -11,9 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static com.marcnuri.helm.ReleaseResult.parse;
+import static com.marcnuri.helm.Release.parseSingle;
 
-public class InstallCommand extends HelmCommand<ReleaseResult> {
+public class InstallCommand extends HelmCommand<Release> {
 
   public enum DryRun {
     NONE, CLIENT, SERVER
@@ -53,8 +53,8 @@ public class InstallCommand extends HelmCommand<ReleaseResult> {
   }
 
   @Override
-  public ReleaseResult call() {
-    return parse(run(hl -> hl.Install(new InstallOptions(
+  public Release call() {
+    return parseSingle(run(hl -> hl.Install(new InstallOptions(
       name,
       toInt(generateName),
       nameTemplate,

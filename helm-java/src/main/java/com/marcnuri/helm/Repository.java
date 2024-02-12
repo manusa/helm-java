@@ -2,14 +2,12 @@ package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.Result;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.marcnuri.helm.HelmCommand.parseUrlEncodedLines;
 
 public class Repository {
 
@@ -51,31 +49,14 @@ public class Repository {
     if (result == null) {
       throw new IllegalArgumentException("Result cannot be null");
     }
-    final String out = result.out;
-    if (out == null || out.isEmpty()) {
-      return Collections.emptyList();
-    }
     final List<Repository> repositories = new java.util.ArrayList<>();
-    for (String line : out.split("\n")) {
-      try {
-        final Map<String, String> entries = new HashMap<>();
-        for (String entry : line.split("&")) {
-          final String[] keyValue = entry.split("=");
-          if (keyValue.length == 2) {
-            entries.put(
-              URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8.name()),
-              URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8.name()));
-          }
-        }
-        repositories.add(new Repository(
-          entries.get("name"),
-          URI.create(entries.get("url")),
-          entries.get("username"),
-          entries.get("password"),
-          Boolean.parseBoolean(entries.get("insecureSkipTlsVerify"))));
-      } catch (UnsupportedEncodingException e) {
-        throw new IllegalStateException("Returned repository cannot be parsed: " + line, e);
-      }
+    for (Map<String, String> entries : parseUrlEncodedLines(result.out)) {
+      repositories.add(new Repository(
+        entries.get("name"),
+        URI.create(entries.get("url")),
+        entries.get("username"),
+        entries.get("password"),
+        Boolean.parseBoolean(entries.get("insecureSkipTlsVerify"))));
     }
     return Collections.unmodifiableList(repositories);
   }

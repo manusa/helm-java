@@ -16,6 +16,8 @@ public interface HelmLib extends Library {
 
   Result Lint(LintOptions options);
 
+  Result List(ListOptions options);
+
   Result Package(PackageOptions options);
 
   Result Push(PushOptions options);

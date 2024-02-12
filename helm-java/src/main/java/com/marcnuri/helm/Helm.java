@@ -68,6 +68,15 @@ public class Helm {
   }
 
   /**
+   * Lists all the releases for a specified namespace (uses current namespace context if namespace not specified).
+   *
+   * @return the {@link ListCommand} callable command.
+   */
+  public static ListCommand list() {
+    return new ListCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
    * This command packages a chart into a versioned chart archive file.
    * If a path is given, this will look at that path for a chart (which must contain a Chart.yaml file) and then package that directory.
    *

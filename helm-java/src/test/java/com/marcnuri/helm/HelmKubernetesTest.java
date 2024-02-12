@@ -1,6 +1,7 @@
 package com.marcnuri.helm;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -16,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,12 +56,12 @@ class HelmKubernetesTest {
 
       @Test
       void withName() {
-        final ReleaseResult result = helm.install()
+        final Release result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("test")
           .call();
         assertThat(result)
-          .extracting(ReleaseResult::getOutput).asString()
+          .extracting(Release::getOutput).asString()
           .contains(
             "NAME: test\n",
             "LAST DEPLOYED: ",
@@ -69,13 +72,13 @@ class HelmKubernetesTest {
 
       @Test
       void withDebug() {
-        final ReleaseResult result = helm.install()
+        final Release result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("with-debug")
           .debug()
           .call();
         assertThat(result)
-          .extracting(ReleaseResult::getOutput).asString()
+          .extracting(Release::getOutput).asString()
           .contains(
             "NAME: with-debug\n",
             "---\n",
@@ -85,14 +88,14 @@ class HelmKubernetesTest {
 
       @Test
       void withWait() {
-        final ReleaseResult result = helm.install()
+        final Release result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("with-wait")
           .waitReady()
           .debug()
           .call();
         assertThat(result)
-          .extracting(ReleaseResult::getOutput).asString()
+          .extracting(Release::getOutput).asString()
           .contains(
             "beginning wait for 3 resources with timeout of 5m0s"
           );
@@ -100,14 +103,14 @@ class HelmKubernetesTest {
 
       @Test
       void withNamespaceAndCreateNamespace() {
-        final ReleaseResult result = helm.install()
+        final Release result = helm.install()
           .withKubeConfig(kubeConfig)
           .withName("created-namespace")
           .withNamespace("to-be-created")
           .createNamespace()
           .debug().call();
         assertThat(result)
-          .extracting(ReleaseResult::getOutput).asString()
+          .extracting(Release::getOutput).asString()
           .contains(
             "NAME: created-namespace\n",
             "---\n",
@@ -136,6 +139,62 @@ class HelmKubernetesTest {
   }
 
   @Nested
+  class HelmList {
+
+    @BeforeEach
+    void setUp() {
+      helm.install().withKubeConfig(kubeConfig).withName("list-default").call();
+      helm.install().withKubeConfig(kubeConfig)
+        .withName("list-namespace").withNamespace("list-namespace").createNamespace().call();
+    }
+
+    @AfterEach()
+    void tearDown() {
+      Helm.uninstall("list-default").withKubeConfig(kubeConfig).call();
+      Helm.uninstall("list-namespace").withKubeConfig(kubeConfig).withNamespace("list-namespace").call();
+    }
+
+    @Test
+    void listsCurrentNamespace() {
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfig).call();
+      assertThat(result)
+        .filteredOn(r -> r.getName().equals("list-default"))
+        .singleElement()
+        .returns("list-default", Release::getName)
+        .returns(null, Release::getNamespace)
+        .returns("deployed", Release::getStatus)
+        .returns("1", Release::getRevision)
+        .returns("test-0.1.0", Release::getChart)
+        .returns("1.16.0", Release::getAppVersion)
+        .returns("", Release::getOutput)
+        .extracting(Release::getLastDeployed)
+        .matches(d -> d.toLocalDate().equals(LocalDate.now()));
+    }
+
+    @Test
+    void listsSpecificNamespace() {
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfig)
+        .withNamespace("list-namespace")
+        .call();
+      assertThat(result)
+        .singleElement()
+        .returns("list-namespace", Release::getName)
+        .returns("list-namespace", Release::getNamespace);
+    }
+
+    @Test
+    void listsAllNamespaces() {
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfig)
+        .allNamespaces()
+        .call();
+      assertThat(result)
+        .filteredOn(r -> r.getName().startsWith("list-"))
+        .extracting(Release::getName)
+        .containsExactlyInAnyOrder("list-default", "list-namespace");
+    }
+  }
+
+  @Nested
   class HelmTest {
 
     @Nested
@@ -148,12 +207,12 @@ class HelmKubernetesTest {
           .withName("helm-test")
           .waitReady()
           .call();
-        final ReleaseResult result = Helm.test("helm-test")
+        final Release result = Helm.test("helm-test")
           .withKubeConfig(kubeConfig)
           .call();
         assertThat(result)
           .hasFieldOrPropertyWithValue("name", "helm-test")
-          .extracting(ReleaseResult::getOutput).asString()
+          .extracting(Release::getOutput).asString()
           .contains(
             "NAME: helm-test\n",
             "LAST DEPLOYED: ",

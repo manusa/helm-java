@@ -221,7 +221,11 @@ func TestList(t *testing.T) {
 		t.Errorf("Expected list to succeed, got %s", err)
 		return
 	}
-	if !strings.Contains(out, "chart=test-list-0.1.0&name=test-list") {
+	if !strings.Contains(out, "name=test-list") {
+		t.Errorf("Expected list to include test-list, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "chart=test-list-0.1.0") {
 		t.Errorf("Expected list to include test-list, got %s", out)
 		return
 	}
