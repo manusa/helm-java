@@ -8,6 +8,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/strvals"
 	"net/url"
 	"slices"
@@ -91,7 +92,7 @@ func Install(options *InstallOptions) (string, error) {
 	client.CaFile = options.CaFile
 	client.InsecureSkipTLSverify = options.InsecureSkipTLSverify
 	client.PlainHTTP = options.PlainHttp
-	chartRequested, err := loader.Load(chartReference)
+	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +104,7 @@ func Install(options *InstallOptions) (string, error) {
 		DependencyUpdate: options.DependencyUpdate,
 		Keyring:          options.Keyring,
 		Debug:            options.Debug,
-	}, chartRequested, chartReference)
+	}, chartRequested, chartPath)
 	if err != nil {
 		return "", err
 	}
@@ -182,7 +183,16 @@ type updateDependenciesOptions struct {
 	Debug            bool
 }
 
-func updateDependencies(options *updateDependenciesOptions, chart *chart.Chart, chartReference string) (*chart.Chart, string, error) {
+func loadChart(chartPathOptions action.ChartPathOptions, chartReference string) (*chart.Chart, string, error) {
+	chartPath, err := chartPathOptions.LocateChart(chartReference, cli.New())
+	if err != nil {
+		return nil, "", err
+	}
+	chartRequested, err := loader.Load(chartPath)
+	return chartRequested, chartPath, err
+}
+
+func updateDependencies(options *updateDependenciesOptions, chart *chart.Chart, chartPath string) (*chart.Chart, string, error) {
 	dependencies := chart.Metadata.Dependencies
 	if dependencies == nil {
 		return chart, "", nil
@@ -195,7 +205,7 @@ func updateDependencies(options *updateDependenciesOptions, chart *chart.Chart, 
 	invalidDependencies = errors.Wrap(invalidDependencies, "An error occurred while checking for chart dependencies. You may need to run `helm dependency build` to fetch missing dependencies")
 	if options.DependencyUpdate {
 		updateOutput, updateError := DependencyUpdate(&DependencyOptions{
-			Path:        chartReference,
+			Path:        chartPath,
 			Keyring:     options.Keyring,
 			SkipRefresh: false,
 			Debug:       options.Debug,
@@ -203,7 +213,7 @@ func updateDependencies(options *updateDependenciesOptions, chart *chart.Chart, 
 		if updateError != nil {
 			return nil, updateOutput, errors.Wrap(updateError, "An error occurred while updating chart dependencies")
 		}
-		reloadedChart, reloadError := loader.Load(chartReference)
+		reloadedChart, reloadError := loader.Load(chartPath)
 		if reloadError != nil {
 			return nil, updateOutput, errors.Wrap(reloadError, "An error occurred while reloading chart dependencies")
 		}

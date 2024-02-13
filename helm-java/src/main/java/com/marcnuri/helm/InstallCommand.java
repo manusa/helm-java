@@ -3,9 +3,6 @@ package com.marcnuri.helm;
 import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.InstallOptions;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -14,10 +11,6 @@ import java.util.Map;
 import static com.marcnuri.helm.Release.parseSingle;
 
 public class InstallCommand extends HelmCommand<Release> {
-
-  public enum DryRun {
-    NONE, CLIENT, SERVER
-  }
 
   private String name;
   private boolean generateName;
@@ -67,7 +60,7 @@ public class InstallCommand extends HelmCommand<Release> {
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
       toInt(wait),
-      encodeValues(),
+      urlEncode(values),
       toString(kubeConfig),
       toString(certFile),
       toString(keyFile),
@@ -81,7 +74,7 @@ public class InstallCommand extends HelmCommand<Release> {
   }
 
   /**
-   * Name for the release
+   * Name for the release.
    *
    * @param name for the release.
    * @return this {@link InstallCommand} instance.
@@ -321,20 +314,4 @@ public class InstallCommand extends HelmCommand<Release> {
     return this;
   }
 
-  private String encodeValues() {
-    final StringBuilder sb = new StringBuilder();
-    for (Map.Entry<String, String> entry : values.entrySet()) {
-      if (sb.length() > 0) {
-        sb.append("&");
-      }
-      try {
-        sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()))
-          .append("=")
-          .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
-      } catch (UnsupportedEncodingException e) {
-        throw new IllegalArgumentException("Invalid chart value: " + entry.getKey() + "=" + entry.getValue(), e);
-      }
-    }
-    return sb.toString();
-  }
 }

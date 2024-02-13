@@ -149,6 +149,24 @@ func TestInstallDry(t *testing.T) {
 	}
 }
 
+func TestInstallDryUrl(t *testing.T) {
+	out, err := helm.Install(&helm.InstallOptions{
+		Chart:        "https://github.com/kubernetes/ingress-nginx/releases/download/helm-chart-4.9.1/ingress-nginx-4.9.1.tgz",
+		Name:         "test",
+		DryRun:       true,
+		DryRunOption: "client",
+		ClientOnly:   true,
+	})
+	if err != nil {
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "CHART: ingress-nginx-4.9.1") {
+		t.Errorf("Expected install to succeed, got %s", out)
+		return
+	}
+}
+
 func TestInstallValues(t *testing.T) {
 	create, _ := helm.Create(&helm.CreateOptions{
 		Name: "test",

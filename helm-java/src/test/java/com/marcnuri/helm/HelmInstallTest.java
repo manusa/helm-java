@@ -111,7 +111,7 @@ class HelmInstallTest {
         ("\ndependencies:\n" +
           "  - name: the-dependency\n" +
           "    version: 0.1.0\n" +
-          "    repository: " + tempDir.resolve("the-dependency").toUri() +"\n").getBytes(StandardCharsets.UTF_8),
+          "    repository: " + tempDir.resolve("the-dependency").toUri() + "\n").getBytes(StandardCharsets.UTF_8),
         StandardOpenOption.APPEND);
       final Release result = helm.install()
         .clientOnly()
@@ -137,7 +137,7 @@ class HelmInstallTest {
         .clientOnly()
         .withName("test")
         .dryRun()
-        .withDryRunOption(InstallCommand.DryRun.CLIENT)
+        .withDryRunOption(DryRun.CLIENT)
         .call();
       assertThat(result)
         .hasFieldOrPropertyWithValue("name", "test")
@@ -173,12 +173,12 @@ class HelmInstallTest {
 
     @Test
     void withMissingChart() {
-      final InstallCommand install = Helm.install(null).clientOnly().withName("test");
+      final InstallCommand install = Helm.install("/tmp/nothing").clientOnly().withName("test");
       assertThatThrownBy(install::call)
         .message()
         .containsAnyOf(
-          "no such file or directory",
-          "The system cannot find the path specified"
+          "path \"/tmp/nothing\" not found",
+          "repo  not found"
         );
     }
 
@@ -193,9 +193,9 @@ class HelmInstallTest {
     void withDependencyUpdateAndMissing() throws IOException {
       Files.write(tempDir.resolve("test").resolve("Chart.yaml"),
         ("\ndependencies:\n" +
-        "  - name: dependency\n" +
-        "    version: 0.1.0\n" +
-        "    repository: file://i-dont-exist\n").getBytes(StandardCharsets.UTF_8),
+          "  - name: dependency\n" +
+          "    version: 0.1.0\n" +
+          "    repository: file://i-dont-exist\n").getBytes(StandardCharsets.UTF_8),
         StandardOpenOption.APPEND);
       final InstallCommand install = helm.install().clientOnly().withName("dependency-missing").dependencyUpdate();
       assertThatThrownBy(install::call)
