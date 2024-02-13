@@ -108,10 +108,10 @@ Installs a chart archive.
 
 ``` java
 // Instantiate the command with chart reference
-InstallCommand = Helm.install("chart/reference");
+InstallCommand installCommand = Helm.install("chart/reference");
 // Instatiate the command with chart archive
-InstallCommand = new Helm(Paths.get("path", "to", "chart")).install;
-ReleaseResult result = installCommand
+InstallCommand installCommand = new Helm(Paths.get("path", "to", "chart")).install();
+Release result = installCommand
   // Name of the release to install
   .withName("release-name")
   // Optionally generate a release name (and omit the name parameter)
@@ -445,7 +445,7 @@ Equivalent of [`helm test`](https://helm.sh/docs/helm/helm_test/).
 This command runs the tests for a release.
 
 ``` java
-ReleaseResult result = Helm.test("chart/reference")
+Release result = Helm.test("chart/reference")
   // Optionally specify the time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300)
   .withTimeout(int timeout)
   // Optionally specify the Kubernetes namespace to uninstall the release from
@@ -479,6 +479,76 @@ String result = Helm.uninstall("chart/reference")
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally enable verbose output
+  .debug()
+  .call();
+```
+
+### Upgrade
+
+Equivalent of [`helm upgrade`](https://helm.sh/docs/helm/helm_upgrade/).
+
+Upgrades a release to a new version of a chart.
+
+``` java
+// Instantiate the command with chart reference
+UpgradeCommand upgradeCommand = Helm.upgrade("chart/reference");
+// Instatiate the command with chart archive
+UpgradeCommand upgradeCommand = new Helm(Paths.get("path", "to", "chart")).upgrade();
+Release result = upgradeCommand
+  // Name of the release to upgrade
+  .withName("release-name")
+  // Optionally specify the Kubernetes namespace to upgrade the release
+  .withNamespace("namespace")
+  // Optionally run an installation if a release by this name doesn't already exist
+  .install()
+  // Optionally force resource updates through a replacement strategy
+  .force()
+  // Optionally reset the values to the ones built into the chart when upgrading
+  .resetValues()
+  // Optionally reuse the last release's values and merge in any overrides from the current values when upgrading
+  // Ignored if used in combination with resetValues()
+  .reuseValues()
+  // Optionally reset the values to the ones built into the chart,
+  // apply the last release's values and merge in any overrides from the current values when upgrading
+  // Ignored if used in combination with resetValues() or reuseValues()
+  .resetThenReuseValues()
+  // Optionally, if set, upgrade process rolls back changes made in case of failed upgrade
+  .atomic()
+  // Optionally allow deletion of new resources created in this upgrade when upgrade fails
+  .cleanupOnFail()
+  // Optionally create the release namespace if not present (if install() is set)
+  .createNamespace()
+  // Optionally specify a custom description
+  .withDescription("the-description")
+  // Optionally enable the use of development versions too
+  .devel()
+  // Optionally update dependencies if they are missing before installing the chart
+  .dependencyUpdate()
+  // Optionally enable dry run mode to simulate an install
+  .dryRun()
+  // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
+  .withDryRunOption(DryRun.CLIENT)
+  // Optionally wait until all Pods are in a ready state, PVCs are bound, Deployments have
+  // minimum (Desired minus maxUnavailable) Pods in ready state and Services have an IP
+  // address (and Ingress if a LoadBalancer) before marking the release as successful. 
+  .waitReady()
+  // Optionally set typed values for the chart (can be repeated)
+  .set("key", "value")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally verify certificates of HTTPS-enabled servers using this CA bundle
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally allow insecure plain HTTP connections for the chart download
+  .plainHttp()
+  // Optionally specify a keyring (used for verification)
+  .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally enable verbose output
   .debug()
   .call();

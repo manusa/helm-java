@@ -363,4 +363,49 @@ class HelmKubernetesTest {
       }
     }
   }
+
+  @Nested
+  class Upgrade {
+
+    @Nested
+    class Valid {
+
+      @Test
+      void withInstall() {
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .install()
+          .withName("upgrade-with-install")
+          .call();
+        assertThat(result)
+          .returns("1", Release::getRevision)
+          .returns("deployed", Release::getStatus);
+      }
+
+      @Test
+      void withPriorInstall() {
+        helm.install().withName("upgrade-prior-install").withKubeConfig(kubeConfig).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("upgrade-prior-install")
+          .call();
+        assertThat(result)
+          .returns("2", Release::getRevision)
+          .returns("deployed", Release::getStatus);
+      }
+    }
+
+    @Nested
+    class Invalid {
+      @Test
+      void missingRelease() {
+        final UpgradeCommand upgrade = helm.upgrade()
+          .withName("upgrade-missing-release")
+          .withKubeConfig(kubeConfig);
+        assertThatThrownBy(upgrade::call)
+          .message()
+          .isEqualTo("\"upgrade-missing-release\" has no deployed releases");
+      }
+    }
+  }
 }

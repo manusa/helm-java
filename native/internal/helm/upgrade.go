@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"time"
 )
@@ -126,7 +125,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	client.Keyring = options.Keyring
 
 	chartReference := options.Chart
-	chartRequested, err := loader.Load(chartReference)
+	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +134,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 		DependencyUpdate: options.DependencyUpdate,
 		Keyring:          options.Keyring,
 		Debug:            options.Debug,
-	}, chartRequested, chartReference)
+	}, chartRequested, chartPath)
 	if err != nil {
 		return "", err
 	}

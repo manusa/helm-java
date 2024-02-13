@@ -143,6 +143,25 @@ public class Helm {
   }
 
   /**
+   * This commands upgrades a release to a new version of a chart.
+   *
+   * @param chart the chart to upgrade.
+   * @return the {@link UpgradeCommand} callable command.
+   */
+  public static UpgradeCommand upgrade(String chart) {
+    return new UpgradeCommand(HelmLibHolder.INSTANCE).withChart(chart);
+  }
+
+  /**
+   * This commands upgrades a release to a new version of the current chart.
+   *
+   * @return the {@link UpgradeCommand} callable command.
+   */
+  public UpgradeCommand upgrade() {
+    return new UpgradeCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
    * This command returns the underlying Helm library version
    *
    * @return the {@link VersionCommand} callable command.

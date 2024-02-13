@@ -46,6 +46,8 @@ public interface HelmLib extends Library {
 
   Result Uninstall(UninstallOptions options);
 
+  Result Upgrade(UpgradeOptions options);
+
   Result Version();
 
   void Free(Result result);

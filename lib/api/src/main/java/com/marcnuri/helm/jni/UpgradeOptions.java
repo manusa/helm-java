@@ -4,10 +4,15 @@ import com.sun.jna.Structure;
 
 @Structure.FieldOrder({
   "name",
-  "generateName",
-  "nameTemplate",
   "chart",
   "namespace",
+  "install",
+  "force",
+  "resetValues",
+  "reuseValues",
+  "resetThenReuseValues",
+  "atomic",
+  "cleanupOnFail",
   "createNamespace",
   "description",
   "devel",
@@ -26,13 +31,17 @@ import com.sun.jna.Structure;
   "debug",
   "clientOnly"
 })
-public class InstallOptions extends Structure {
-
+public class UpgradeOptions extends Structure {
   public String name;
-  public int generateName;
-  public String nameTemplate;
   public String chart;
   public String namespace;
+  public int install;
+  public int force;
+  public int resetValues;
+  public int reuseValues;
+  public int resetThenReuseValues;
+  public int atomic;
+  public int cleanupOnFail;
   public int createNamespace;
   public String description;
   public int devel;
@@ -51,12 +60,17 @@ public class InstallOptions extends Structure {
   public int debug;
   public int clientOnly;
 
-  public InstallOptions(
+  public UpgradeOptions(
     String name,
-    int  generateName,
-    String nameTemplate,
     String chart,
     String namespace,
+    int install,
+    int force,
+    int resetValues,
+    int reuseValues,
+    int resetThenReuseValues,
+    int atomic,
+    int cleanupOnFail,
     int createNamespace,
     String description,
     int devel,
@@ -76,10 +90,15 @@ public class InstallOptions extends Structure {
     int clientOnly
   ) {
     this.name = name;
-    this.generateName = generateName;
-    this.nameTemplate = nameTemplate;
     this.chart = chart;
     this.namespace = namespace;
+    this.install = install;
+    this.force = force;
+    this.resetValues = resetValues;
+    this.reuseValues = reuseValues;
+    this.resetThenReuseValues = resetThenReuseValues;
+    this.atomic = atomic;
+    this.cleanupOnFail = cleanupOnFail;
     this.createNamespace = createNamespace;
     this.description = description;
     this.devel = devel;

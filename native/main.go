@@ -42,7 +42,7 @@ struct InstallOptions {
 	char* certFile;
 	char* keyFile;
 	char* caFile;
-	int   insecureSkipTLSverify;
+	int   insecureSkipTlsVerify;
 	int   plainHttp;
 	char* keyring;
 	int   debug;
@@ -167,7 +167,7 @@ struct UpgradeOptions {
 	char* certFile;
 	char* keyFile;
 	char* caFile;
-	int   insecureSkipTLSverify;
+	int   insecureSkipTlsVerify;
 	int   plainHttp;
 	char* keyring;
 	int   debug;
@@ -285,7 +285,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			CertFile:              C.GoString(options.certFile),
 			KeyFile:               C.GoString(options.keyFile),
 			CaFile:                C.GoString(options.caFile),
-			InsecureSkipTLSverify: options.insecureSkipTLSverify == 1,
+			InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
 			PlainHttp:             options.plainHttp == 1,
 			Keyring:               C.GoString(options.keyring),
 			Debug:                 options.debug == 1,
@@ -543,7 +543,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			CertFile:              C.GoString(options.certFile),
 			KeyFile:               C.GoString(options.keyFile),
 			CaFile:                C.GoString(options.caFile),
-			InsecureSkipTLSverify: options.insecureSkipTLSverify == 1,
+			InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
 			PlainHttp:             options.plainHttp == 1,
 			Keyring:               C.GoString(options.keyring),
 			Debug:                 options.debug == 1,

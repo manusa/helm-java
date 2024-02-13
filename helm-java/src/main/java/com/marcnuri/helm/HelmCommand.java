@@ -6,6 +6,7 @@ import com.marcnuri.helm.jni.Result;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -34,6 +35,23 @@ public abstract class HelmCommand<T> implements Callable<T> {
     return result;
   }
 
+  static String urlEncode(Map<String, String> values) {
+    final StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, String> entry : values.entrySet()) {
+      if (sb.length() > 0) {
+        sb.append("&");
+      }
+      try {
+        sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()))
+          .append("=")
+          .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+      } catch (UnsupportedEncodingException e) {
+        throw new IllegalArgumentException("Invalid entry: " + entry.getKey() + "=" + entry.getValue(), e);
+      }
+    }
+    return sb.toString();
+  }
+
   static List<Map<String, String>> parseUrlEncodedLines(String lines) {
     if (lines == null || lines.isEmpty()) {
       return Collections.emptyList();
@@ -59,6 +77,7 @@ public abstract class HelmCommand<T> implements Callable<T> {
     }
     return entries;
   }
+
   static String toString(Path path) {
     return path == null ? null : path.normalize().toFile().getAbsolutePath();
   }

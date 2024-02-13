@@ -1,0 +1,382 @@
+package com.marcnuri.helm;
+
+import com.marcnuri.helm.jni.HelmLib;
+import com.marcnuri.helm.jni.UpgradeOptions;
+
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static com.marcnuri.helm.Release.parseSingle;
+
+public class UpgradeCommand extends HelmCommand<Release> {
+
+  private String name;
+  private String chart;
+  private String namespace;
+  private boolean install;
+  private boolean force;
+  private boolean resetValues;
+  private boolean reuseValues;
+  private boolean resetThenReuseValues;
+  private boolean atomic;
+  private boolean cleanupOnFail;
+  private boolean createNamespace;
+  private String description;
+  private boolean devel;
+  private boolean dependencyUpdate;
+  private boolean dryRun;
+  private DryRun dryRunOption;
+  private boolean wait;
+  private final Map<String, String> values;
+  private Path kubeConfig;
+  private Path certFile;
+  private Path keyFile;
+  private Path caFile;
+  private boolean insecureSkipTlsVerify;
+  private boolean plainHttp;
+  private Path keyring;
+  private boolean debug;
+  private boolean clientOnly;
+
+
+  public UpgradeCommand(HelmLib helmLib) {
+    this(helmLib, null);
+  }
+
+  public UpgradeCommand(HelmLib helmLib, Path chart) {
+    super(helmLib);
+    this.chart = toString(chart);
+    this.values = new LinkedHashMap<>();
+  }
+
+  @Override
+  public Release call() {
+    return parseSingle(run(hl -> hl.Upgrade(new UpgradeOptions(
+      name,
+      chart,
+      namespace,
+      toInt(install),
+      toInt(force),
+      toInt(resetValues),
+      toInt(reuseValues),
+      toInt(resetThenReuseValues),
+      toInt(atomic),
+      toInt(cleanupOnFail),
+      toInt(createNamespace),
+      description,
+      toInt(devel),
+      toInt(dependencyUpdate),
+      toInt(dryRun),
+      dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
+      toInt(wait),
+      urlEncode(values),
+      toString(kubeConfig),
+      toString(certFile),
+      toString(keyFile),
+      toString(caFile),
+      toInt(insecureSkipTlsVerify),
+      toInt(plainHttp),
+      toString(keyring),
+      toInt(debug),
+      toInt(clientOnly)
+    ))));
+  }
+
+  /**
+   * Name for the release.
+   *
+   * @param name for the release.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Chart reference to upgrade.
+   *
+   * @param chart the reference of the chart to upgrade.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  UpgradeCommand withChart(String chart) {
+    this.chart = chart;
+    return this;
+  }
+
+  /**
+   * Kubernetes namespace scope for this request.
+   *
+   * @param namespace the Kubernetes namespace for this request.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withNamespace(String namespace) {
+    this.namespace = namespace;
+    return this;
+  }
+
+  /**
+   * If a release by this name doesn't already exist, run an installation.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand install() {
+    this.install = true;
+    return this;
+  }
+
+  /**
+   * Force resource updates through a replacement strategy.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand force() {
+    this.force = true;
+    return this;
+  }
+
+  /**
+   * When upgrading, reset the values to the ones built into the chart.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand resetValues() {
+    this.resetValues = true;
+    return this;
+  }
+
+  /**
+   * When upgrading, reuse the last release's values and merge in any overrides from the current values.
+   * <p>
+   * If {@link #resetValues()} is used, this is ignored.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand reuseValues() {
+    this.reuseValues = true;
+    return this;
+  }
+
+  /**
+   * When upgrading, reset the values to the ones built into the chart, apply the last release's values and merge in any overrides from the current values.
+   * <p>
+   * If {@link #resetValues()} or {@link #reuseValues()} is used, this is ignored.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand resetThenReuseValues() {
+    this.resetThenReuseValues = true;
+    return this;
+  }
+
+  /**
+   * If set, upgrade process rolls back changes made in case of failed upgrade.
+   * <p>
+   * The {@link #wait()} flag will be set automatically if used.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand atomic() {
+    this.atomic = true;
+    return this;
+  }
+
+  /**
+   * Allow deletion of new resources created in this upgrade when upgrade fails.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand cleanupOnFail() {
+    this.cleanupOnFail = true;
+    return this;
+  }
+
+  /**
+   * Create the release namespace if not present (if {@link #install()} is set).
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand createNamespace() {
+    this.createNamespace = true;
+    return this;
+  }
+
+  /**
+   * Add a custom description.
+   *
+   * @param description the custom description.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withDescription(String description) {
+    this.description = description;
+    return this;
+  }
+
+  /**
+   * Use development versions, too. Equivalent to version '&gt;0.0.0-0'. If --version is set, this is ignored.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand devel() {
+    this.devel = true;
+    return this;
+  }
+
+  /**
+   * Update dependencies if they are missing before installing the chart.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand dependencyUpdate() {
+    this.dependencyUpdate = true;
+    return this;
+  }
+
+  /**
+   * Simulate an installation.
+   * <p>
+   * If set with no option in dryRunOption or dryRunOption is set to 'client', it will not attempt cluster connections.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand dryRun() {
+    this.dryRun = true;
+    return this;
+  }
+
+  /**
+   * Set the dry run option/mode.
+   *
+   * @param dryRunOption the dry run option/mode.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withDryRunOption(DryRun dryRunOption) {
+    this.dryRunOption = dryRunOption;
+    return this;
+  }
+
+  /**
+   * Waits until all Pods are in a ready state, PVCs are bound, Deployments have minimum
+   * (Desired minus maxUnavailable) Pods in ready state and Services have an IP address
+   * (and Ingress if a LoadBalancer) before marking the release as successful.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand waitReady() {
+    this.wait = true;
+    return this;
+  }
+
+  /**
+   * Set values for the chart.
+   *
+   * @param key   the key.
+   * @param value the value for this key.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand set(String key, Object value) {
+    this.values.put(key, value == null ? "" : value.toString());
+    return this;
+  }
+
+  /**
+   * Set the path ./kube/config file to use.
+   *
+   * @param kubeConfig the path to kube config file.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withKubeConfig(Path kubeConfig) {
+    this.kubeConfig = kubeConfig;
+    return this;
+  }
+
+  /**
+   * Identify registry client using this SSL certificate file.
+   *
+   * @param certFile the path to the certificate file.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withCertFile(Path certFile) {
+    this.certFile = certFile;
+    return this;
+  }
+
+  /**
+   * Identify registry client using this SSL key file.
+   *
+   * @param keyFile the path to the key file.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withKeyFile(Path keyFile) {
+    this.keyFile = keyFile;
+    return this;
+  }
+
+  /**
+   * Verify certificates of HTTPS-enabled servers using this CA bundle.
+   *
+   * @param caFile the path to the CA bundle file.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withCaFile(Path caFile) {
+    this.caFile = caFile;
+    return this;
+  }
+
+  /**
+   * Skip TLS certificate checks of HTTPS-enabled servers.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand insecureSkipTlsVerify() {
+    this.insecureSkipTlsVerify = true;
+    return this;
+  }
+
+  /**
+   * Allow insecure plain HTTP connections for the chart download.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand plainHttp() {
+    this.plainHttp = true;
+    return this;
+  }
+
+  /**
+   * Location of a public keyring (default "~/.gnupg/pubring.gpg").
+   *
+   * @param keyring a {@link Path} with the keyring location.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withKeyring(Path keyring) {
+    this.keyring = keyring;
+    return this;
+  }
+
+  /**
+   * Enable verbose output.
+   * <p>
+   * The command execution output ({@link #call}) will include verbose debug messages.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand debug() {
+    this.debug = true;
+    return this;
+  }
+
+  /**
+   * Enable client only mode.
+   * <p>
+   * No connections will be made to the Kubernetes cluster. Especially intended for testing purposes.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand clientOnly() {
+    this.clientOnly = true;
+    return this;
+  }
+}
