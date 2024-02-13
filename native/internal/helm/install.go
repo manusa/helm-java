@@ -79,11 +79,7 @@ func Install(options *InstallOptions) (string, error) {
 	client.Description = options.Description
 	client.Devel = options.Devel
 	client.DryRun = options.DryRun
-	if options.DryRunOption == "" {
-		client.DryRunOption = "none"
-	} else {
-		client.DryRunOption = options.DryRunOption
-	}
+	client.DryRunOption = dryRunOption(options.DryRunOption)
 	client.Wait = options.Wait
 	// Timeout defaults to 5 minutes (used when wait is enabled)
 	if options.Timeout == 0 {
@@ -103,7 +99,11 @@ func Install(options *InstallOptions) (string, error) {
 		return "", notInstallable
 	}
 	// Dependency management
-	chartRequested, updateOutput, err := updateDependencies(options, chartRequested, chartReference)
+	chartRequested, updateOutput, err := updateDependencies(&updateDependenciesOptions{
+		DependencyUpdate: options.DependencyUpdate,
+		Keyring:          options.Keyring,
+		Debug:            options.Debug,
+	}, chartRequested, chartReference)
 	if err != nil {
 		return "", err
 	}
@@ -176,7 +176,13 @@ func validateDryRunOptionFlag(dryRunOptionFlagValue string) error {
 	return nil
 }
 
-func updateDependencies(options *InstallOptions, chart *chart.Chart, chartReference string) (*chart.Chart, string, error) {
+type updateDependenciesOptions struct {
+	DependencyUpdate bool
+	Keyring          string
+	Debug            bool
+}
+
+func updateDependencies(options *updateDependenciesOptions, chart *chart.Chart, chartReference string) (*chart.Chart, string, error) {
 	dependencies := chart.Metadata.Dependencies
 	if dependencies == nil {
 		return chart, "", nil
@@ -204,4 +210,12 @@ func updateDependencies(options *InstallOptions, chart *chart.Chart, chartRefere
 		return reloadedChart, updateOutput, nil
 	}
 	return chart, "", invalidDependencies
+}
+
+func dryRunOption(dryRunOption string) string {
+	if dryRunOption == "" {
+		return "none"
+	} else {
+		return dryRunOption
+	}
 }

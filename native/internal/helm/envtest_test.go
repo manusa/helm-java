@@ -328,3 +328,57 @@ func TestUninstallDebug(t *testing.T) {
 		return
 	}
 }
+
+func TestUpgrade(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	chart, _ := Create(&CreateOptions{
+		Name: "test-upgrade",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-upgrade",
+	})
+	out, err := Upgrade(&UpgradeOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-upgrade",
+	})
+	if err != nil {
+		t.Errorf("Expected upgrade to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test-upgrade") ||
+		!strings.Contains(out, "REVISION: 2") ||
+		!strings.Contains(out, "STATUS: deployed") {
+		t.Errorf("Expected upgrade to succeed, got %s", out)
+		return
+	}
+}
+
+func TestUpgradeInstall(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	chart, _ := Create(&CreateOptions{
+		Name: "test-upgrade",
+		Dir:  t.TempDir(),
+	})
+	out, err := Upgrade(&UpgradeOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Install:    true,
+		Chart:      chart,
+		Name:       "test-upgrade-install",
+	})
+	if err != nil {
+		t.Errorf("Expected upgrade to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test-upgrade-install") ||
+		!strings.Contains(out, "REVISION: 1") ||
+		!strings.Contains(out, "STATUS: deployed") {
+		t.Errorf("Expected upgrade to succeed, got %s", out)
+		return
+	}
+}
