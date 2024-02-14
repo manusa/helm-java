@@ -448,7 +448,7 @@ This command runs the tests for a release.
 Release result = Helm.test("chart/reference")
   // Optionally specify the time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300)
   .withTimeout(int timeout)
-  // Optionally specify the Kubernetes namespace to uninstall the release from
+  // Optionally specify the Kubernetes namespace
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
