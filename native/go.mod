@@ -12,7 +12,7 @@ require (
 	github.com/spf13/afero v1.11.0
 	golang.org/x/crypto v0.19.0
 	helm.sh/helm/v3 v3.14.1
-	k8s.io/client-go v0.29.1
+	k8s.io/client-go v0.29.2
 	sigs.k8s.io/controller-runtime v0.17.1
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20240123110158-b88ed7a3602b
 	sigs.k8s.io/yaml v1.4.0
@@ -161,9 +161,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.29.1 // indirect
+	k8s.io/api v0.29.2 // indirect
 	k8s.io/apiextensions-apiserver v0.29.0 // indirect
-	k8s.io/apimachinery v0.29.1 // indirect
+	k8s.io/apimachinery v0.29.2 // indirect
 	k8s.io/apiserver v0.29.0 // indirect
 	k8s.io/cli-runtime v0.29.0 // indirect
 	k8s.io/component-base v0.29.0 // indirect
