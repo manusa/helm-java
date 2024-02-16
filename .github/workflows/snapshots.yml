@@ -28,7 +28,7 @@ jobs:
           gpg-passphrase: SIGNINGPASSWORD
       - name: Build
         run: make build-all
-      - name: Maven Build
+      - name: Maven SNAPSHOT Release
         run: mvn -Prelease clean deploy
         env:
           OSSRHUSERNAME: ${{ secrets.OSSRHUSERNAME }}
