@@ -119,7 +119,7 @@ class RemoteJarLoader {
     final String arch = System.getProperty("os.arch");
     if (arch.equals("amd64") || arch.equals("x86_64")) {
       return "amd64";
-    } else if (arch.equals("aarch64")) {
+    } else if (arch.equals("arm64") || arch.equals("aarch64")) {
       return "arm64";
     }
     return null;

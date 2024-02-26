@@ -88,6 +88,21 @@
       </dependencies>
     </profile>
     <profile>
+      <id>darwin-aarch64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>darwin-arm64</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>linux-amd64</id>
       <activation>
         <os>
