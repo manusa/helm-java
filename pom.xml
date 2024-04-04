@@ -67,7 +67,7 @@
     <version.maven-release-plugin>3.0.1</version.maven-release-plugin>
     <!-- DON'T BUMP to 3.3.0 -->
     <!-- https://issues.apache.org/jira/browse/MSOURCES-143?page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel&focusedCommentId=17755616#comment-17755616 -->
-    <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
+    <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
     <version.sonatype-staging>1.6.13</version.sonatype-staging>
     <version.test-containers>1.19.7</version.test-containers>
