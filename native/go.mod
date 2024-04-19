@@ -1,6 +1,7 @@
 module github.com/manusa/helm-java/native
 
-go 1.21.2
+go 1.22.0
+
 toolchain go1.22.2
 
 require (
