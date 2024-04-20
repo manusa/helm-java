@@ -548,3 +548,33 @@ func TestRepoServerStopAll(t *testing.T) {
 		t.Errorf("Expected all servers to be stopped")
 	}
 }
+
+func TestSearchRepo(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	err := helm.RepoAdd(&helm.RepoOptions{
+		Name:                  "helm",
+		Url:                   "https://charts.helm.sh/stable",
+		InsecureSkipTlsVerify: true,
+		RepositoryConfig:      repositoryConfigFile.Name(),
+	})
+	out, err := helm.SearchRepo(&helm.SearchOptions{
+		Keyword:          "nginx",
+		RepositoryConfig: repositoryConfigFile.Name(),
+	})
+	if err != nil {
+		t.Errorf("Expected search to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "chartAppVersion=") {
+		t.Errorf("Expected search to contain 'chartAppVersion=', got %s", out)
+		return
+	}
+	if !strings.Contains(out, "&chartDescription=") {
+		t.Errorf("Expected search to contain '&chartDescription=', got %s", out)
+		return
+	}
+	if !strings.Contains(out, "&name=") {
+		t.Errorf("Expected search to contain '&name=', got %s", out)
+		return
+	}
+}

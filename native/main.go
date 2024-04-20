@@ -119,6 +119,14 @@ struct RepoServerOptions {
 	char* password;
 };
 
+struct SearchOptions {
+	char* repositoryConfig;
+	char* keyword;
+	int   regexp;
+	int   devel;
+	char* version;
+};
+
 struct ShowOptions {
 	char* path;
 	char* outputFormat;
@@ -468,6 +476,19 @@ func RepoServerStopAll() C.Result {
 	return runCommand(func() (string, error) {
 		helm.RepoServerStopAll()
 		return "", nil
+	})
+}
+
+//export SearchRepo
+func SearchRepo(options *C.struct_SearchOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.SearchRepo(&helm.SearchOptions{
+			RepositoryConfig: C.GoString(options.repositoryConfig),
+			Keyword:          C.GoString(options.keyword),
+			Regexp:           options.regexp == 1,
+			Devel:            options.devel == 1,
+			Version:          C.GoString(options.version),
+		})
 	})
 }
 
