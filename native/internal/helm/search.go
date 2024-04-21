@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type SearchOptions struct {
@@ -73,8 +74,9 @@ func SearchRepo(options *SearchOptions) (string, error) {
 			values.Set("name", searchResult.Name)
 			values.Set("score", strconv.Itoa(searchResult.Score))
 			values.Set("chartVersion", searchResult.Chart.Version)
-			values.Set("chartAppVersion", searchResult.Chart.AppVersion)
-			values.Set("chartDescription", searchResult.Chart.Description)
+			values.Set("appVersion", searchResult.Chart.AppVersion)
+			values.Set("description", searchResult.Chart.Description)
+			values.Set("keywords", strings.Join(searchResult.Chart.Metadata.Keywords, ","))
 			_, _ = fmt.Fprintln(out, values.Encode())
 		}
 	}

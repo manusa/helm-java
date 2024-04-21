@@ -181,7 +181,7 @@ Equivalent of [`helm list`](https://helm.sh/docs/helm/helm_list/).
 Lists all the releases for a specified namespace (uses current namespace context if namespace not specified).
 
 ``` java
-Helm.list()
+List<Release> releases = Helm.list()
   // Optionally specify the Kubernetes namespace to list the releases from
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
@@ -347,7 +347,7 @@ Equivalent of [`helm repo list`](https://helm.sh/docs/helm/helm_repo_list/).
 List chart repositories.
 
 ``` java
-Helm.repo().list()
+List<Repository> respositories = Helm.repo().list()
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
   .withRepositoryConfig(Paths.get("path", "to", "config"))
@@ -369,6 +369,34 @@ Helm.repo().remove()
   .withRepo("repo-1")
   // Add another repository name to the list of repos to remove
   .withRepo("repo-2")
+  .call();
+```
+
+### Search
+
+Equivalent of [`helm search`](https://helm.sh/docs/helm/helm_search/).
+
+This command provides the ability to search for Helm charts in various places including the Artifact Hub and the repositories you have added.
+
+#### Repo
+
+Equivalent of [`helm search repo`](https://helm.sh/docs/helm/helm_search_repo/).
+
+Search repositories for a keyword in charts.
+
+``` java
+List<SearchResult> results = Helm.search().repo()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Optionally set the keyword to match against the repo name, chart name, chart keywords, and description.
+  .withKeyword("keyword")
+  // Optionally use regular expressions for searching.
+  .regexp()
+  // Optionally search for development versions too (alpha, beta, and release candidate releases).
+  .devel()
+  // Optionally search using semantic versioning constraints
+  .withVersion(">=1.0.0")
   .call();
 ```
 

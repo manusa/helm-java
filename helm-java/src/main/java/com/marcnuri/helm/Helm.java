@@ -114,6 +114,16 @@ public class Helm {
   }
 
   /**
+   * This command provides the ability to search for Helm charts in various places including the Artifact Hub
+   * and the repositories you have added.
+   *
+   * @return the {@link SearchCommand} command.
+   */
+  public static SearchCommand search() {
+    return new SearchCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
    * This command shows information about a chart.
    *
    * @return the {@link ShowCommand} command.

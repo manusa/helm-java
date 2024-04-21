@@ -40,6 +40,8 @@ public interface HelmLib extends Library {
 
   Result RepoServerStopAll();
 
+  Result SearchRepo(SearchOptions options);
+
   Result Show(ShowOptions options);
 
   Result Test(TestOptions options);
