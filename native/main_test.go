@@ -565,12 +565,12 @@ func TestSearchRepo(t *testing.T) {
 		t.Errorf("Expected search to succeed, got %s", err)
 		return
 	}
-	if !strings.Contains(out, "chartAppVersion=") {
-		t.Errorf("Expected search to contain 'chartAppVersion=', got %s", out)
+	if !strings.Contains(out, "appVersion=") {
+		t.Errorf("Expected search to contain 'appVersion=', got %s", out)
 		return
 	}
-	if !strings.Contains(out, "&chartDescription=") {
-		t.Errorf("Expected search to contain '&chartDescription=', got %s", out)
+	if !strings.Contains(out, "&description=") {
+		t.Errorf("Expected search to contain '&description=', got %s", out)
 		return
 	}
 	if !strings.Contains(out, "&name=") {
