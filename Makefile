@@ -4,12 +4,13 @@ COMMON_BUILD_ARGS=-ldflags "$(LD_FLAGS)" -buildmode=c-shared
 MAVEN_OPTIONS=
 # Detect OS to be able to run build-native target and provide a name
 NATIVE_NAME=linux-amd64.so
+LICENSE_FILE=license-header.txt
 ifeq ($(OS), Windows_NT)
 	NATIVE_NAME := windows-4.0-amd64.dll
 else
 	UNAME := $(shell uname -s)
 	ifeq ($(UNAME), Darwin)
-		NATIVE_NAME := darwin-10.12-amd64.dylib
+	  NATIVE_NAME := darwin-10.12-amd64.dylib
 	endif
 endif
 
@@ -60,3 +61,13 @@ release:
 	@git add .
 	@git commit -m "[RELEASE] v$(V) released, prepare for next development iteration"
 	@git push origin main
+
+.PHONY: license
+license:
+	@license_len=$$(wc -l $(LICENSE_FILE) | cut -f1 -d ' ') &&								\
+	 files=$$(git ls-files | grep -E "\.go|\.java") &&											\
+	 for file in $$files; do																	\
+	   echo "Applying license to $$file";														\
+	   head -n $$license_len $$file | diff -q $(LICENSE_FILE) - > /dev/null ||					\
+	     ( ( cat $(LICENSE_FILE); echo; cat $$file ) > $$file.temp; mv $$file.temp $$file )		\
+	 done
