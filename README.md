@@ -641,3 +641,11 @@ To release a new version manually:
    git commit -m "[RELEASE] v0.0.6 released, prepare for next development iteration"
    git push origin master
    ```
+
+### License Headers
+
+Whenever a new file is created, the license header must be added. To add the license header to all files:
+
+```shell
+make license
+```
