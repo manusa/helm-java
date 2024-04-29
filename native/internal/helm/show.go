@@ -19,12 +19,19 @@ package helm
 import (
 	"fmt"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli"
 	"strings"
 )
 
 type ShowOptions struct {
 	Path         string
 	OutputFormat string
+	CertFile     string
+	KeyFile      string
+	CaFile       string
+	Insecure     bool
+	PlainHttp    bool
+	Debug        bool
 }
 
 func Show(options *ShowOptions) (string, error) {
@@ -44,6 +51,22 @@ func Show(options *ShowOptions) (string, error) {
 	if format == "" {
 		return "", fmt.Errorf("invalid output format: %s", options.OutputFormat)
 	}
+	registryClient, _, err := newRegistryClient(
+		options.CertFile,
+		options.KeyFile,
+		options.CaFile,
+		options.Insecure,
+		options.PlainHttp,
+		options.Debug,
+	)
+	if err != nil {
+		return "", err
+	}
 	client := action.NewShowWithConfig(format, NewCfg(&CfgOptions{}))
-	return client.Run(options.Path)
+	client.SetRegistryClient(registryClient)
+	cp, err := client.ChartPathOptions.LocateChart(options.Path, cli.New())
+	if err != nil {
+		return "", err
+	}
+	return client.Run(cp)
 }

@@ -413,8 +413,23 @@ Equivalent of [`helm show all`](https://helm.sh/docs/helm/helm_show_all/).
 Show **all** information about a chart.
 
 ``` java
-String result = new Helm(Paths.get("path", "to", "chart")).show()
-  .all()
+// Instantiate the command with chart reference
+ShowCommand showCommand = Helm.show("chart/reference");
+// Instatiate the command with chart archive
+ShowCommand showCommand = new Helm(Paths.get("path", "to", "chart")).show();
+String result = showCommand.all()
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 
@@ -427,6 +442,18 @@ Show the chart's definition.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .chart()
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 
@@ -439,6 +466,18 @@ Show the chart's CRDs.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .crds()
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 
@@ -451,6 +490,18 @@ Show the chart's README.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .readme()
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 
@@ -463,6 +514,18 @@ Show the chart's values.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .values()
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally specify an SSL CA bundle file to verify the HTTPS-enabled registry server certificates
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally use insecure HTTP connections for the chart upload
+  .plainHttp()
+  // Optionally enable debug mode to print out verbose information
+  .debug()
   .call();
 ```
 
