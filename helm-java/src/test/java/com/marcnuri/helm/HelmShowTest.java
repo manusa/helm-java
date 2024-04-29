@@ -16,15 +16,19 @@
 
 package com.marcnuri.helm;
 
+import com.marcnuri.helm.jni.RepoServerOptions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -117,5 +121,41 @@ class HelmShowTest {
         "kind: CustomResourceDefinition\n",
         "# Readme"
       );
+  }
+
+  @Nested
+  class RemoteOciChart {
+
+    private String remoteServer;
+    private String password;
+
+    @BeforeEach
+    void setUp() {
+      password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
+      remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
+        new RepoServerOptions(null, null, password)).out;
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+      helm.packageIt().withDestination(tempDir).call();
+      final Path packagedChart = tempDir.resolve("test-0.1.0.tgz");
+      Helm.push()
+        .withChart(packagedChart)
+        .withRemote(URI.create("oci://" + remoteServer))
+        .call();
+    }
+
+    @Test
+    void all() {
+      final String result = Helm.show("oci://" + remoteServer + "/test")
+        .all()
+        .plainHttp()
+        .call();
+      assertThat(result).contains(
+        "---",
+        "name: test\n",
+        "# Default values for test.",
+        "kind: CustomResourceDefinition\n",
+        "# Readme"
+      );
+    }
   }
 }

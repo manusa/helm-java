@@ -146,6 +146,12 @@ struct SearchOptions {
 struct ShowOptions {
 	char* path;
 	char* outputFormat;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecure;
+	int   plainHttp;
+	int   debug;
 };
 
 struct TestOptions {
@@ -514,6 +520,12 @@ func Show(options *C.struct_ShowOptions) C.Result {
 		return helm.Show(&helm.ShowOptions{
 			Path:         C.GoString(options.path),
 			OutputFormat: C.GoString(options.outputFormat),
+			CertFile:     C.GoString(options.certFile),
+			KeyFile:      C.GoString(options.keyFile),
+			CaFile:       C.GoString(options.caFile),
+			Insecure:     options.insecure == 1,
+			PlainHttp:    options.plainHttp == 1,
+			Debug:        options.debug == 1,
 		})
 	})
 }

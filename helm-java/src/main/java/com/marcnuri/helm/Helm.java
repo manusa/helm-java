@@ -142,6 +142,16 @@ public class Helm {
   /**
    * This command shows information about a chart.
    *
+   * @param chart the chart to show.
+   * @return the {@link ShowCommand} command.
+   */
+  public static ShowCommand show(String chart) {
+    return new ShowCommand(HelmLibHolder.INSTANCE, chart);
+  }
+
+  /**
+   * This command shows information about a chart.
+   *
    * @return the {@link ShowCommand} command.
    */
   public ShowCommand show() {
