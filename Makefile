@@ -2,17 +2,26 @@ CGO_ENABLED=1
 LD_FLAGS=-s -w
 COMMON_BUILD_ARGS=-ldflags "$(LD_FLAGS)" -buildmode=c-shared
 MAVEN_OPTIONS=
-# Detect OS to be able to run build-native target and provide a name
-NATIVE_NAME=linux-amd64.so
 LICENSE_FILE=license-header.txt
+# Detect OS to be able to run build-native target and provide a name
+OS_NAME=linux
+ARCH=amd64
+EXTENSION=so
 ifeq ($(OS), Windows_NT)
-	NATIVE_NAME := windows-4.0-amd64.dll
+	OS_NAME := windows-4.0
+	EXTENSION := dll
 else
-	UNAME := $(shell uname -s)
-	ifeq ($(UNAME), Darwin)
-	  NATIVE_NAME := darwin-10.12-amd64.dylib
+	UNAME_MACHINE := $(shell uname -m)
+	ifneq ($(UNAME_MACHINE), x86_64)
+		ARCH := arm64
+	endif
+	UNAME_KERNEL := $(shell uname -s)
+	ifeq ($(UNAME_KERNEL), Darwin)
+		OS_NAME := darwin-10.12
+		EXTENSION := dylib
 	endif
 endif
+NATIVE_NAME := $(OS_NAME)-$(ARCH).$(EXTENSION)
 
 .PHONY: clean
 clean:
