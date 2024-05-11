@@ -164,3 +164,11 @@ func appendToOutOrErr(debugInfo *bytes.Buffer, out string, err error) (string, e
 	}
 	return out, err
 }
+
+func repositoryConfig(options *RepoOptions) string {
+	if len(options.RepositoryConfig) == 0 {
+		return cli.New().RepositoryConfig
+	} else {
+		return options.RepositoryConfig
+	}
+}

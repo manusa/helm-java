@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofrs/flock"
@@ -159,10 +160,53 @@ func RepoRemove(options *RepoOptions) error {
 	return nil
 }
 
-func repositoryConfig(options *RepoOptions) string {
-	if len(options.RepositoryConfig) == 0 {
-		return cli.New().RepositoryConfig
-	} else {
-		return options.RepositoryConfig
+func RepoUpdate(options *RepoOptions) error {
+	repoFile := repositoryConfig(options)
+	r, err := repo.LoadFile(repoFile)
+	if err != nil {
+		return err
 	}
+
+	var repos []*repo.ChartRepository
+	updateAllRepos := len(options.Names) == 0
+
+	// Grab list of repositories to update
+	for _, repositoryFile := range r.Repositories {
+		var addRepo bool
+		if updateAllRepos {
+			addRepo = true
+		} else {
+			for _, name := range strings.Split(options.Names, "\n") {
+				if name == repositoryFile.Name {
+					addRepo = true
+					break
+				}
+			}
+		}
+		if addRepo {
+			repo, err := repo.NewChartRepository(repositoryFile, getter.All(cli.New()))
+			if err != nil {
+				return err
+			}
+			repos = append(repos, repo)
+		}
+	}
+
+	// Update the repositories
+	var wg sync.WaitGroup
+	var repoFailList []string
+	for _, re := range repos {
+		wg.Add(1)
+		go func(re *repo.ChartRepository) {
+			defer wg.Done()
+			if _, err := re.DownloadIndexFile(); err != nil {
+				repoFailList = append(repoFailList, re.Config.URL)
+			}
+		}(re)
+	}
+	wg.Wait()
+	if len(repoFailList) > 0 {
+		return fmt.Errorf("failed to update the following repositories: %s", repoFailList)
+	}
+	return nil
 }
