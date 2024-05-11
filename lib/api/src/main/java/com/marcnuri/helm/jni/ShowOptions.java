@@ -18,10 +18,11 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
-@Structure.FieldOrder({"path", "outputFormat", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
+@Structure.FieldOrder({"path", "outputFormat", "version", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
 public class ShowOptions extends Structure {
   public String path;
   public String outputFormat;
+  public String version;
   public String certFile;
   public String keyFile;
   public String caFile;
@@ -29,9 +30,10 @@ public class ShowOptions extends Structure {
   public int plainHttp;
   public int debug;
 
-  public ShowOptions(String path, String outputFormat, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify, int plainHttp, int debug) {
+  public ShowOptions(String path, String outputFormat, String version, String certFile, String keyFile, String caFile, int insecureSkipTlsVerify, int plainHttp, int debug) {
     this.path = path;
     this.outputFormat = outputFormat;
+    this.version = version;
     this.certFile = certFile;
     this.keyFile = keyFile;
     this.caFile = caFile;

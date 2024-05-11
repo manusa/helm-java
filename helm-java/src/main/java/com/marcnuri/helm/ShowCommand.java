@@ -80,6 +80,7 @@ public class ShowCommand {
 
     private final String chart;
     private final String outputFormat;
+    private String version;
     private Path certFile;
     private Path keyFile;
     private Path caFile;
@@ -101,6 +102,7 @@ public class ShowCommand {
       return run(hl -> hl.Show(new ShowOptions(
         chart,
         outputFormat,
+        version,
         toString(certFile),
         toString(keyFile),
         toString(caFile),
@@ -108,6 +110,21 @@ public class ShowCommand {
         toInt(plainHttp),
         toInt(debug)
       ))).out;
+    }
+
+    /**
+     * Specify a version constraint for the chart version to use.
+     * <p>
+     * This constraint can be a specific tag (e.g. 1.1.1) or it may reference a valid range (e.g. ^2.0.0).
+     * <p>
+     * If this is not specified, the latest version is used.
+     *
+     * @param version the version to search for.
+     * @return this {@link ShowSubcommand} instance.
+     */
+    public ShowSubcommand withVersion(String version) {
+      this.version = version;
+      return this;
     }
 
     /**

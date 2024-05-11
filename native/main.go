@@ -146,6 +146,7 @@ struct SearchOptions {
 struct ShowOptions {
 	char* path;
 	char* outputFormat;
+	char* version;
 	char* certFile;
 	char* keyFile;
 	char* caFile;
@@ -520,6 +521,7 @@ func Show(options *C.struct_ShowOptions) C.Result {
 		return helm.Show(&helm.ShowOptions{
 			Path:         C.GoString(options.path),
 			OutputFormat: C.GoString(options.outputFormat),
+			Version:      C.GoString(options.version),
 			CertFile:     C.GoString(options.certFile),
 			KeyFile:      C.GoString(options.keyFile),
 			CaFile:       C.GoString(options.caFile),
