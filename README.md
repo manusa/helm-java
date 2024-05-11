@@ -14,7 +14,7 @@ Add the dependency to your project:
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java</artifactId>
-  <version>0.0.7</version>
+  <version>0.0.8</version>
 </dependency>
 ```
 
