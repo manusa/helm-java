@@ -31,6 +31,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 class HelmShowTest {
 
@@ -127,11 +128,10 @@ class HelmShowTest {
   class RemoteOciChart {
 
     private String remoteServer;
-    private String password;
 
     @BeforeEach
     void setUp() {
-      password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
+      final String password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
       remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
         new RepoServerOptions(null, null, password)).out;
       Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
@@ -155,6 +155,51 @@ class HelmShowTest {
         "# Default values for test.",
         "kind: CustomResourceDefinition\n",
         "# Readme"
+      );
+    }
+  }
+
+  @Nested
+  class VersionConstraint {
+
+    private String remoteServer;
+
+    @BeforeEach
+    void setUp() {
+      final String password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
+      remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
+        new RepoServerOptions(null, null, password)).out;
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+      helm.packageIt().withDestination(tempDir).call();
+      final Path packagedChart = tempDir.resolve("test-0.1.0.tgz");
+      Helm.push()
+        .withChart(packagedChart)
+        .withRemote(URI.create("oci://" + remoteServer))
+        .call();
+    }
+
+    @Test
+    void missingVersionThrowsException() {
+      final ShowCommand.ShowSubcommand showAll = Helm.show("oci://" + remoteServer + "/test")
+        .all()
+        .withVersion("^0.2.0")
+        .plainHttp();
+      assertThatIllegalStateException()
+        .isThrownBy(showAll::call)
+        .withMessageContaining("Could not locate a version matching provided version string ^0.2.0");
+    }
+
+    @Test
+    void validVersion() {
+      final String result = Helm.show("oci://" + remoteServer + "/test")
+        .all()
+        .plainHttp()
+        .withVersion("^0.1.0")
+        .call();
+      assertThat(result).contains(
+        "---",
+        "name: test\n",
+        "version: 0.1.0\n"
       );
     }
   }

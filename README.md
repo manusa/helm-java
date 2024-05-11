@@ -418,6 +418,8 @@ ShowCommand showCommand = Helm.show("chart/reference");
 // Instatiate the command with chart archive
 ShowCommand showCommand = new Helm(Paths.get("path", "to", "chart")).show();
 String result = showCommand.all()
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -442,6 +444,8 @@ Show the chart's definition.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .chart()
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -466,6 +470,8 @@ Show the chart's CRDs.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .crds()
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -490,6 +496,8 @@ Show the chart's README.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .readme()
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -514,6 +522,8 @@ Show the chart's values.
 ``` java
 String result = new Helm(Paths.get("path", "to", "chart")).show()
   .values()
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client

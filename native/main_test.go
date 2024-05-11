@@ -594,3 +594,22 @@ func TestSearchRepo(t *testing.T) {
 		return
 	}
 }
+
+func TestShowAllLocal(t *testing.T) {
+	create, _ := helm.Create(&helm.CreateOptions{
+		Name: "test",
+		Dir:  t.TempDir(),
+	})
+	out, err := helm.Show(&helm.ShowOptions{
+		Path:         create,
+		OutputFormat: "all",
+	})
+	if err != nil {
+		t.Errorf("Expected show to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "apiVersion:") || !strings.Contains(out, "name: test") {
+		t.Errorf("Expected show to contain chart info, got %s", out)
+		return
+	}
+}

@@ -54,8 +54,7 @@ build-current-platform: build-native build-java
 build-all: build-native-cross-platform build-java
 
 .PHONY: test
-test:
-	cd native && go test ./...
+test: test-go
 
 .PHONY: release
 release:

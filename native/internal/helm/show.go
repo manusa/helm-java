@@ -26,6 +26,7 @@ import (
 type ShowOptions struct {
 	Path         string
 	OutputFormat string
+	Version      string
 	CertFile     string
 	KeyFile      string
 	CaFile       string
@@ -64,6 +65,7 @@ func Show(options *ShowOptions) (string, error) {
 	}
 	client := action.NewShowWithConfig(format, NewCfg(&CfgOptions{}))
 	client.SetRegistryClient(registryClient)
+	client.Version = options.Version
 	cp, err := client.ChartPathOptions.LocateChart(options.Path, cli.New())
 	if err != nil {
 		return "", err
