@@ -683,6 +683,8 @@ String version = Helm.version();
 
 ### Release Process
 
+#### Release to Maven Central
+
 To release a new version automatically:
 
 ```shell
@@ -714,6 +716,10 @@ To release a new version manually:
    git commit -m "[RELEASE] v0.0.6 released, prepare for next development iteration"
    git push origin master
    ```
+
+#### Create GitHub Release
+
+Once the release is published to Maven Central, create a new [GitHub release](https://github.com/manusa/helm-java/releases/new) for the released tag.
 
 ### License Headers
 
