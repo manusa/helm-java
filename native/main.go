@@ -459,7 +459,7 @@ func RepoRemove(options *C.struct_RepoOptions) C.Result {
 //export RepoUpdate
 func RepoUpdate(options *C.struct_RepoOptions) C.Result {
 	return runCommand(func() (string, error) {
-		return "", helm.RepoUpdate(&helm.RepoOptions{
+		return helm.RepoUpdate(&helm.RepoOptions{
 			RepositoryConfig: C.GoString(options.repositoryConfig),
 			Names:            C.GoString(options.names),
 		})

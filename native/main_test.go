@@ -495,11 +495,15 @@ func TestRepoUpdateAll(t *testing.T) {
 		"repositories:\n" +
 		"  - name: stable\n" +
 		"    url: https://charts.helm.sh/stable\n")
-	err := helm.RepoUpdate(&helm.RepoOptions{
+	updated, err := helm.RepoUpdate(&helm.RepoOptions{
 		RepositoryConfig: repositoryConfigFile.Name(),
 	})
 	if err != nil {
 		t.Error("Expected repo update to succeed")
+	}
+	if !strings.Contains(updated, "&name=stable&") {
+		t.Errorf("Expected to update stable repository, got %s", updated)
+		return
 	}
 }
 
@@ -512,12 +516,16 @@ func TestRepoUpdateByName(t *testing.T) {
 		"    url: https://charts.helm.sh/stable\n" +
 		"  - name: other\n" +
 		"    url: https://charts.example.com/other\n")
-	err := helm.RepoUpdate(&helm.RepoOptions{
+	updated, err := helm.RepoUpdate(&helm.RepoOptions{
 		RepositoryConfig: repositoryConfigFile.Name(),
 		Names:            "stable\n",
 	})
 	if err != nil {
-		t.Error("Expected repo update to succeed")
+		t.Errorf("Expected repo update to succeed")
+	}
+	if !strings.Contains(updated, "&name=stable&") {
+		t.Errorf("Expected to update stable repository, got %s", updated)
+		return
 	}
 }
 
@@ -530,7 +538,7 @@ func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
 		"    url: https://charts.helm.sh/stable\n" +
 		"  - name: other\n" +
 		"    url: https://charts.example.com/other\n")
-	err := helm.RepoUpdate(&helm.RepoOptions{
+	updated, err := helm.RepoUpdate(&helm.RepoOptions{
 		RepositoryConfig: repositoryConfigFile.Name(),
 		Names:            "other\n",
 	})
@@ -540,6 +548,37 @@ func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
 	if !strings.Contains(err.Error(), "failed to update the following repositories:") ||
 		!strings.Contains(err.Error(), "https://charts.example.com/other") {
 		t.Errorf("Expected error to contain invalid chart, got %s", err.Error())
+		return
+	}
+	if updated != "" {
+		t.Errorf("Expected updated chart list to return empty, got %s", updated)
+		return
+	}
+}
+
+func TestRepoUpdateByNameWithInvalidAndValidRepo(t *testing.T) {
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	defer os.Remove(repositoryConfigFile.Name())
+	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
+		"repositories:\n" +
+		"  - name: stable\n" +
+		"    url: https://charts.helm.sh/stable\n" +
+		"  - name: other\n" +
+		"    url: https://charts.example.com/other\n")
+	updated, err := helm.RepoUpdate(&helm.RepoOptions{
+		RepositoryConfig: repositoryConfigFile.Name(),
+		Names:            "other\nstable\n",
+	})
+	if err == nil {
+		t.Error("Expected repo update to fail")
+	}
+	if !strings.Contains(err.Error(), "failed to update the following repositories:") ||
+		!strings.Contains(err.Error(), "https://charts.example.com/other") {
+		t.Errorf("Expected error to contain invalid chart, got %s", err.Error())
+		return
+	}
+	if !strings.Contains(updated, "&name=stable&") {
+		t.Errorf("Expected to updated stable repository, got %s", updated)
 		return
 	}
 }
