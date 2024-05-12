@@ -123,7 +123,7 @@ class HelmRepoTest {
     @BeforeEach
     void setUp(@TempDir Path tempDir) throws IOException {
       repositoryConfig = tempDir.resolve("repositories.yaml");
-      Files.write(tempDir.resolve("repositories.yaml"),
+      Files.write(repositoryConfig,
         ("repositories:\n" +
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
@@ -169,6 +169,101 @@ class HelmRepoTest {
       assertThatThrownBy(callable::call)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("no repo named \"missing\" found");
+    }
+
+  }
+
+  @Nested
+  class RepoUpdate {
+
+    Path repositoryConfig;
+
+    @BeforeEach
+    void setUp(@TempDir Path tempDir) {
+      repositoryConfig = tempDir.resolve("repositories.yaml");
+    }
+
+    @Test
+    void updateAllWithValidRepos() throws IOException {
+      Files.write(repositoryConfig,
+        ("repositories:\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n"
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final List<Repository> updated = Helm.repo().update().withRepositoryConfig(repositoryConfig).call();
+      assertThat(updated)
+        .singleElement().hasFieldOrPropertyWithValue("name", "stable");
+    }
+
+    @Test
+    void updateAllWithValidAndInvalidRepos() throws IOException {
+      Files.write(repositoryConfig,
+        ("repositories:\n" +
+          "  - name: repo-1\n" +
+          "    url: https://charts.example.com/repo-1?i=31&test\n" +
+          "    username: user-name\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n"
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final RepoCommand.WithRepositoryConfig<List<Repository>> callable = Helm.repo().update()
+        .withRepositoryConfig(repositoryConfig);
+      assertThatThrownBy(callable::call)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("ailed to update the following repositories:")
+        .hasMessageContaining("[https://charts.example.com/repo-1?i=31&test]");
+    }
+
+    @Test
+    void updateByNameWithValidAndInvalidRepos() throws IOException {
+      Files.write(repositoryConfig,
+        ("repositories:\n" +
+          "  - name: repo-1\n" +
+          "    url: https://charts.example.com/repo-1?i=31&test\n" +
+          "    username: user-name\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n"
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final RepoCommand.WithRepositoryConfig<List<Repository>> callable = Helm.repo().update()
+        .withRepositoryConfig(repositoryConfig)
+        .withRepo("stable")
+        .withRepo("repo-1");
+      assertThatThrownBy(callable::call)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("ailed to update the following repositories:")
+        .hasMessageContaining("[https://charts.example.com/repo-1?i=31&test]");
+    }
+
+    @Test
+    void updateByNameWithValidAndInvalidReposOnlyValid() throws IOException {
+      Files.write(repositoryConfig,
+        ("repositories:\n" +
+          "  - name: repo-1\n" +
+          "    url: https://charts.example.com/repo-1?i=31&test\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n"
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final List<Repository> updated = Helm.repo().update()
+        .withRepositoryConfig(repositoryConfig)
+        .withRepo("stable")
+        .call();
+      assertThat(updated)
+        .singleElement().hasFieldOrPropertyWithValue("name", "stable");
+    }
+
+    @Test
+    void updateByNameWithMissingRepo() throws IOException {
+      Files.write(repositoryConfig,
+        ("repositories:\n" +
+          "  - name: repo-1\n" +
+          "    url: https://charts.example.com/repo-1?i=31&test\n" +
+          "  - name: stable\n" +
+          "    url: https://charts.helm.sh/stable\n"
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final List<Repository> updated = Helm.repo().update()
+        .withRepositoryConfig(repositoryConfig)
+        .withRepo("not-there")
+        .call();
+      assertThat(updated).isEmpty();
     }
 
   }

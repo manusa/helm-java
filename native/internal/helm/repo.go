@@ -129,13 +129,7 @@ func RepoList(options *RepoOptions) (string, error) {
 	}
 	out := bytes.NewBuffer(make([]byte, 0))
 	for _, repository := range f.Repositories {
-		values := make(url.Values)
-		values.Set("name", repository.Name)
-		values.Set("url", repository.URL)
-		values.Set("username", repository.Username)
-		values.Set("password", repository.Password)
-		values.Set("insecureSkipTlsVerify", strconv.FormatBool(repository.InsecureSkipTLSverify))
-		_, _ = fmt.Fprintln(out, values.Encode())
+		_, _ = fmt.Fprintln(out, urlEncode(repository))
 	}
 	return out.String(), nil
 }
@@ -160,11 +154,11 @@ func RepoRemove(options *RepoOptions) error {
 	return nil
 }
 
-func RepoUpdate(options *RepoOptions) error {
+func RepoUpdate(options *RepoOptions) (string, error) {
 	repoFile := repositoryConfig(options)
 	r, err := repo.LoadFile(repoFile)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var repos []*repo.ChartRepository
@@ -184,29 +178,42 @@ func RepoUpdate(options *RepoOptions) error {
 			}
 		}
 		if addRepo {
-			repo, err := repo.NewChartRepository(repositoryFile, getter.All(cli.New()))
+			chartRepo, err := repo.NewChartRepository(repositoryFile, getter.All(cli.New()))
 			if err != nil {
-				return err
+				return "", err
 			}
-			repos = append(repos, repo)
+			repos = append(repos, chartRepo)
 		}
 	}
 
 	// Update the repositories
 	var wg sync.WaitGroup
+	repoUpdatedList := bytes.NewBuffer(make([]byte, 0))
 	var repoFailList []string
 	for _, re := range repos {
 		wg.Add(1)
-		go func(re *repo.ChartRepository) {
+		go func(chartRepository *repo.ChartRepository) {
 			defer wg.Done()
-			if _, err := re.DownloadIndexFile(); err != nil {
-				repoFailList = append(repoFailList, re.Config.URL)
+			if _, err := chartRepository.DownloadIndexFile(); err != nil {
+				repoFailList = append(repoFailList, chartRepository.Config.URL)
+			} else {
+				_, _ = fmt.Fprintln(repoUpdatedList, urlEncode(chartRepository.Config))
 			}
 		}(re)
 	}
 	wg.Wait()
 	if len(repoFailList) > 0 {
-		return fmt.Errorf("failed to update the following repositories: %s", repoFailList)
+		return repoUpdatedList.String(), fmt.Errorf("failed to update the following repositories: %s", repoFailList)
 	}
-	return nil
+	return repoUpdatedList.String(), nil
+}
+
+func urlEncode(repository *repo.Entry) string {
+	values := make(url.Values)
+	values.Set("name", repository.Name)
+	values.Set("url", repository.URL)
+	values.Set("username", repository.Username)
+	values.Set("password", repository.Password)
+	values.Set("insecureSkipTlsVerify", strconv.FormatBool(repository.InsecureSkipTLSverify))
+	return values.Encode()
 }

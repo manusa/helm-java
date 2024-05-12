@@ -372,6 +372,24 @@ Helm.repo().remove()
   .call();
 ```
 
+#### Repo update
+
+Equivalent of [`helm repo update`](https://helm.sh/docs/helm/helm_repo_update/).
+
+Update information of available charts locally from chart repositories.
+
+``` java
+Helm.repo().update()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Add a repository name to the list of repos to remove
+  .withRepo("repo-1")
+  // Add another repository name to the list of repos to remove
+  .withRepo("repo-2")
+  .call();
+```
+
 ### Search
 
 Equivalent of [`helm search`](https://helm.sh/docs/helm/helm_search/).

@@ -63,6 +63,18 @@ public class RepoCommand {
     return new RepoCommand.RepoSubcommand<>(helmLib, hl -> hl::RepoRemove, r -> null);
   }
 
+  /**
+   * Update information of available charts locally from chart repositories.
+   * <p>
+   * Update gets the latest information about charts from the respective chart repositories.
+   * Information is cached locally, where it is used by commands like 'helm search'.
+   *
+   * @return the {@link WithRepo} subcommand.
+   */
+  public WithRepo<List<Repository>> update() {
+    return new RepoCommand.RepoSubcommand<>(helmLib, hl -> hl::RepoUpdate, Repository::parse);
+  }
+
   public static final class RepoSubcommand<T> extends HelmCommand<T> implements WithRepositoryConfig<T>, WithRepo<T> {
 
     private final Function<HelmLib, Function<RepoOptions, Result>> callable;
