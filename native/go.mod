@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.11.0
 	golang.org/x/crypto v0.23.0
-	helm.sh/helm/v3 v3.14.4
+	helm.sh/helm/v3 v3.15.0
 	k8s.io/client-go v0.30.1
 	sigs.k8s.io/controller-runtime v0.18.2
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20240123110158-b88ed7a3602b
@@ -167,11 +167,11 @@ require (
 	k8s.io/apiextensions-apiserver v0.30.0 // indirect
 	k8s.io/apimachinery v0.30.1 // indirect
 	k8s.io/apiserver v0.30.0 // indirect
-	k8s.io/cli-runtime v0.29.0 // indirect
+	k8s.io/cli-runtime v0.30.0 // indirect
 	k8s.io/component-base v0.30.0 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/kubectl v0.29.0 // indirect
+	k8s.io/kubectl v0.30.0 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	oras.land/oras-go v1.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
