@@ -212,7 +212,7 @@ func TestInstallWaitFails(t *testing.T) {
 		t.Errorf("Expected install to fail, got %s", out)
 		return
 	}
-	if !strings.Contains(err.Error(), " context deadline exceeded") {
+	if !strings.Contains(err.Error(), "context deadline exceeded") {
 		t.Errorf("Expected install to fail, got %s", err.Error())
 		return
 	}
