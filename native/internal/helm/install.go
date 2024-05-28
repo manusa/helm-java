@@ -27,7 +27,10 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/strvals"
 	"net/url"
+	"os"
+	"os/signal"
 	"slices"
+	"syscall"
 	"time"
 )
 
@@ -128,12 +131,25 @@ func Install(options *InstallOptions) (string, error) {
 	if invalidDryRun := validateDryRunOptionFlag(client.DryRunOption); invalidDryRun != nil {
 		return "", invalidDryRun
 	}
-	ctx := context.Background()
 	// Values
 	var values, invalidValues = parseValues(options.Values)
 	if invalidValues != nil {
 		return "", invalidValues
 	}
+
+	// Create context that handles SIGINT, SIGTERM
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	// Set up channel on which to send signal notifications.
+	// We must use a buffered channel or risk missing the signal
+	// if we're not ready to receive when the signal is sent.
+	cSignal := make(chan os.Signal, 4)
+	signal.Notify(cSignal, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
+	go func() {
+		<-cSignal
+		cancel()
+	}()
+
 	// Run
 	release, err := client.RunWithContext(ctx, chartRequested, values)
 	// Generate report
