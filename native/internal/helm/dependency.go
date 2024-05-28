@@ -19,7 +19,9 @@ package helm
 import (
 	"bytes"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/downloader"
+	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/registry"
 )
 
@@ -74,6 +76,7 @@ func DependencyUpdate(options *DependencyOptions) (string, error) {
 
 func newManager(options *DependencyOptions, registryClient *registry.Client) (*downloader.Manager, *bytes.Buffer) {
 	out := bytes.NewBuffer(make([]byte, 0))
+	settings := cli.New()
 	manager := &downloader.Manager{
 		Out:            out,
 		ChartPath:      options.Path,
@@ -81,6 +84,7 @@ func newManager(options *DependencyOptions, registryClient *registry.Client) (*d
 		SkipUpdate:     options.SkipRefresh,
 		RegistryClient: registryClient,
 		Debug:          options.Debug,
+		Getters:        getter.All(settings),
 	}
 	return manager, out
 }
