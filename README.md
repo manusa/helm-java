@@ -14,7 +14,7 @@ Add the dependency to your project:
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java</artifactId>
-  <version>0.0.8</version>
+  <version>0.0.9</version>
 </dependency>
 ```
 
@@ -731,7 +731,7 @@ To release a new version manually:
 4. Commit the changes with the following message:
    ```shell
    git add .
-   git commit -m "[RELEASE] v0.0.6 released, prepare for next development iteration"
+   git commit -m "[RELEASE] v0.0.9 released, prepare for next development iteration"
    git push origin master
    ```
 
