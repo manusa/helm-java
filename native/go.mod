@@ -16,7 +16,7 @@ require (
 	golang.org/x/crypto v0.24.0
 	helm.sh/helm/v3 v3.15.1
 	k8s.io/client-go v0.30.1
-	sigs.k8s.io/controller-runtime v0.18.3
+	sigs.k8s.io/controller-runtime v0.18.4
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20240521074430-fbb7d370bebc
 	sigs.k8s.io/yaml v1.4.0
 )
