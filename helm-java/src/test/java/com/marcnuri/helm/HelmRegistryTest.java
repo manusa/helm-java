@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.regex.Pattern;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -48,7 +50,7 @@ class HelmRegistryTest {
         .debug()
         .withHost(remoteServer).withUsername("username").withPassword("password").call();
       assertThat(result)
-        .startsWith("Login Succeeded")
+        .containsPattern(Pattern.compile("^Login Succeeded$", Pattern.MULTILINE))
         .contains("level=info msg=\"authorized request\"");
     }
 
@@ -74,7 +76,7 @@ class HelmRegistryTest {
         .hasMessageContainingAll(
           "login attempt to",
           "failed with status: 401 Unauthorized",
-          "level=info msg=\"Error logging in to endpoint, trying next endpoint\""
+          "level=warning msg=\"error authorizing context: basic authentication challenge for realm"
         );
     }
   }
