@@ -25,33 +25,34 @@ import (
 )
 
 type UpgradeOptions struct {
-	Name                  string
-	Chart                 string
-	Namespace             string
-	Install               bool
-	Force                 bool
-	ResetValues           bool
-	ReuseValues           bool
-	ResetThenReuseValues  bool
-	Atomic                bool
-	CleanupOnFail         bool
-	CreateNamespace       bool
-	Description           string
-	Devel                 bool
-	DependencyUpdate      bool
-	DryRun                bool
-	DryRunOption          string
-	Wait                  bool
-	Timeout               time.Duration
-	Values                string
-	KubeConfig            string
-	CertFile              string
-	KeyFile               string
-	CaFile                string
-	InsecureSkipTLSverify bool
-	PlainHttp             bool
-	Keyring               string
-	Debug                 bool
+	Name                     string
+	Chart                    string
+	Namespace                string
+	Install                  bool
+	Force                    bool
+	ResetValues              bool
+	ReuseValues              bool
+	ResetThenReuseValues     bool
+	Atomic                   bool
+	CleanupOnFail            bool
+	CreateNamespace          bool
+	Description              string
+	Devel                    bool
+	DependencyUpdate         bool
+	DisableOpenApiValidation bool
+	DryRun                   bool
+	DryRunOption             string
+	Wait                     bool
+	Timeout                  time.Duration
+	Values                   string
+	KubeConfig               string
+	CertFile                 string
+	KeyFile                  string
+	CaFile                   string
+	InsecureSkipTLSverify    bool
+	PlainHttp                bool
+	Keyring                  string
+	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly bool
 }
@@ -85,29 +86,30 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 		histClient.Max = 1
 		if _, err := histClient.Run(options.Name); err == driver.ErrReleaseNotFound {
 			return Install(&InstallOptions{
-				Name:                  options.Name,
-				GenerateName:          false,
-				NameTemplate:          "",
-				Chart:                 options.Chart,
-				Namespace:             options.Namespace,
-				CreateNamespace:       options.CreateNamespace,
-				Description:           options.Description,
-				Devel:                 options.Devel,
-				DependencyUpdate:      options.DependencyUpdate,
-				DryRun:                options.DryRun,
-				DryRunOption:          options.DryRunOption,
-				Wait:                  options.Wait,
-				Timeout:               options.Timeout,
-				Values:                options.Values,
-				KubeConfig:            options.KubeConfig,
-				CertFile:              options.CertFile,
-				KeyFile:               options.KeyFile,
-				CaFile:                options.CaFile,
-				InsecureSkipTLSverify: options.InsecureSkipTLSverify,
-				PlainHttp:             options.PlainHttp,
-				Keyring:               options.Keyring,
-				Debug:                 options.Debug,
-				ClientOnly:            options.ClientOnly,
+				Name:                     options.Name,
+				GenerateName:             false,
+				NameTemplate:             "",
+				Chart:                    options.Chart,
+				Namespace:                options.Namespace,
+				CreateNamespace:          options.CreateNamespace,
+				Description:              options.Description,
+				Devel:                    options.Devel,
+				DependencyUpdate:         options.DependencyUpdate,
+				DisableOpenApiValidation: options.DisableOpenApiValidation,
+				DryRun:                   options.DryRun,
+				DryRunOption:             options.DryRunOption,
+				Wait:                     options.Wait,
+				Timeout:                  options.Timeout,
+				Values:                   options.Values,
+				KubeConfig:               options.KubeConfig,
+				CertFile:                 options.CertFile,
+				KeyFile:                  options.KeyFile,
+				CaFile:                   options.CaFile,
+				InsecureSkipTLSverify:    options.InsecureSkipTLSverify,
+				PlainHttp:                options.PlainHttp,
+				Keyring:                  options.Keyring,
+				Debug:                    options.Debug,
+				ClientOnly:               options.ClientOnly,
 			})
 		} else if err != nil {
 			return "", err
@@ -125,6 +127,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	client.CleanupOnFail = options.CleanupOnFail
 	client.Description = options.Description
 	client.Devel = options.Devel
+	client.DisableOpenAPIValidation = options.DisableOpenApiValidation
 	client.DryRun = options.DryRun
 	client.DryRunOption = dryRunOption(options.DryRunOption)
 	client.Wait = options.Wait

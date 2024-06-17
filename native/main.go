@@ -50,6 +50,7 @@ struct InstallOptions {
 	char* description;
 	int   devel;
 	int   dependencyUpdate;
+	int   disableOpenApiValidation;
 	int   dryRun;
 	char* dryRunOption;
 	int   wait;
@@ -190,6 +191,7 @@ struct UpgradeOptions {
 	char* description;
 	int   devel;
 	int   dependencyUpdate;
+	int   disableOpenApiValidation;
 	int   dryRun;
 	char* dryRunOption;
 	int   wait;
@@ -299,28 +301,29 @@ func DependencyUpdate(options *C.struct_DependencyOptions) C.Result {
 func Install(options *C.struct_InstallOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Install(&helm.InstallOptions{
-			Name:                  C.GoString(options.name),
-			GenerateName:          options.generateName == 1,
-			NameTemplate:          C.GoString(options.nameTemplate),
-			Chart:                 C.GoString(options.chart),
-			Namespace:             C.GoString(options.namespace),
-			CreateNamespace:       options.createNamespace == 1,
-			Description:           C.GoString(options.description),
-			Devel:                 options.devel == 1,
-			DependencyUpdate:      options.dependencyUpdate == 1,
-			DryRun:                options.dryRun == 1,
-			DryRunOption:          C.GoString(options.dryRunOption),
-			Wait:                  options.wait == 1,
-			Values:                C.GoString(options.values),
-			KubeConfig:            C.GoString(options.kubeConfig),
-			CertFile:              C.GoString(options.certFile),
-			KeyFile:               C.GoString(options.keyFile),
-			CaFile:                C.GoString(options.caFile),
-			InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
-			PlainHttp:             options.plainHttp == 1,
-			Keyring:               C.GoString(options.keyring),
-			Debug:                 options.debug == 1,
-			ClientOnly:            options.clientOnly == 1,
+			Name:                     C.GoString(options.name),
+			GenerateName:             options.generateName == 1,
+			NameTemplate:             C.GoString(options.nameTemplate),
+			Chart:                    C.GoString(options.chart),
+			Namespace:                C.GoString(options.namespace),
+			CreateNamespace:          options.createNamespace == 1,
+			Description:              C.GoString(options.description),
+			Devel:                    options.devel == 1,
+			DependencyUpdate:         options.dependencyUpdate == 1,
+			DisableOpenApiValidation: options.disableOpenApiValidation == 1,
+			DryRun:                   options.dryRun == 1,
+			DryRunOption:             C.GoString(options.dryRunOption),
+			Wait:                     options.wait == 1,
+			Values:                   C.GoString(options.values),
+			KubeConfig:               C.GoString(options.kubeConfig),
+			CertFile:                 C.GoString(options.certFile),
+			KeyFile:                  C.GoString(options.keyFile),
+			CaFile:                   C.GoString(options.caFile),
+			InsecureSkipTLSverify:    options.insecureSkipTlsVerify == 1,
+			PlainHttp:                options.plainHttp == 1,
+			Keyring:                  C.GoString(options.keyring),
+			Debug:                    options.debug == 1,
+			ClientOnly:               options.clientOnly == 1,
 		})
 	})
 }
@@ -582,33 +585,34 @@ func Uninstall(options *C.struct_UninstallOptions) C.Result {
 func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Upgrade(&helm.UpgradeOptions{
-			Name:                  C.GoString(options.name),
-			Chart:                 C.GoString(options.chart),
-			Namespace:             C.GoString(options.namespace),
-			Install:               options.install == 1,
-			Force:                 options.force == 1,
-			ResetValues:           options.resetValues == 1,
-			ReuseValues:           options.reuseValues == 1,
-			ResetThenReuseValues:  options.resetThenReuseValues == 1,
-			Atomic:                options.atomic == 1,
-			CleanupOnFail:         options.cleanupOnFail == 1,
-			CreateNamespace:       options.createNamespace == 1,
-			Description:           C.GoString(options.description),
-			Devel:                 options.devel == 1,
-			DependencyUpdate:      options.dependencyUpdate == 1,
-			DryRun:                options.dryRun == 1,
-			DryRunOption:          C.GoString(options.dryRunOption),
-			Wait:                  options.wait == 1,
-			Values:                C.GoString(options.values),
-			KubeConfig:            C.GoString(options.kubeConfig),
-			CertFile:              C.GoString(options.certFile),
-			KeyFile:               C.GoString(options.keyFile),
-			CaFile:                C.GoString(options.caFile),
-			InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
-			PlainHttp:             options.plainHttp == 1,
-			Keyring:               C.GoString(options.keyring),
-			Debug:                 options.debug == 1,
-			ClientOnly:            options.clientOnly == 1,
+			Name:                     C.GoString(options.name),
+			Chart:                    C.GoString(options.chart),
+			Namespace:                C.GoString(options.namespace),
+			Install:                  options.install == 1,
+			Force:                    options.force == 1,
+			ResetValues:              options.resetValues == 1,
+			ReuseValues:              options.reuseValues == 1,
+			ResetThenReuseValues:     options.resetThenReuseValues == 1,
+			Atomic:                   options.atomic == 1,
+			CleanupOnFail:            options.cleanupOnFail == 1,
+			CreateNamespace:          options.createNamespace == 1,
+			Description:              C.GoString(options.description),
+			Devel:                    options.devel == 1,
+			DependencyUpdate:         options.dependencyUpdate == 1,
+			DisableOpenApiValidation: options.disableOpenApiValidation == 1,
+			DryRun:                   options.dryRun == 1,
+			DryRunOption:             C.GoString(options.dryRunOption),
+			Wait:                     options.wait == 1,
+			Values:                   C.GoString(options.values),
+			KubeConfig:               C.GoString(options.kubeConfig),
+			CertFile:                 C.GoString(options.certFile),
+			KeyFile:                  C.GoString(options.keyFile),
+			CaFile:                   C.GoString(options.caFile),
+			InsecureSkipTLSverify:    options.insecureSkipTlsVerify == 1,
+			PlainHttp:                options.plainHttp == 1,
+			Keyring:                  C.GoString(options.keyring),
+			Debug:                    options.debug == 1,
+			ClientOnly:               options.clientOnly == 1,
 		})
 	})
 }

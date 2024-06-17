@@ -128,6 +128,8 @@ Release result = installCommand
   .devel()
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
+  // Optionally disable the validation of rendered templates against the Kubernetes OpenAPI Schema
+  .disableOpenApiValidation()
   // Optionally enable dry run mode to simulate an install
   .dryRun()
   // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
@@ -644,6 +646,8 @@ Release result = upgradeCommand
   .devel()
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
+  // Optionally disable the validation of rendered templates against the Kubernetes OpenAPI Schema
+  .disableOpenApiValidation()
   // Optionally enable dry run mode to simulate an install
   .dryRun()
   // Optionally specify the dry run strategy (client, server, or none). If unset, defaults to client
