@@ -42,6 +42,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private String description;
   private boolean devel;
   private boolean dependencyUpdate;
+  private boolean disableOpenApiValidation;
   private boolean dryRun;
   private DryRun dryRunOption;
   private boolean wait;
@@ -84,6 +85,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       description,
       toInt(devel),
       toInt(dependencyUpdate),
+      toInt(disableOpenApiValidation),
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
       toInt(wait),
@@ -249,6 +251,17 @@ public class UpgradeCommand extends HelmCommand<Release> {
     this.dependencyUpdate = true;
     return this;
   }
+
+  /**
+   * The upgrade process will not validate rendered templates against the Kubernetes OpenAPI Schema.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand disableOpenApiValidation() {
+    this.disableOpenApiValidation = true;
+    return this;
+  }
+
 
   /**
    * Simulate an installation.

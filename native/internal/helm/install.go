@@ -35,28 +35,29 @@ import (
 )
 
 type InstallOptions struct {
-	Name                  string
-	GenerateName          bool
-	NameTemplate          string
-	Chart                 string
-	Namespace             string
-	CreateNamespace       bool
-	Description           string
-	Devel                 bool
-	DependencyUpdate      bool
-	DryRun                bool
-	DryRunOption          string
-	Wait                  bool
-	Timeout               time.Duration
-	Values                string
-	KubeConfig            string
-	CertFile              string
-	KeyFile               string
-	CaFile                string
-	InsecureSkipTLSverify bool
-	PlainHttp             bool
-	Keyring               string
-	Debug                 bool
+	Name                     string
+	GenerateName             bool
+	NameTemplate             string
+	Chart                    string
+	Namespace                string
+	CreateNamespace          bool
+	Description              string
+	Devel                    bool
+	DependencyUpdate         bool
+	DisableOpenApiValidation bool
+	DryRun                   bool
+	DryRunOption             string
+	Wait                     bool
+	Timeout                  time.Duration
+	Values                   string
+	KubeConfig               string
+	CertFile                 string
+	KeyFile                  string
+	CaFile                   string
+	InsecureSkipTLSverify    bool
+	PlainHttp                bool
+	Keyring                  string
+	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly bool
 }
@@ -109,6 +110,7 @@ func Install(options *InstallOptions) (string, error) {
 	client.CertFile = options.CertFile
 	client.KeyFile = options.KeyFile
 	client.CaFile = options.CaFile
+	client.DisableOpenAPIValidation = options.DisableOpenApiValidation
 	client.InsecureSkipTLSverify = options.InsecureSkipTLSverify
 	client.PlainHTTP = options.PlainHttp
 	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)

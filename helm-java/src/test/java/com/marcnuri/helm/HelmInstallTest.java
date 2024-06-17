@@ -182,6 +182,19 @@ class HelmInstallTest {
           "float: \"1.1\"" // helm.sh/helm/v3/pkg/strvals does not support floats
         );
     }
+
+    @Test
+    void withDisableOpenApiValidation() {
+      final Release result = helm.install()
+        .clientOnly()
+        .debug()
+        .withName("test")
+        .disableOpenApiValidation()
+        .call();
+      assertThat(result)
+        .hasFieldOrPropertyWithValue("name", "test")
+        .hasFieldOrPropertyWithValue("status", "deployed");
+    }
   }
 
   @Nested

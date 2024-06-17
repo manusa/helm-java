@@ -33,6 +33,7 @@ import com.sun.jna.Structure;
   "description",
   "devel",
   "dependencyUpdate",
+  "disableOpenApiValidation",
   "dryRun",
   "dryRunOption",
   "wait",
@@ -62,6 +63,7 @@ public class UpgradeOptions extends Structure {
   public String description;
   public int devel;
   public int dependencyUpdate;
+  public int disableOpenApiValidation;
   public int dryRun;
   public String dryRunOption;
   public int wait;
@@ -91,6 +93,7 @@ public class UpgradeOptions extends Structure {
     String description,
     int devel,
     int dependencyUpdate,
+    int disableOpenApiValidation,
     int dryRun,
     String dryRunOption,
     int wait,
@@ -119,6 +122,7 @@ public class UpgradeOptions extends Structure {
     this.description = description;
     this.devel = devel;
     this.dependencyUpdate = dependencyUpdate;
+    this.disableOpenApiValidation = disableOpenApiValidation;
     this.dryRun = dryRun;
     this.dryRunOption = dryRunOption;
     this.wait = wait;
