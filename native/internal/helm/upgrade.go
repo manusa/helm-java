@@ -25,6 +25,7 @@ import (
 )
 
 type UpgradeOptions struct {
+	CertOptions
 	Name                     string
 	Chart                    string
 	Namespace                string
@@ -46,12 +47,6 @@ type UpgradeOptions struct {
 	Timeout                  time.Duration
 	Values                   string
 	KubeConfig               string
-	CertFile                 string
-	KeyFile                  string
-	CaFile                   string
-	InsecureSkipTLSverify    bool
-	PlainHttp                bool
-	Keyring                  string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly bool
@@ -102,12 +97,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				Timeout:                  options.Timeout,
 				Values:                   options.Values,
 				KubeConfig:               options.KubeConfig,
-				CertFile:                 options.CertFile,
-				KeyFile:                  options.KeyFile,
-				CaFile:                   options.CaFile,
-				InsecureSkipTLSverify:    options.InsecureSkipTLSverify,
-				PlainHttp:                options.PlainHttp,
-				Keyring:                  options.Keyring,
+				CertOptions:              options.CertOptions,
 				Debug:                    options.Debug,
 				ClientOnly:               options.ClientOnly,
 			})

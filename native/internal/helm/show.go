@@ -24,6 +24,7 @@ import (
 )
 
 type ShowOptions struct {
+	CertOptions
 	Path         string
 	OutputFormat string
 	Version      string

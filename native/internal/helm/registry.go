@@ -24,15 +24,11 @@ import (
 )
 
 type RegistryOptions struct {
-	Hostname  string
-	Username  string
-	Password  string
-	CertFile  string
-	KeyFile   string
-	CaFile    string
-	Insecure  bool
-	PlainHttp bool
-	Debug     bool
+	CertOptions
+	Hostname string
+	Username string
+	Password string
+	Debug    bool
 }
 
 func RegistryLogin(options *RegistryOptions) (string, error) {
@@ -40,7 +36,7 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
-		options.Insecure,
+		options.InsecureSkipTLSverify,
 		options.PlainHttp,
 		options.Debug,
 	)
@@ -58,7 +54,7 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		action.WithCertFile(options.CertFile),
 		action.WithKeyFile(options.KeyFile),
 		action.WithCAFile(options.CaFile),
-		action.WithInsecure(options.Insecure),
+		action.WithInsecure(options.InsecureSkipTLSverify),
 	)
 	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
 }
@@ -68,7 +64,7 @@ func RegistryLogout(options *RegistryOptions) (string, error) {
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
-		options.Insecure,
+		options.InsecureSkipTLSverify,
 		options.PlainHttp,
 		options.Debug,
 	)
