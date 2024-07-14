@@ -35,6 +35,7 @@ import (
 )
 
 type InstallOptions struct {
+	CertOptions
 	Name                     string
 	GenerateName             bool
 	NameTemplate             string
@@ -51,12 +52,6 @@ type InstallOptions struct {
 	Timeout                  time.Duration
 	Values                   string
 	KubeConfig               string
-	CertFile                 string
-	KeyFile                  string
-	CaFile                   string
-	InsecureSkipTLSverify    bool
-	PlainHttp                bool
-	Keyring                  string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly bool

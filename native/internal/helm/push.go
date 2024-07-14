@@ -21,14 +21,10 @@ import (
 )
 
 type PushOptions struct {
-	Chart                 string
-	Remote                string
-	CertFile              string
-	KeyFile               string
-	CaFile                string
-	InsecureSkipTlsVerify bool
-	PlainHttp             bool
-	Debug                 bool
+	CertOptions
+	Chart  string
+	Remote string
+	Debug  bool
 }
 
 func Push(options *PushOptions) (string, error) {
@@ -36,7 +32,7 @@ func Push(options *PushOptions) (string, error) {
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
-		options.InsecureSkipTlsVerify,
+		options.InsecureSkipTLSverify,
 		options.PlainHttp,
 		options.Debug,
 	)
@@ -46,7 +42,7 @@ func Push(options *PushOptions) (string, error) {
 	pushOptions := []action.PushOpt{
 		action.WithPushConfig(NewCfg(&CfgOptions{RegistryClient: registryClient})),
 		action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CaFile),
-		action.WithInsecureSkipTLSVerify(options.InsecureSkipTlsVerify),
+		action.WithInsecureSkipTLSVerify(options.InsecureSkipTLSverify),
 		action.WithPlainHTTP(options.PlainHttp),
 	}
 	client := action.NewPushWithOpts(pushOptions...)

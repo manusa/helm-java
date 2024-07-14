@@ -41,6 +41,15 @@ type CfgOptions struct {
 	KubeOut        io.Writer
 }
 
+type CertOptions struct {
+	CertFile              string
+	KeyFile               string
+	CaFile                string
+	InsecureSkipTLSverify bool
+	PlainHttp             bool
+	Keyring               string
+}
+
 func NewCfg(options *CfgOptions) *action.Configuration {
 	settings := cli.New()
 	settings.KubeConfig = options.KubeConfig

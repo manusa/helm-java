@@ -316,14 +316,16 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Wait:                     options.wait == 1,
 			Values:                   C.GoString(options.values),
 			KubeConfig:               C.GoString(options.kubeConfig),
-			CertFile:                 C.GoString(options.certFile),
-			KeyFile:                  C.GoString(options.keyFile),
-			CaFile:                   C.GoString(options.caFile),
-			InsecureSkipTLSverify:    options.insecureSkipTlsVerify == 1,
-			PlainHttp:                options.plainHttp == 1,
-			Keyring:                  C.GoString(options.keyring),
-			Debug:                    options.debug == 1,
-			ClientOnly:               options.clientOnly == 1,
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
+				PlainHttp:             options.plainHttp == 1,
+				Keyring:               C.GoString(options.keyring),
+			},
+			Debug:      options.debug == 1,
+			ClientOnly: options.clientOnly == 1,
 		})
 	})
 }
@@ -379,14 +381,16 @@ func Package(options *C.struct_PackageOptions) C.Result {
 func Push(options *C.struct_PushOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Push(&helm.PushOptions{
-			Chart:                 C.GoString(options.chart),
-			Remote:                C.GoString(options.remote),
-			CertFile:              C.GoString(options.certFile),
-			KeyFile:               C.GoString(options.keyFile),
-			CaFile:                C.GoString(options.caFile),
-			InsecureSkipTlsVerify: options.insecureSkipTlsVerify == 1,
-			PlainHttp:             options.plainHttp == 1,
-			Debug:                 options.debug == 1,
+			Chart:  C.GoString(options.chart),
+			Remote: C.GoString(options.remote),
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
+				PlainHttp:             options.plainHttp == 1,
+			},
+			Debug: options.debug == 1,
 		})
 	})
 }
@@ -395,15 +399,17 @@ func Push(options *C.struct_PushOptions) C.Result {
 func RegistryLogin(options *C.struct_RegistryOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.RegistryLogin(&helm.RegistryOptions{
-			Hostname:  C.GoString(options.hostname),
-			Username:  C.GoString(options.username),
-			Password:  C.GoString(options.password),
-			CertFile:  C.GoString(options.certFile),
-			KeyFile:   C.GoString(options.keyFile),
-			CaFile:    C.GoString(options.caFile),
-			Insecure:  options.insecure == 1,
-			PlainHttp: options.plainHttp == 1,
-			Debug:     options.debug == 1,
+			Hostname: C.GoString(options.hostname),
+			Username: C.GoString(options.username),
+			Password: C.GoString(options.password),
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecure == 1,
+				PlainHttp:             options.plainHttp == 1,
+			},
+			Debug: options.debug == 1,
 		})
 	})
 }
@@ -412,13 +418,15 @@ func RegistryLogin(options *C.struct_RegistryOptions) C.Result {
 func RegistryLogout(options *C.struct_RegistryOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.RegistryLogout(&helm.RegistryOptions{
-			Hostname:  C.GoString(options.hostname),
-			CertFile:  C.GoString(options.certFile),
-			KeyFile:   C.GoString(options.keyFile),
-			CaFile:    C.GoString(options.caFile),
-			Insecure:  options.insecure == 1,
-			PlainHttp: options.plainHttp == 1,
-			Debug:     options.debug == 1,
+			Hostname: C.GoString(options.hostname),
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecure == 1,
+				PlainHttp:             options.plainHttp == 1,
+			},
+			Debug: options.debug == 1,
 		})
 	})
 }
@@ -605,14 +613,16 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			Wait:                     options.wait == 1,
 			Values:                   C.GoString(options.values),
 			KubeConfig:               C.GoString(options.kubeConfig),
-			CertFile:                 C.GoString(options.certFile),
-			KeyFile:                  C.GoString(options.keyFile),
-			CaFile:                   C.GoString(options.caFile),
-			InsecureSkipTLSverify:    options.insecureSkipTlsVerify == 1,
-			PlainHttp:                options.plainHttp == 1,
-			Keyring:                  C.GoString(options.keyring),
-			Debug:                    options.debug == 1,
-			ClientOnly:               options.clientOnly == 1,
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
+				PlainHttp:             options.plainHttp == 1,
+				Keyring:               C.GoString(options.keyring),
+			},
+			Debug:      options.debug == 1,
+			ClientOnly: options.clientOnly == 1,
 		})
 	})
 }
