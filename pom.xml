@@ -70,7 +70,7 @@
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.3.1</version.maven-surefire-plugin>
     <version.sonatype-staging>1.7.0</version.sonatype-staging>
-    <version.test-containers>1.19.8</version.test-containers>
+    <version.test-containers>1.20.0</version.test-containers>
   </properties>
 
   <modules>
