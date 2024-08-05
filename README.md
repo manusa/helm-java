@@ -564,6 +564,27 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
+### Template
+
+Equivalent of [`helm template`](https://helm.sh/docs/helm/helm_template/).
+
+This command render graphics templates locally and display the output.
+
+``` java
+  // Instantiate the command with chart reference
+  TemplateCommand templateCommand = new Helm().template("chart/reference");
+  // Instantiate the command with chart archive
+  TemplateCommand templateCommand = new Helm(Paths.get("path", "to", "chart")).template();
+  String result = templateCommand
+    // Optionally specify a name for the release
+    .withName("release-name")
+    // Optionally set values for the chart
+    .set("key", "value")
+    // Optionally enable debug mode to print out verbose information
+    .debug()
+    .call();
+```
+
 ### Test
 
 Equivalent of [`helm test`](https://helm.sh/docs/helm/helm_test/).
