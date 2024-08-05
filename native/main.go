@@ -158,6 +158,16 @@ struct ShowOptions {
 	int   debug;
 };
 
+struct TemplateOptions {
+	char* name;
+	char* chart;
+	char* namespace;
+	int   dependencyUpdate;
+	char* values;
+	char* kubeConfig;
+	int   debug;
+};
+
 struct TestOptions {
 	char* releaseName;
 	int   timeout;
@@ -555,6 +565,21 @@ func Show(options *C.struct_ShowOptions) C.Result {
 			Insecure:     options.insecure == 1,
 			PlainHttp:    options.plainHttp == 1,
 			Debug:        options.debug == 1,
+		})
+	})
+}
+
+//export Template
+func Template(options *C.struct_TemplateOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Template(&helm.TemplateOptions{
+			Name: C.GoString(options.name),
+			Chart:  C.GoString(options.chart),
+			Namespace:  C.GoString(options.namespace),
+			DependencyUpdate:  options.dependencyUpdate == 1,
+			Values:  C.GoString(options.values),
+			KubeConfig:  C.GoString(options.kubeConfig),
+			Debug: options.debug == 1,
 		})
 	})
 }
