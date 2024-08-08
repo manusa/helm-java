@@ -578,6 +578,8 @@ This command render graphics templates locally and display the output.
   String result = templateCommand
     // Optionally specify a name for the release
     .withName("release-name")
+    // Optionally specify the Kubernetes namespace
+    .withNamespace("namespace")
     // Optionally set values for the chart
     .set("key", "value")
     // Optionally enable debug mode to print out verbose information
