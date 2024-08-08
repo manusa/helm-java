@@ -68,6 +68,9 @@ func Template(options *TemplateOptions) (string, error) {
 	client.DryRun = true
 	client.ReleaseName = options.Name
 	client.Replace = true
+	client.Namespace = options.Namespace
+	client.CreateNamespace = true
+	client.ClientOnly = true
 	
 	chartReference := options.Chart
 	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
