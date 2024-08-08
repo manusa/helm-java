@@ -159,6 +159,27 @@ public class Helm {
   }
 
   /**
+   * This command template create a deployment.
+   *
+   * @param name  The name of the release (required)
+   * @param chart The chart to template (can be either a path to a packaged chart or an unpacked chart directory)
+   * @return the {@link TemplateCommand} command.
+   */
+  public static TemplateCommand template(String name, String chart) {
+    return new TemplateCommand(HelmLibHolder.INSTANCE, name, chart);
+  }
+
+  /**
+   * This command template create a deployment.
+   *
+   * @param chart The chart to template (can be either a path to a packaged chart or an unpacked chart directory)
+   * @return the {@link TemplateCommand} command.
+   */
+  public static TemplateCommand template(String chart) {
+    return new TemplateCommand(HelmLibHolder.INSTANCE, chart);
+  }
+
+  /**
    * This command runs the tests for a release.
    *
    * @param releaseName the name of the release to test.
