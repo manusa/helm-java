@@ -83,6 +83,17 @@ public class TemplateCommand extends HelmCommand<String> {
   }
 
   /**
+   * Namespace for the release.
+   *
+   * @param namespace for the release.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand withNamespace(String namespace) {
+    this.namespace = namespace;
+    return this;
+  }
+
+  /**
    * Enable verbose output.
    * <p>
    * The command execution output ({@link #call}) will include verbose debug messages.
