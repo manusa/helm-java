@@ -20,6 +20,7 @@ import com.sun.jna.Structure;
 
 @Structure.FieldOrder({
   "name",
+  "version",
   "chart",
   "namespace",
   "install",
@@ -46,10 +47,12 @@ import com.sun.jna.Structure;
   "plainHttp",
   "keyring",
   "debug",
-  "clientOnly"
+  "clientOnly",
+  "repositoryConfig"
 })
 public class UpgradeOptions extends Structure {
   public String name;
+  public String version;
   public String chart;
   public String namespace;
   public int install;
@@ -77,9 +80,11 @@ public class UpgradeOptions extends Structure {
   public String keyring;
   public int debug;
   public int clientOnly;
+  public String repositoryConfig;
 
   public UpgradeOptions(
     String name,
+    String version,
     String chart,
     String namespace,
     int install,
@@ -106,9 +111,11 @@ public class UpgradeOptions extends Structure {
     int plainHttp,
     String keyring,
     int debug,
-    int clientOnly
+    int clientOnly,
+    String repositoryConfig
   ) {
     this.name = name;
+    this.version = version;
     this.chart = chart;
     this.namespace = namespace;
     this.install = install;
@@ -136,5 +143,6 @@ public class UpgradeOptions extends Structure {
     this.keyring = keyring;
     this.debug = debug;
     this.clientOnly = clientOnly;
+    this.repositoryConfig = repositoryConfig;
   }
 }

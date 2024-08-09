@@ -31,6 +31,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private String name;
   private boolean generateName;
   private String nameTemplate;
+  private String version;
   private String chart;
   private String namespace;
   private boolean createNamespace;
@@ -51,6 +52,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private Path keyring;
   private boolean debug;
   private boolean clientOnly;
+  private Path repositoryConfig;
 
   public InstallCommand(HelmLib helmLib) {
     this(helmLib, null);
@@ -68,6 +70,7 @@ public class InstallCommand extends HelmCommand<Release> {
       name,
       toInt(generateName),
       nameTemplate,
+      version,
       chart,
       namespace,
       toInt(createNamespace),
@@ -87,7 +90,8 @@ public class InstallCommand extends HelmCommand<Release> {
       toInt(plainHttp),
       toString(keyring),
       toInt(debug),
-      toInt(clientOnly)
+      toInt(clientOnly),
+      toString(repositoryConfig)
     ))));
   }
 
@@ -120,6 +124,21 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand withNameTemplate(String nameTemplate) {
     this.nameTemplate = nameTemplate;
+    return this;
+  }
+
+  /**
+   * Specify a version constraint for the chart version to use.
+   * <p>
+   * This constraint can be a specific tag (e.g. 1.1.1) or it may reference a valid range (e.g. ^2.0.0).
+   * <p>
+   * If this is not specified, the latest version is used.
+   *
+   * @param version constraint to install.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand withVersion(String version) {
+    this.version = version;
     return this;
   }
 
@@ -342,4 +361,15 @@ public class InstallCommand extends HelmCommand<Release> {
     return this;
   }
 
+  /**
+   * Path to the file containing repository names and URLs
+   * (default "~/.config/helm/repositories.yaml")
+   *
+   * @param repositoryConfig a {@link Path} to the repository configuration file.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand withRepositoryConfig(Path repositoryConfig) {
+    this.repositoryConfig = repositoryConfig;
+    return this;
+  }
 }

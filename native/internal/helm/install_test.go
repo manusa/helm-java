@@ -64,6 +64,39 @@ func TestInstallDryUrl(t *testing.T) {
 	}
 }
 
+func TestInstallFromRepoAndInvalidVersion(t *testing.T) {
+	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
+	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	defer os.Remove(repositoryConfigFile.Name())
+	err := RepoAdd(&RepoOptions{
+		Name:                  "helm",
+		Url:                   "https://charts.helm.sh/stable",
+		InsecureSkipTlsVerify: true,
+		RepositoryConfig:      repositoryConfigFile.Name(),
+	})
+	if err != nil {
+		t.Errorf("Expected repo add to succeed, got %s", err)
+		return
+	}
+	// When
+	_, err = Install(&InstallOptions{
+		Chart:            "helm/ingress-nginx",
+		Name:             "ingress-nginx",
+		Version:          "9999.9999.9999",
+		ClientOnly:       true,
+		RepositoryConfig: repositoryConfigFile.Name(),
+	})
+	// Then
+	if err == nil {
+		t.Error("Expected install to fail but was successful")
+		return
+	}
+	if !strings.Contains(err.Error(), "chart \"ingress-nginx\" matching 9999.9999.9999 not found") {
+		t.Errorf("Expected error with version not found, got %s", err.Error())
+		return
+	}
+}
+
 func TestInstallValues(t *testing.T) {
 	create, _ := Create(&CreateOptions{
 		Name: "test",

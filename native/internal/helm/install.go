@@ -39,6 +39,7 @@ type InstallOptions struct {
 	Name                     string
 	GenerateName             bool
 	NameTemplate             string
+	Version                  string
 	Chart                    string
 	Namespace                string
 	CreateNamespace          bool
@@ -54,10 +55,14 @@ type InstallOptions struct {
 	KubeConfig               string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
-	ClientOnly bool
+	ClientOnly       bool
+	RepositoryConfig string
 }
 
 func Install(options *InstallOptions) (string, error) {
+	if options.Version == "" && options.Devel {
+		options.Version = ">0.0.0-0"
+	}
 	registryClient, registryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
@@ -81,6 +86,7 @@ func Install(options *InstallOptions) (string, error) {
 	client := action.NewInstall(NewCfg(cfgOptions))
 	client.GenerateName = options.GenerateName
 	client.NameTemplate = options.NameTemplate
+	client.Version = options.Version
 	var name, chartReference string
 	if options.GenerateName {
 		// Generate name if applicable
@@ -108,7 +114,7 @@ func Install(options *InstallOptions) (string, error) {
 	client.DisableOpenAPIValidation = options.DisableOpenApiValidation
 	client.InsecureSkipTLSverify = options.InsecureSkipTLSverify
 	client.PlainHTTP = options.PlainHttp
-	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
+	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, options.RepositoryConfig, chartReference)
 	if err != nil {
 		return "", err
 	}
@@ -212,8 +218,12 @@ type updateDependenciesOptions struct {
 	Debug            bool
 }
 
-func loadChart(chartPathOptions action.ChartPathOptions, chartReference string) (*chart.Chart, string, error) {
-	chartPath, err := chartPathOptions.LocateChart(chartReference, cli.New())
+func loadChart(chartPathOptions action.ChartPathOptions, repositoryConfig string, chartReference string) (*chart.Chart, string, error) {
+	settings := cli.New()
+	if repositoryConfig != "" {
+		settings.RepositoryConfig = repositoryConfig
+	}
+	chartPath, err := chartPathOptions.LocateChart(chartReference, settings)
 	if err != nil {
 		return nil, "", err
 	}

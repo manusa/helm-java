@@ -22,6 +22,7 @@ import com.sun.jna.Structure;
   "name",
   "generateName",
   "nameTemplate",
+  "version",
   "chart",
   "namespace",
   "createNamespace",
@@ -41,13 +42,15 @@ import com.sun.jna.Structure;
   "plainHttp",
   "keyring",
   "debug",
-  "clientOnly"
+  "clientOnly",
+  "repositoryConfig"
 })
 public class InstallOptions extends Structure {
 
   public String name;
   public int generateName;
   public String nameTemplate;
+  public String version;
   public String chart;
   public String namespace;
   public int createNamespace;
@@ -68,11 +71,13 @@ public class InstallOptions extends Structure {
   public String keyring;
   public int debug;
   public int clientOnly;
+  public String repositoryConfig;
 
   public InstallOptions(
     String name,
     int  generateName,
     String nameTemplate,
+    String version,
     String chart,
     String namespace,
     int createNamespace,
@@ -92,11 +97,13 @@ public class InstallOptions extends Structure {
     int plainHttp,
     String keyring,
     int debug,
-    int clientOnly
+    int clientOnly,
+    String repositoryConfig
   ) {
     this.name = name;
     this.generateName = generateName;
     this.nameTemplate = nameTemplate;
+    this.version = version;
     this.chart = chart;
     this.namespace = namespace;
     this.createNamespace = createNamespace;
@@ -117,5 +124,6 @@ public class InstallOptions extends Structure {
     this.keyring = keyring;
     this.debug = debug;
     this.clientOnly = clientOnly;
+    this.repositoryConfig = repositoryConfig;
   }
 }

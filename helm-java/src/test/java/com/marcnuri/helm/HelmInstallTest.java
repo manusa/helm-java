@@ -24,6 +24,7 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -231,6 +232,26 @@ class HelmInstallTest {
         .hasMessageContaining(
           "An error occurred while updating chart dependencies:",
           "i-dont-exist not found"
+        );
+    }
+
+    @Test
+    void fromRepoWithInvalidVersion(@TempDir Path tempDir) {
+      // Add a temp repository to retrieve the chart from (should include ingress-nginx)
+      final Path repositoryConfig = tempDir.resolve("repositories.yaml");
+      Helm.repo().add().withRepositoryConfig(repositoryConfig)
+        .withName("stable")
+        .withUrl(URI.create("https://charts.helm.sh/stable"))
+        .insecureSkipTlsVerify()
+        .call();
+      final InstallCommand install = Helm.install("stable/nginx-ingress")
+        .withName("ingress-nginx")
+        .withVersion("9999.9999.9999")
+        .withRepositoryConfig(repositoryConfig)
+        .clientOnly();
+      assertThatThrownBy(install::call)
+        .hasMessageContaining(
+          "chart \"nginx-ingress\" matching 9999.9999.9999 not found"
         );
     }
 
