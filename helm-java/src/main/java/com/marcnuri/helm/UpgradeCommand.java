@@ -29,6 +29,7 @@ import static com.marcnuri.helm.Release.parseSingle;
 public class UpgradeCommand extends HelmCommand<Release> {
 
   private String name;
+  private String version;
   private String chart;
   private String namespace;
   private boolean install;
@@ -72,6 +73,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   public Release call() {
     return parseSingle(run(hl -> hl.Upgrade(new UpgradeOptions(
       name,
+      version,
       chart,
       namespace,
       toInt(install),
@@ -110,6 +112,21 @@ public class UpgradeCommand extends HelmCommand<Release> {
    */
   public UpgradeCommand withName(String name) {
     this.name = name;
+    return this;
+  }
+
+  /**
+   * Specify a version constraint for the chart version to use.
+   * <p>
+   * This constraint can be a specific tag (e.g. 1.1.1) or it may reference a valid range (e.g. ^2.0.0).
+   * <p>
+   * If this is not specified, the latest version is used.
+   *
+   * @param version constraint to upgrade.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withVersion(String version) {
+    this.version = version;
     return this;
   }
 

@@ -31,6 +31,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private String name;
   private boolean generateName;
   private String nameTemplate;
+  private String version;
   private String chart;
   private String namespace;
   private boolean createNamespace;
@@ -68,6 +69,7 @@ public class InstallCommand extends HelmCommand<Release> {
       name,
       toInt(generateName),
       nameTemplate,
+      version,
       chart,
       namespace,
       toInt(createNamespace),
@@ -120,6 +122,21 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand withNameTemplate(String nameTemplate) {
     this.nameTemplate = nameTemplate;
+    return this;
+  }
+
+  /**
+   * Specify a version constraint for the chart version to use.
+   * <p>
+   * This constraint can be a specific tag (e.g. 1.1.1) or it may reference a valid range (e.g. ^2.0.0).
+   * <p>
+   * If this is not specified, the latest version is used.
+   *
+   * @param version constraint to install.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand withVersion(String version) {
+    this.version = version;
     return this;
   }
 

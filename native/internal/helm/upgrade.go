@@ -27,6 +27,7 @@ import (
 type UpgradeOptions struct {
 	CertOptions
 	Name                     string
+	Version                  string
 	Chart                    string
 	Namespace                string
 	Install                  bool
@@ -84,6 +85,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				Name:                     options.Name,
 				GenerateName:             false,
 				NameTemplate:             "",
+				Version:                  options.Version,
 				Chart:                    options.Chart,
 				Namespace:                options.Namespace,
 				CreateNamespace:          options.CreateNamespace,
@@ -106,7 +108,11 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 		}
 	}
 
+	if options.Version == "" && options.Devel {
+		options.Version = ">0.0.0-0"
+	}
 	client := action.NewUpgrade(cfg)
+	client.Version = options.Version
 	client.Namespace = options.Namespace
 	client.Install = options.Install
 	client.Force = options.Force

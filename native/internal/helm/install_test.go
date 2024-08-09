@@ -64,6 +64,23 @@ func TestInstallDryUrl(t *testing.T) {
 	}
 }
 
+func TestInstallFromRepoAndInvalidVersion(t *testing.T) {
+	_, err := Install(&InstallOptions{
+		Chart:      "stable/ingress-nginx",
+		Name:       "ingress-nginx",
+		Version:    "9999.9999.9999",
+		ClientOnly: true,
+	})
+	if err == nil {
+		t.Error("Expected install to fail but was successful")
+		return
+	}
+	if !strings.Contains(err.Error(), "chart \"ingress-nginx\" matching 9999.9999.9999 not found") {
+		t.Errorf("Expected error with version not found, got %s", err.Error())
+		return
+	}
+}
+
 func TestInstallValues(t *testing.T) {
 	create, _ := Create(&CreateOptions{
 		Name: "test",

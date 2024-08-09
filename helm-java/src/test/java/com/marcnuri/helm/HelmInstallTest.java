@@ -234,6 +234,18 @@ class HelmInstallTest {
         );
     }
 
+    @Test
+    void fromRepoWithInvalidVersion() {
+      final InstallCommand install = Helm.install("stable/nginx-ingress")
+        .withName("ingress-nginx")
+        .withVersion("9999.9999.9999")
+        .clientOnly();
+      assertThatThrownBy(install::call)
+        .hasMessageContaining(
+          "chart \"nginx-ingress\" matching 9999.9999.9999 not found"
+        );
+    }
+
 //    @Test
 //    void withDevelopmentVersionInChart() throws IOException {
 //      final Path chartYaml = tempDir.resolve("test").resolve("Chart.yaml");
