@@ -39,6 +39,7 @@ type InstallOptions struct {
 	Name                     string
 	GenerateName             bool
 	NameTemplate             string
+	Version                  string
 	Chart                    string
 	Namespace                string
 	CreateNamespace          bool
@@ -58,6 +59,9 @@ type InstallOptions struct {
 }
 
 func Install(options *InstallOptions) (string, error) {
+	if options.Version == "" && options.Devel {
+		options.Version = ">0.0.0-0"
+	}
 	registryClient, registryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
@@ -81,6 +85,7 @@ func Install(options *InstallOptions) (string, error) {
 	client := action.NewInstall(NewCfg(cfgOptions))
 	client.GenerateName = options.GenerateName
 	client.NameTemplate = options.NameTemplate
+	client.Version = options.Version
 	var name, chartReference string
 	if options.GenerateName {
 		// Generate name if applicable

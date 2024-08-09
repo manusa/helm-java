@@ -44,6 +44,7 @@ struct InstallOptions {
 	char* name;
 	int   generateName;
 	char* nameTemplate;
+	char* version;
 	char* chart;
 	char* namespace;
 	int   createNamespace;
@@ -178,6 +179,7 @@ struct UninstallOptions {
 
 struct UpgradeOptions {
 	char* name;
+	char* version;
 	char* chart;
 	char* namespace;
 	int   install;
@@ -304,6 +306,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Name:                     C.GoString(options.name),
 			GenerateName:             options.generateName == 1,
 			NameTemplate:             C.GoString(options.nameTemplate),
+			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
 			CreateNamespace:          options.createNamespace == 1,
@@ -594,6 +597,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Upgrade(&helm.UpgradeOptions{
 			Name:                     C.GoString(options.name),
+			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
 			Install:                  options.install == 1,
