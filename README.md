@@ -118,6 +118,8 @@ Release result = installCommand
   .generateName()
   // Optionally specify a template for the name generation
   .withNameTemplate("a-chart-{{randAlpha 6 | lower}}")
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify the Kubernetes namespace to install the release into
   .withNamespace("namespace")
   // Optionally create the namespace if not present
@@ -156,6 +158,9 @@ Release result = installCommand
   .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally enable verbose output
   .debug()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
   .call();
 ```
 
@@ -619,6 +624,8 @@ UpgradeCommand upgradeCommand = new Helm(Paths.get("path", "to", "chart")).upgra
 Release result = upgradeCommand
   // Name of the release to upgrade
   .withName("release-name")
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
   // Optionally specify the Kubernetes namespace to upgrade the release
   .withNamespace("namespace")
   // Optionally run an installation if a release by this name doesn't already exist
@@ -674,6 +681,9 @@ Release result = upgradeCommand
   .withKeyring(Paths.get("path", "to", "keyring"))
   // Optionally enable verbose output
   .debug()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
   .call();
 ```
 

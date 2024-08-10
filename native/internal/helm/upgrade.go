@@ -27,6 +27,7 @@ import (
 type UpgradeOptions struct {
 	CertOptions
 	Name                     string
+	Version                  string
 	Chart                    string
 	Namespace                string
 	Install                  bool
@@ -49,7 +50,8 @@ type UpgradeOptions struct {
 	KubeConfig               string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
-	ClientOnly bool
+	ClientOnly       bool
+	RepositoryConfig string
 }
 
 func Upgrade(options *UpgradeOptions) (string, error) {
@@ -84,6 +86,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				Name:                     options.Name,
 				GenerateName:             false,
 				NameTemplate:             "",
+				Version:                  options.Version,
 				Chart:                    options.Chart,
 				Namespace:                options.Namespace,
 				CreateNamespace:          options.CreateNamespace,
@@ -106,7 +109,11 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 		}
 	}
 
+	if options.Version == "" && options.Devel {
+		options.Version = ">0.0.0-0"
+	}
 	client := action.NewUpgrade(cfg)
+	client.Version = options.Version
 	client.Namespace = options.Namespace
 	client.Install = options.Install
 	client.Force = options.Force
@@ -134,7 +141,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	client.Keyring = options.Keyring
 
 	chartReference := options.Chart
-	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
+	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, options.RepositoryConfig, chartReference)
 	if err != nil {
 		return "", err
 	}

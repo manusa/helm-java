@@ -44,6 +44,7 @@ struct InstallOptions {
 	char* name;
 	int   generateName;
 	char* nameTemplate;
+	char* version;
 	char* chart;
 	char* namespace;
 	int   createNamespace;
@@ -64,6 +65,7 @@ struct InstallOptions {
 	char* keyring;
 	int   debug;
 	int   clientOnly;
+	char* repositoryConfig;
 };
 
 struct LintOptions {
@@ -178,6 +180,7 @@ struct UninstallOptions {
 
 struct UpgradeOptions {
 	char* name;
+	char* version;
 	char* chart;
 	char* namespace;
 	int   install;
@@ -205,6 +208,7 @@ struct UpgradeOptions {
 	char* keyring;
 	int   debug;
 	int   clientOnly;
+	char* repositoryConfig;
 };
 */
 import "C"
@@ -304,6 +308,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Name:                     C.GoString(options.name),
 			GenerateName:             options.generateName == 1,
 			NameTemplate:             C.GoString(options.nameTemplate),
+			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
 			CreateNamespace:          options.createNamespace == 1,
@@ -324,8 +329,9 @@ func Install(options *C.struct_InstallOptions) C.Result {
 				PlainHttp:             options.plainHttp == 1,
 				Keyring:               C.GoString(options.keyring),
 			},
-			Debug:      options.debug == 1,
-			ClientOnly: options.clientOnly == 1,
+			Debug:            options.debug == 1,
+			ClientOnly:       options.clientOnly == 1,
+			RepositoryConfig: C.GoString(options.repositoryConfig),
 		})
 	})
 }
@@ -594,6 +600,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Upgrade(&helm.UpgradeOptions{
 			Name:                     C.GoString(options.name),
+			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
 			Install:                  options.install == 1,
@@ -621,8 +628,9 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 				PlainHttp:             options.plainHttp == 1,
 				Keyring:               C.GoString(options.keyring),
 			},
-			Debug:      options.debug == 1,
-			ClientOnly: options.clientOnly == 1,
+			Debug:            options.debug == 1,
+			ClientOnly:       options.clientOnly == 1,
+			RepositoryConfig: C.GoString(options.repositoryConfig),
 		})
 	})
 }
