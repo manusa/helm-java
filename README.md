@@ -564,6 +564,46 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
+### Template
+
+Equivalent of [`helm template`](https://helm.sh/docs/helm/helm_template/).
+
+This command renders chart templates locally and displays the output.
+
+``` java
+// Instantiate the command with chart reference
+TemplateCommand templateCommand = Helm.template("chart/reference");
+// Instatiate the command with chart archive
+TemplateCommand templateCommand = new Helm(Paths.get("path", "to", "chart")).template();
+String result = templateCommand
+  // Optionally specify a name for the release
+  .withName("release-name")
+  // Optionally specify a version constraint for the chart version to use.
+  .withVersion("^1.0.0")
+  // Optionally update dependencies if they are missing before installing the chart
+  .dependencyUpdate()
+  // Optionally set values for the chart
+  .set("key", "value")
+  // Optionally specify an SSL certificate file to identify the registry client
+  .withCertFile(Paths.get("path", "to", "cert"))
+  // Optionally specify an SSL key file to identify the registry client
+  .withKey(Paths.get("path", "to", "key"))
+  // Optionally verify certificates of HTTPS-enabled servers using this CA bundle
+  .withCaFile(Paths.get("path", "to", "ca"))
+  // Optionally skip TLS certificate checks of HTTPS-enabled servers
+  .insecureSkipTlsVerify()
+  // Optionally allow insecure plain HTTP connections for the chart download
+  .plainHttp()
+  // Optionally specify a keyring (used for verification)
+  .withKeyring(Paths.get("path", "to", "keyring"))
+  // Optionally enable debug mode to print out verbose information
+  .debug()
+  // Optionally set the path to the file containing repository names and URLs
+  // Defaults to "~/.config/helm/repositories.yaml"
+  .withRepositoryConfig(Paths.get("path", "to", "config"))
+  .call();
+```
+
 ### Test
 
 Equivalent of [`helm test`](https://helm.sh/docs/helm/helm_test/).

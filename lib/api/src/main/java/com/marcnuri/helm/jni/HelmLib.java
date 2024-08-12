@@ -62,6 +62,8 @@ public interface HelmLib extends Library {
 
   Result Show(ShowOptions options);
 
+  Result Template(TemplateOptions options);
+
   Result Test(TestOptions options);
 
   Result Uninstall(UninstallOptions options);

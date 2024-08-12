@@ -25,6 +25,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/strvals"
 	"net/url"
 	"os"
@@ -59,7 +60,23 @@ type InstallOptions struct {
 	RepositoryConfig string
 }
 
+type installOutputs struct {
+	updateOutput      string
+	registryClientOut *bytes.Buffer
+	kubeOut           *bytes.Buffer
+}
+
 func Install(options *InstallOptions) (string, error) {
+	rel, outputs, err := install(options)
+	// Generate report
+	out := StatusReport(rel, false, options.Debug)
+	return appendToOutOrErr(concat(cStr(outputs.updateOutput), cBuf(outputs.registryClientOut), cBuf(outputs.kubeOut)), out, err)
+}
+
+func install(options *InstallOptions) (*release.Release, *installOutputs, error) {
+	outputs := &installOutputs{
+		kubeOut: bytes.NewBuffer(make([]byte, 0)),
+	}
 	if options.Version == "" && options.Devel {
 		options.Version = ">0.0.0-0"
 	}
@@ -71,17 +88,17 @@ func Install(options *InstallOptions) (string, error) {
 		options.PlainHttp,
 		options.Debug,
 	)
+	outputs.registryClientOut = registryClientOut
 	if err != nil {
-		return "", err
+		return nil, outputs, err
 	}
-	kubeOut := bytes.NewBuffer(make([]byte, 0))
 	cfgOptions := &CfgOptions{
 		RegistryClient: registryClient,
 		KubeConfig:     options.KubeConfig,
 		Namespace:      options.Namespace,
 	}
 	if options.Debug {
-		cfgOptions.KubeOut = kubeOut
+		cfgOptions.KubeOut = outputs.kubeOut
 	}
 	client := action.NewInstall(NewCfg(cfgOptions))
 	client.GenerateName = options.GenerateName
@@ -116,10 +133,10 @@ func Install(options *InstallOptions) (string, error) {
 	client.PlainHTTP = options.PlainHttp
 	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, options.RepositoryConfig, chartReference)
 	if err != nil {
-		return "", err
+		return nil, outputs, err
 	}
 	if notInstallable := checkIfInstallable(chartRequested); notInstallable != nil {
-		return "", notInstallable
+		return nil, outputs, notInstallable
 	}
 	// Dependency management
 	chartRequested, updateOutput, err := updateDependencies(&updateDependenciesOptions{
@@ -128,16 +145,17 @@ func Install(options *InstallOptions) (string, error) {
 		Debug:            options.Debug,
 	}, chartRequested, chartPath)
 	if err != nil {
-		return "", err
+		return nil, outputs, err
 	}
+	outputs.updateOutput = updateOutput
 	// Dry Run options
 	if invalidDryRun := validateDryRunOptionFlag(client.DryRunOption); invalidDryRun != nil {
-		return "", invalidDryRun
+		return nil, outputs, invalidDryRun
 	}
 	// Values
 	var values, invalidValues = parseValues(options.Values)
 	if invalidValues != nil {
-		return "", invalidValues
+		return nil, outputs, invalidValues
 	}
 
 	// Create context that handles SIGINT, SIGTERM
@@ -154,10 +172,8 @@ func Install(options *InstallOptions) (string, error) {
 	}()
 
 	// Run
-	release, err := client.RunWithContext(ctx, chartRequested, values)
-	// Generate report
-	out := StatusReport(release, false, options.Debug)
-	return appendToOutOrErr(concat(cStr(updateOutput), cBuf(registryClientOut), cBuf(kubeOut)), out, err)
+	rel, err := client.RunWithContext(ctx, chartRequested, values)
+	return rel, outputs, err
 }
 
 var escapedChars = []rune("\"'\\={[,.]}")

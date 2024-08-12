@@ -158,6 +158,22 @@ struct ShowOptions {
 	int   debug;
 };
 
+struct TemplateOptions {
+	char* name;
+	char* version;
+	char* chart;
+	int   dependencyUpdate;
+	char* values;
+	char* certFile;
+	char* keyFile;
+	char* caFile;
+	int   insecureSkipTlsVerify;
+	int   plainHttp;
+	char* keyring;
+	int   debug;
+	char* repositoryConfig;
+};
+
 struct TestOptions {
 	char* releaseName;
 	int   timeout;
@@ -555,6 +571,29 @@ func Show(options *C.struct_ShowOptions) C.Result {
 			Insecure:     options.insecure == 1,
 			PlainHttp:    options.plainHttp == 1,
 			Debug:        options.debug == 1,
+		})
+	})
+}
+
+//export Template
+func Template(options *C.struct_TemplateOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Template(&helm.TemplateOptions{
+			Name:             C.GoString(options.name),
+			Version:          C.GoString(options.version),
+			Chart:            C.GoString(options.chart),
+			DependencyUpdate: options.dependencyUpdate == 1,
+			Values:           C.GoString(options.values),
+			CertOptions: helm.CertOptions{
+				CertFile:              C.GoString(options.certFile),
+				KeyFile:               C.GoString(options.keyFile),
+				CaFile:                C.GoString(options.caFile),
+				InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
+				PlainHttp:             options.plainHttp == 1,
+				Keyring:               C.GoString(options.keyring),
+			},
+			Debug:            options.debug == 1,
+			RepositoryConfig: C.GoString(options.repositoryConfig),
 		})
 	})
 }

@@ -159,6 +159,25 @@ public class Helm {
   }
 
   /**
+   * This command renders chart templates locally and displays the output.
+   *
+   * @param chart The chart to render the templates for.
+   * @return the {@link TemplateCommand} command.
+   */
+  public static TemplateCommand template(String chart) {
+    return new TemplateCommand(HelmLibHolder.INSTANCE).withChart(chart);
+  }
+
+  /**
+   * This command renders chart templates locally and displays the output.
+   *
+   * @return the {@link TemplateCommand} command.
+   */
+  public TemplateCommand template() {
+    return new TemplateCommand(HelmLibHolder.INSTANCE, path);
+  }
+
+  /**
    * This command runs the tests for a release.
    *
    * @param releaseName the name of the release to test.
