@@ -159,24 +159,22 @@ public class Helm {
   }
 
   /**
-   * This command template create a deployment.
+   * This command renders chart templates locally and displays the output.
    *
-   * @param name  The name of the release (required)
-   * @param chart The chart to template (can be either a path to a packaged chart or an unpacked chart directory)
-   * @return the {@link TemplateCommand} command.
-   */
-  public static TemplateCommand template(String name, String chart) {
-    return new TemplateCommand(HelmLibHolder.INSTANCE, name, chart);
-  }
-
-  /**
-   * This command template create a deployment.
-   *
-   * @param chart The chart to template (can be either a path to a packaged chart or an unpacked chart directory)
+   * @param chart The chart to render the templates for.
    * @return the {@link TemplateCommand} command.
    */
   public static TemplateCommand template(String chart) {
-    return new TemplateCommand(HelmLibHolder.INSTANCE, chart);
+    return new TemplateCommand(HelmLibHolder.INSTANCE).withChart(chart);
+  }
+
+  /**
+   * This command renders chart templates locally and displays the output.
+   *
+   * @return the {@link TemplateCommand} command.
+   */
+  public TemplateCommand template() {
+    return new TemplateCommand(HelmLibHolder.INSTANCE, path);
   }
 
   /**

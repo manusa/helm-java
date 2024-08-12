@@ -20,86 +20,49 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-
-	"context"
-	"helm.sh/helm/v3/pkg/action"
 )
 
 type TemplateOptions struct {
 	CertOptions
-	Name                     string
-	Chart                    string
-	Namespace                string
-	DependencyUpdate         bool
-	Values                   string
-	KubeConfig               string
-	Debug                    bool
+	Name             string
+	Version          string
+	Chart            string
+	DependencyUpdate bool
+	Values           string
+	Debug            bool
+	RepositoryConfig string
 }
 
 func Template(options *TemplateOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
-		options.CertFile,
-		options.KeyFile,
-		options.CaFile,
-		options.InsecureSkipTLSverify,
-		options.PlainHttp,
-		options.Debug,
-	)
-	if err != nil {
-		return "", err
+	var releaseName string
+	if options.Name == "" {
+		releaseName = "release-name"
+	} else {
+		releaseName = options.Name
 	}
-	kubeOut := bytes.NewBuffer(make([]byte, 0))
-	cfgOptions := &CfgOptions{
-		RegistryClient: registryClient,
-		KubeConfig:     options.KubeConfig,
-		Namespace:      options.Namespace,
-	}
-	if options.Debug {
-		cfgOptions.KubeOut = kubeOut
-	}
-	client := action.NewInstall(NewCfg(cfgOptions))
-
-	// This is for the case where "" is specifically passed in as a
-	// value. When there is no value passed in NoOptDefVal will be used
-	// and it is set to client. See addInstallFlags.
-	if client.DryRunOption == "" {
-		client.DryRunOption = "true"
-	}
-	client.DryRun = true
-	client.ReleaseName = options.Name
-	client.Replace = true
-	client.Namespace = options.Namespace
-	client.CreateNamespace = true
-	client.ClientOnly = true
-	
-	chartReference := options.Chart
-	chartRequested, chartPath, err := loadChart(client.ChartPathOptions, chartReference)
-	if err != nil {
-		return "", err
-	}
-	// Dependency management
-	chartRequested, updateOutput, err := updateDependencies(&updateDependenciesOptions{
+	rel, _, err := install(&InstallOptions{
+		DryRun:           true,
+		ClientOnly:       true,
+		CertOptions:      options.CertOptions,
+		Name:             releaseName,
+		Version:          options.Version,
+		Chart:            options.Chart,
 		DependencyUpdate: options.DependencyUpdate,
-		Keyring:          options.Keyring,
+		Values:           options.Values,
 		Debug:            options.Debug,
-	}, chartRequested, chartPath)
+		RepositoryConfig: options.RepositoryConfig,
+	})
 
-	ctx := context.Background()
-	// Values
-	var values, invalidValues = parseValues(options.Values)
-	if invalidValues != nil {
-		return "", invalidValues
-	}
-	// Run
-	rel, err := client.RunWithContext(ctx, chartRequested, values)
-	if err != nil {
+	if err != nil && !options.Debug {
+		if rel != nil {
+			return "", fmt.Errorf("%w\n\nUse --debug flag to render out invalid YAML", err)
+		}
 		return "", err
 	}
-	// Generate report
-	out := StatusReport(rel, false, options.Debug)
-	appendToOutOrErr(concat(cStr(updateOutput), cBuf(registryClientOut), cBuf(kubeOut)), out, err)
 
 	var manifests bytes.Buffer
-	fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest))
-	return rel.Manifest,err
+	if _, fmtErr := fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest)); fmtErr != nil {
+		return "", fmtErr
+	}
+	return appendToOutOrErr(&manifests, "", err)
 }

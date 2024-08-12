@@ -18,23 +18,63 @@
 
  import com.sun.jna.Structure;
 
- @Structure.FieldOrder({"name", "chart", "namespace", "dependencyUpdate", "values", "kubeConfig", "debug"})
+@Structure.FieldOrder({
+  "name",
+  "version",
+  "chart",
+  "dependencyUpdate",
+  "values",
+  "certFile",
+  "keyFile",
+  "caFile",
+  "insecureSkipTlsVerify",
+  "plainHttp",
+  "keyring",
+  "debug",
+  "repositoryConfig"
+})
 public class TemplateOptions extends Structure {
-    public String name;
-    public String chart;
-    public String namespace;
-    public int dependencyUpdate;
-    public String values;
-    public String kubeConfig;
-    public int debug;
-  
-    public TemplateOptions(String name, String chart, String namespace, int dependencyUpdate, String values,String kubeConfig, int debug) {
-      this.name = name;
-      this.chart = chart;
-      this.namespace = namespace;
-      this.dependencyUpdate = dependencyUpdate;
-      this.values = values;
-      this.kubeConfig = kubeConfig;
-      this.debug = debug;
-    }
+  public String name;
+  public String version;
+  public String chart;
+  public int dependencyUpdate;
+  public String values;
+  public String certFile;
+  public String keyFile;
+  public String caFile;
+  public int insecureSkipTlsVerify;
+  public int plainHttp;
+  public String keyring;
+  public int debug;
+  public String repositoryConfig;
+
+  public TemplateOptions(
+    String name,
+    String version,
+    String chart,
+    int dependencyUpdate,
+    String values,
+    String certFile,
+    String keyFile,
+    String caFile,
+    int insecureSkipTlsVerify,
+    int plainHttp,
+    String keyring,
+    int debug,
+    String repositoryConfig
+  ) {
+    this.name = name;
+    this.version = version;
+    this.chart = chart;
+    this.dependencyUpdate = dependencyUpdate;
+    this.values = values;
+    this.certFile = certFile;
+    this.keyFile = keyFile;
+    this.caFile = caFile;
+    this.insecureSkipTlsVerify = insecureSkipTlsVerify;
+    this.plainHttp = plainHttp;
+    this.keyring = keyring;
+    this.debug = debug;
+    this.repositoryConfig = repositoryConfig;
   }
+}
