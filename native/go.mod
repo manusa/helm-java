@@ -5,7 +5,7 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/distribution/distribution/v3 v3.0.0-beta.1
 	github.com/gofrs/flock v0.12.1
 	github.com/orcaman/concurrent-map/v2 v2.0.1
