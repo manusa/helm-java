@@ -55,7 +55,7 @@
     <com.marcnuri.jkube-helm.repository.snapshots>https://oss.sonatype.org/content/repositories/snapshots</com.marcnuri.jkube-helm.repository.snapshots>
     <com.marcnuri.jkube-helm.repository.stable>https://repo1.maven.org/maven2</com.marcnuri.jkube-helm.repository.stable>
     <version.assertj>3.26.3</version.assertj>
-    <version.jna>5.14.0</version.jna>
+    <version.jna>5.15.0</version.jna>
     <version.junit>5.11.0</version.junit>
     <version.maven-core>3.9.5</version.maven-core>
     <version.maven-plugin-annotations>3.10.1</version.maven-plugin-annotations>
