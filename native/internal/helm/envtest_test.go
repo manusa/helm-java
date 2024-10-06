@@ -43,12 +43,9 @@ func setupEnvTest() (func(), *os.File) {
 		panic(err)
 	}
 	envTest := &env.Env{
-		FS:  afero.Afero{Fs: afero.NewOsFs()},
-		Out: os.Stdout,
-		Client: &remote.Client{
-			Bucket: "kubebuilder-tools",
-			Server: "storage.googleapis.com",
-		},
+		FS:     afero.Afero{Fs: afero.NewOsFs()},
+		Out:    os.Stdout,
+		Client: &remote.HTTPClient{},
 		Platform: versions.PlatformItem{
 			Platform: versions.Platform{
 				OS:   runtime.GOOS,
