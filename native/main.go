@@ -47,6 +47,7 @@ struct InstallOptions {
 	char* version;
 	char* chart;
 	char* namespace;
+	int   atomic;
 	int   createNamespace;
 	char* description;
 	int   devel;
@@ -327,6 +328,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
+			Atomic:                   options.atomic == 1,
 			CreateNamespace:          options.createNamespace == 1,
 			Description:              C.GoString(options.description),
 			Devel:                    options.devel == 1,

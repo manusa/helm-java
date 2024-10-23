@@ -124,6 +124,8 @@ Release result = installCommand
   .withNamespace("namespace")
   // Optionally create the namespace if not present
   .createNamespace()
+  // Optionally, if set, the installation process deletes the installation on failure
+  .atomic()
   // Optionally specify a custom description for the release
   .withDescription("the-description")
   // Optionally enable the use of development versions too

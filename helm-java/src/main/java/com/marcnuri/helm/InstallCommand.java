@@ -34,6 +34,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private String version;
   private String chart;
   private String namespace;
+  private boolean atomic;
   private boolean createNamespace;
   private String description;
   private boolean devel;
@@ -73,6 +74,7 @@ public class InstallCommand extends HelmCommand<Release> {
       version,
       chart,
       namespace,
+      toInt(atomic),
       toInt(createNamespace),
       description,
       toInt(devel),
@@ -171,6 +173,18 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand createNamespace() {
     this.createNamespace = true;
+    return this;
+  }
+
+  /**
+   * If set, the installation process deletes the installation on failure.
+   * <p>
+   * The {@link #wait()} flag will be set automatically if used.
+   *
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand atomic() {
+    this.atomic = true;
     return this;
   }
 

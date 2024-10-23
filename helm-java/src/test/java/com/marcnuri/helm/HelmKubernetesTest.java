@@ -152,6 +152,49 @@ class HelmKubernetesTest {
           .isEqualTo("create: failed to create: namespaces \"non-existent\" not found");
       }
     }
+
+    @Nested
+    class Failing {
+      private Helm failingHelm;
+
+      @BeforeEach
+      void setUp(@TempDir Path tempDir) throws IOException {
+        failingHelm = Helm.create().withName("test-failing").withDir(tempDir).call();
+        Path podWithoutSpecPath = tempDir.resolve("test-failing").resolve("templates").resolve("pod-without-spec.yaml");
+        Files.createFile(podWithoutSpecPath);
+        Files.write(podWithoutSpecPath, (
+          "apiVersion: v1\n" +
+          "kind: Pod\n" +
+          "metadata:\n" +
+          "  name: {{ include \"test-failing.fullname\" . }}\n" +
+          "  labels:\n" +
+          "    {{- include \"test-failing.labels\" . | nindent 4 }}\n" +
+          "spec:\n").getBytes(
+                StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      }
+
+      @Test
+      void withoutAtomic() {
+        InstallCommand installCommand = failingHelm.install().withKubeConfig(kubeConfig).withName("test-fail");
+        assertThatThrownBy(installCommand::call).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Pod \"test-fail-test-failing\" is invalid: spec.containers: Required value");
+
+        assertThat(Helm.list().withKubeConfig(kubeConfig).call()).filteredOn(r -> r.getName().equals("test-fail"))
+                .singleElement()
+                .returns("failed", Release::getStatus);
+      }
+
+      @Test
+      void withAtomic() {
+        InstallCommand atomicInstallCommand =
+                failingHelm.install().withKubeConfig(kubeConfig).withName("test-rollback").atomic();
+        assertThatThrownBy(atomicInstallCommand::call).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Pod \"test-rollback-test-failing\" is invalid: spec.containers: Required value");
+
+        assertThat(Helm.list().withKubeConfig(kubeConfig).call()).filteredOn(r -> r.getName().equals("test-rollback"))
+                .isEmpty();
+      }
+    }
   }
 
   @Nested
