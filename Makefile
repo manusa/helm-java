@@ -79,3 +79,14 @@ license:
 	   head -n $$license_len $$file | diff -q $(LICENSE_FILE) - > /dev/null ||					\
 	     ( ( cat $(LICENSE_FILE); echo; cat $$file ) > $$file.temp; mv $$file.temp $$file )		\
 	 done
+
+.PHONY: update-go-deps
+update-go-deps:
+	@echo ">> updating Go dependencies"
+	@cd native && for m in $$(go list -mod=readonly -m -f '{{ if and (not .Indirect) (not .Main)}}{{.Path}}{{end}}' all); do \
+		go get $$m; \
+	done
+	cd native && go mod tidy
+ifneq (,$(wildcard native/vendor))
+	cd native && go mod vendor
+endif
