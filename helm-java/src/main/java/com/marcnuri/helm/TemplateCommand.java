@@ -25,19 +25,20 @@ import java.util.Map;
 
 public class TemplateCommand extends HelmCommand<String> {
 
-  public String name;
+  private String name;
   private String version;
-  public String chart;
+  private String chart;
+  private String namespace;
   private boolean dependencyUpdate;
-  public final Map<String, String> values;
+  private final Map<String, String> values;
   private Path certFile;
   private Path keyFile;
   private Path caFile;
   private boolean insecureSkipTlsVerify;
   private boolean plainHttp;
   private Path keyring;
-  public boolean debug;
-  public Path repositoryConfig;
+  private boolean debug;
+  private Path repositoryConfig;
 
   public TemplateCommand(HelmLib helmLib) {
     this(helmLib, null);
@@ -55,6 +56,7 @@ public class TemplateCommand extends HelmCommand<String> {
       name,
       version,
       chart,
+      namespace,
       toInt(dependencyUpdate),
       urlEncode(values),
       toString(certFile),
@@ -102,6 +104,17 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   TemplateCommand withChart(String chart) {
     this.chart = chart;
+    return this;
+  }
+
+  /**
+   * Kubernetes namespace scope for this request.
+   *
+   * @param namespace the Kubernetes namespace for this request.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand withNamespace(String namespace) {
+    this.namespace = namespace;
     return this;
   }
 

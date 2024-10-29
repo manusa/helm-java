@@ -27,6 +27,7 @@ type TemplateOptions struct {
 	Name             string
 	Version          string
 	Chart            string
+	Namespace        string
 	DependencyUpdate bool
 	Values           string
 	Debug            bool
@@ -47,6 +48,7 @@ func Template(options *TemplateOptions) (string, error) {
 		Name:             releaseName,
 		Version:          options.Version,
 		Chart:            options.Chart,
+		Namespace:        options.Namespace,
 		DependencyUpdate: options.DependencyUpdate,
 		Values:           options.Values,
 		Debug:            options.Debug,

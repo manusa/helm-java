@@ -117,5 +117,14 @@ class HelmTemplateTest {
         .contains("chart: nginx-ingress-");
     }
 
+    @Test
+    void withNamespace() {
+      final String result = Helm.template("stable/nginx-ingress")
+        .withRepositoryConfig(repositoryConfig)
+        .withNamespace("the-namespace")
+        .call();
+      assertThat(result)
+        .contains("namespace: the-namespace");
+    }
   }
 }

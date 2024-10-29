@@ -582,6 +582,8 @@ String result = templateCommand
   .withName("release-name")
   // Optionally specify a version constraint for the chart version to use.
   .withVersion("^1.0.0")
+  // Optionally specify the Kubernetes namespace for the release
+  .withNamespace("namespace")
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
   // Optionally set values for the chart
