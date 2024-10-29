@@ -163,6 +163,7 @@ struct TemplateOptions {
 	char* name;
 	char* version;
 	char* chart;
+	char* namespace;
 	int   dependencyUpdate;
 	char* values;
 	char* certFile;
@@ -584,6 +585,7 @@ func Template(options *C.struct_TemplateOptions) C.Result {
 			Name:             C.GoString(options.name),
 			Version:          C.GoString(options.version),
 			Chart:            C.GoString(options.chart),
+			Namespace:        C.GoString(options.namespace),
 			DependencyUpdate: options.dependencyUpdate == 1,
 			Values:           C.GoString(options.values),
 			CertOptions: helm.CertOptions{

@@ -22,6 +22,7 @@
   "name",
   "version",
   "chart",
+  "namespace",
   "dependencyUpdate",
   "values",
   "certFile",
@@ -37,6 +38,7 @@ public class TemplateOptions extends Structure {
   public String name;
   public String version;
   public String chart;
+  public String namespace;
   public int dependencyUpdate;
   public String values;
   public String certFile;
@@ -52,6 +54,7 @@ public class TemplateOptions extends Structure {
     String name,
     String version,
     String chart,
+    String namespace,
     int dependencyUpdate,
     String values,
     String certFile,
@@ -66,6 +69,7 @@ public class TemplateOptions extends Structure {
     this.name = name;
     this.version = version;
     this.chart = chart;
+    this.namespace = namespace;
     this.dependencyUpdate = dependencyUpdate;
     this.values = values;
     this.certFile = certFile;
