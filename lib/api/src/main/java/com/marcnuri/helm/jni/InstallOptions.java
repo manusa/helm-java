@@ -54,7 +54,7 @@ public class InstallOptions extends Structure {
   public String version;
   public String chart;
   public String namespace;
-    public int atomic;
+  public int atomic;
   public int createNamespace;
   public String description;
   public int devel;

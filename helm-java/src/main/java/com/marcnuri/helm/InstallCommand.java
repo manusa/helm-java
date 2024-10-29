@@ -179,7 +179,7 @@ public class InstallCommand extends HelmCommand<Release> {
   /**
    * If set, the installation process deletes the installation on failure.
    * <p>
-   * The {@link #wait()} flag will be set automatically if used.
+   * The {@link #waitReady()} flag will be set automatically if used.
    *
    * @return this {@link InstallCommand} instance.
    */

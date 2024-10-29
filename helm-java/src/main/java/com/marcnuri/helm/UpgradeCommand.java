@@ -210,7 +210,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   /**
    * If set, upgrade process rolls back changes made in case of failed upgrade.
    * <p>
-   * The {@link #wait()} flag will be set automatically if used.
+   * The {@link #waitReady()} flag will be set automatically if used.
    *
    * @return this {@link UpgradeCommand} instance.
    */
