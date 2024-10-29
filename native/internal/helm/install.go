@@ -43,6 +43,7 @@ type InstallOptions struct {
 	Version                  string
 	Chart                    string
 	Namespace                string
+	Atomic                   bool
 	CreateNamespace          bool
 	Description              string
 	Devel                    bool
@@ -114,6 +115,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	}
 	client.ReleaseName = name
 	client.Namespace = options.Namespace
+	client.Atomic = options.Atomic
 	client.CreateNamespace = options.CreateNamespace
 	client.Description = options.Description
 	client.Devel = options.Devel

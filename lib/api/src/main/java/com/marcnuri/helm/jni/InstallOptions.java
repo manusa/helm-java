@@ -25,6 +25,7 @@ import com.sun.jna.Structure;
   "version",
   "chart",
   "namespace",
+  "atomic",
   "createNamespace",
   "description",
   "devel",
@@ -53,6 +54,7 @@ public class InstallOptions extends Structure {
   public String version;
   public String chart;
   public String namespace;
+  public int atomic;
   public int createNamespace;
   public String description;
   public int devel;
@@ -80,6 +82,7 @@ public class InstallOptions extends Structure {
     String version,
     String chart,
     String namespace,
+    int atomic,
     int createNamespace,
     String description,
     int devel,
@@ -106,6 +109,7 @@ public class InstallOptions extends Structure {
     this.version = version;
     this.chart = chart;
     this.namespace = namespace;
+    this.atomic = atomic;
     this.createNamespace = createNamespace;
     this.description = description;
     this.devel = devel;
