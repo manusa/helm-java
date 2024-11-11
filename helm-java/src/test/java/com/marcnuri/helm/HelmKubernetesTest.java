@@ -118,6 +118,22 @@ class HelmKubernetesTest {
       }
 
       @Test
+      void withWaitAndCustomTimeout() {
+        final Release result = helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("with-wait-custom-timeout")
+          .waitReady()
+          .withTimeout(330)
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m30s"
+          );
+      }
+
+      @Test
       void withNamespaceAndCreateNamespace() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
@@ -150,6 +166,18 @@ class HelmKubernetesTest {
         assertThatThrownBy(install::call)
           .message()
           .isEqualTo("create: failed to create: namespaces \"non-existent\" not found");
+      }
+
+      @Test
+      void lowTimeout() {
+        final InstallCommand installCommand = helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("wait-install-low-timeout")
+          .waitReady()
+          .withTimeout(1);
+        assertThatThrownBy(installCommand::call)
+          .message()
+          .contains("context deadline exceeded");
       }
     }
 
@@ -468,6 +496,23 @@ class HelmKubernetesTest {
             "beginning wait for 3 resources with timeout of 5m0s"
           );
       }
+
+      @Test
+      void withWaitAndCustomTimeout() {
+        helm.install().withName("upgrade-with-wait-custom-timeout").withKubeConfig(kubeConfig).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("upgrade-with-wait-custom-timeout")
+          .waitReady()
+          .withTimeout(330)
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m30s"
+          );
+      }
     }
 
     @Nested
@@ -480,6 +525,19 @@ class HelmKubernetesTest {
         assertThatThrownBy(upgrade::call)
           .message()
           .isEqualTo("\"upgrade-missing-release\" has no deployed releases");
+      }
+
+      @Test
+      void lowTimeout() {
+        helm.install().withName("wait-upgrade-low-timeout").withKubeConfig(kubeConfig).call();
+        final UpgradeCommand upgrade = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("wait-upgrade-low-timeout")
+          .waitReady()
+          .withTimeout(1);
+        assertThatThrownBy(upgrade::call)
+          .message()
+          .contains("context deadline exceeded");
       }
     }
   }

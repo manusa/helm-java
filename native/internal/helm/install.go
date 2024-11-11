@@ -122,10 +122,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	client.DryRun = options.DryRun
 	client.DryRunOption = dryRunOption(options.DryRunOption)
 	client.Wait = options.Wait
-	// Timeout defaults to 5 minutes (used when wait is enabled)
-	if options.Timeout == 0 {
-		client.Timeout = 300 * time.Second
-	}
+	client.Timeout = options.Timeout
 	client.ClientOnly = options.ClientOnly
 	client.CertFile = options.CertFile
 	client.KeyFile = options.KeyFile

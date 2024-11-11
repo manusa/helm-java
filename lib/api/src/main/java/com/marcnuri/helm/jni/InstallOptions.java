@@ -34,6 +34,7 @@ import com.sun.jna.Structure;
   "dryRun",
   "dryRunOption",
   "wait",
+  "timeout",
   "values",
   "kubeConfig",
   "certFile",
@@ -63,6 +64,7 @@ public class InstallOptions extends Structure {
   public int dryRun;
   public String dryRunOption;
   public int wait;
+  public int timeout;
   public String values;
   public String kubeConfig;
   public String certFile;
@@ -91,6 +93,7 @@ public class InstallOptions extends Structure {
     int dryRun,
     String dryRunOption,
     int wait,
+    int timeout,
     String values,
     String kubeConfig,
     String certFile,
@@ -118,6 +121,7 @@ public class InstallOptions extends Structure {
     this.dryRun = dryRun;
     this.dryRunOption = dryRunOption;
     this.wait = wait;
+    this.timeout = timeout;
     this.values = values;
     this.kubeConfig = kubeConfig;
     this.certFile = certFile;

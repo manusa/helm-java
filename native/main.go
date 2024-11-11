@@ -56,6 +56,7 @@ struct InstallOptions {
 	int   dryRun;
 	char* dryRunOption;
 	int   wait;
+	int   timeout;
 	char* values;
 	char* kubeConfig;
 	char* certFile;
@@ -216,6 +217,7 @@ struct UpgradeOptions {
 	int   dryRun;
 	char* dryRunOption;
 	int   wait;
+	int   timeout;
 	char* values;
 	char* kubeConfig;
 	char* certFile;
@@ -321,6 +323,12 @@ func DependencyUpdate(options *C.struct_DependencyOptions) C.Result {
 
 //export Install
 func Install(options *C.struct_InstallOptions) C.Result {
+	var timeout time.Duration
+	if options.timeout > 0 {
+		timeout = time.Duration(int(options.timeout)) * time.Second
+	} else {
+		timeout = time.Duration(300) * time.Second
+	}
 	return runCommand(func() (string, error) {
 		return helm.Install(&helm.InstallOptions{
 			Name:                     C.GoString(options.name),
@@ -338,6 +346,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			DryRun:                   options.dryRun == 1,
 			DryRunOption:             C.GoString(options.dryRunOption),
 			Wait:                     options.wait == 1,
+			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),
 			KubeConfig:               C.GoString(options.kubeConfig),
 			CertOptions: helm.CertOptions{
@@ -640,6 +649,12 @@ func Uninstall(options *C.struct_UninstallOptions) C.Result {
 
 //export Upgrade
 func Upgrade(options *C.struct_UpgradeOptions) C.Result {
+	var timeout time.Duration
+	if options.timeout > 0 {
+		timeout = time.Duration(int(options.timeout)) * time.Second
+	} else {
+		timeout = time.Duration(300) * time.Second
+	}
 	return runCommand(func() (string, error) {
 		return helm.Upgrade(&helm.UpgradeOptions{
 			Name:                     C.GoString(options.name),
@@ -661,6 +676,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			DryRun:                   options.dryRun == 1,
 			DryRunOption:             C.GoString(options.dryRunOption),
 			Wait:                     options.wait == 1,
+			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),
 			KubeConfig:               C.GoString(options.kubeConfig),
 			CertOptions: helm.CertOptions{
