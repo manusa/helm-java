@@ -452,6 +452,22 @@ class HelmKubernetesTest {
           .returns("2", Release::getRevision)
           .returns("deployed", Release::getStatus);
       }
+
+      @Test
+      void withWait() {
+        helm.install().withName("upgrade-with-wait").withKubeConfig(kubeConfig).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("upgrade-with-wait")
+          .waitReady()
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m0s"
+          );
+      }
     }
 
     @Nested
