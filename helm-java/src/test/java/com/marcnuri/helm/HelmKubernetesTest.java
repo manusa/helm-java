@@ -49,7 +49,7 @@ class HelmKubernetesTest {
 
   @BeforeAll
   static void setUpKubernetes(@TempDir Path tempDir) throws IOException {
-    k3sContainer = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.29.0-k3s1"));
+    k3sContainer = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.31.2-k3s1"));
     k3sContainer.start();
     kubeConfig = tempDir.resolve("config.yaml");
     Files.write(kubeConfig, k3sContainer.getKubeConfigYaml().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
