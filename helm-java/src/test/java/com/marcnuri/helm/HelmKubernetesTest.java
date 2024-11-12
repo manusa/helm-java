@@ -74,12 +74,12 @@ class HelmKubernetesTest {
       void withName() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("test")
+          .withName("helm-install-with-name")
           .call();
         assertThat(result)
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: test\n",
+            "NAME: helm-install-with-name\n",
             "LAST DEPLOYED: ",
             "STATUS: deployed",
             "REVISION: 1"
@@ -90,23 +90,26 @@ class HelmKubernetesTest {
       void withDebug() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("with-debug")
+          .withName("helm-install-with-with-debug")
           .debug()
           .call();
         assertThat(result)
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: with-debug\n",
+            "NAME: helm-install-with-with-debug\n",
             "---\n",
             "creating 3 resource(s)"
           );
       }
 
       @Test
-      void withWait() {
+      void withWaitReady() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("with-wait")
+          .withName("helm-install-with-wait-ready")
+          .set("fullnameOverride", "helm-install-with-wait-ready")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .debug()
           .call();
@@ -263,17 +266,21 @@ class HelmKubernetesTest {
       void withValidRelease() {
         helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("helm-test")
+          .withName("helm-test-valid-release")
+          .set("fullnameOverride", "helm-test-valid-release")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          // Wait for the deployment to be ready before testing
           .waitReady()
           .call();
-        final Release result = Helm.test("helm-test")
+        final Release result = Helm.test("helm-test-valid-release")
           .withKubeConfig(kubeConfig)
           .call();
         assertThat(result)
-          .hasFieldOrPropertyWithValue("name", "helm-test")
+          .hasFieldOrPropertyWithValue("name", "helm-test-valid-release")
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: helm-test\n",
+            "NAME: helm-test-valid-release\n",
             "LAST DEPLOYED: ",
             "STATUS: deployed",
             "REVISION: 1"
