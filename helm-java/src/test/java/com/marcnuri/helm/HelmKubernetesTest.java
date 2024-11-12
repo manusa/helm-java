@@ -121,10 +121,13 @@ class HelmKubernetesTest {
       }
 
       @Test
-      void withWaitAndCustomTimeout() {
+      void withWaitReadyAndCustomTimeout() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("with-wait-custom-timeout")
+          .withName("helm-install-with-wait-ready-and-custom-timeout")
+          .set("fullnameOverride", "helm-install-with-wait-ready-and-custom-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .withTimeout(330)
           .debug()
@@ -175,7 +178,10 @@ class HelmKubernetesTest {
       void lowTimeout() {
         final InstallCommand installCommand = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("wait-install-low-timeout")
+          .withName("helm-install-with-wait-ready-and-low-timeout")
+          .set("fullnameOverride", "helm-install-with-wait-ready-and-low-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .withTimeout(1);
         assertThatThrownBy(installCommand::call)
@@ -489,11 +495,14 @@ class HelmKubernetesTest {
       }
 
       @Test
-      void withWait() {
-        helm.install().withName("upgrade-with-wait").withKubeConfig(kubeConfig).call();
+      void withWaitReady() {
+        helm.install().withName("helm-upgrade-with-wait-ready").withKubeConfig(kubeConfig).call();
         final Release result = helm.upgrade()
           .withKubeConfig(kubeConfig)
-          .withName("upgrade-with-wait")
+          .withName("helm-upgrade-with-wait-ready")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .debug()
           .call();
@@ -506,10 +515,13 @@ class HelmKubernetesTest {
 
       @Test
       void withWaitAndCustomTimeout() {
-        helm.install().withName("upgrade-with-wait-custom-timeout").withKubeConfig(kubeConfig).call();
+        helm.install().withName("helm-upgrade-with-wait-ready-and-custom-timeout").withKubeConfig(kubeConfig).call();
         final Release result = helm.upgrade()
           .withKubeConfig(kubeConfig)
-          .withName("upgrade-with-wait-custom-timeout")
+          .withName("helm-upgrade-with-wait-ready-and-custom-timeout")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-custom-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .withTimeout(330)
           .debug()
@@ -536,10 +548,13 @@ class HelmKubernetesTest {
 
       @Test
       void lowTimeout() {
-        helm.install().withName("wait-upgrade-low-timeout").withKubeConfig(kubeConfig).call();
+        helm.install().withName("helm-upgrade-with-wait-ready-and-low-timeout").withKubeConfig(kubeConfig).call();
         final UpgradeCommand upgrade = helm.upgrade()
           .withKubeConfig(kubeConfig)
-          .withName("wait-upgrade-low-timeout")
+          .withName("helm-upgrade-with-wait-ready-and-low-timeout")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-low-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .withTimeout(1);
         assertThatThrownBy(upgrade::call)
