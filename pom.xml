@@ -72,6 +72,7 @@
     <version.slf4j>2.0.16</version.slf4j>
     <version.sonatype-staging>1.7.0</version.sonatype-staging>
     <version.test-containers>1.20.3</version.test-containers>
+    <version.test-containers-kind>1.4.7</version.test-containers-kind>
   </properties>
 
   <modules>
@@ -153,9 +154,9 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>k3s</artifactId>
-        <version>${version.test-containers}</version>
+        <groupId>com.dajudge.kindcontainer</groupId>
+        <artifactId>kindcontainer</artifactId>
+        <version>${version.test-containers-kind}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
