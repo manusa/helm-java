@@ -69,6 +69,7 @@
     <!-- https://issues.apache.org/jira/browse/MSOURCES-143?page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel&focusedCommentId=17755616#comment-17755616 -->
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
+    <version.slf4j>2.0.16</version.slf4j>
     <version.sonatype-staging>1.7.0</version.sonatype-staging>
     <version.test-containers>1.20.3</version.test-containers>
   </properties>
@@ -143,6 +144,12 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${version.assertj}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
