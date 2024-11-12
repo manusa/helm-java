@@ -16,6 +16,8 @@
 
 package com.marcnuri.helm;
 
+import com.dajudge.kindcontainer.KindContainer;
+import com.dajudge.kindcontainer.KindContainerVersion;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
-import org.testcontainers.k3s.K3sContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,22 +42,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @EnabledOnOs(OS.LINUX)
 class HelmKubernetesTest {
 
-  static K3sContainer k3sContainer;
+  static KindContainer<?> kindContainer;
   static Path kubeConfig;
 
   private Helm helm;
 
   @BeforeAll
   static void setUpKubernetes(@TempDir Path tempDir) throws IOException {
-    k3sContainer = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.29.0-k3s1"));
-    k3sContainer.start();
+    kindContainer = new KindContainer<>(KindContainerVersion.VERSION_1_31_0);
+    kindContainer.start();
     kubeConfig = tempDir.resolve("config.yaml");
-    Files.write(kubeConfig, k3sContainer.getKubeConfigYaml().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+    Files.write(kubeConfig, kindContainer.getKubeconfig().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
   }
 
   @AfterAll
   static void tearDownKubernetes() {
-    k3sContainer.stop();
+    kindContainer.stop();
   }
 
   @BeforeEach
@@ -74,12 +74,12 @@ class HelmKubernetesTest {
       void withName() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("test")
+          .withName("helm-install-with-name")
           .call();
         assertThat(result)
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: test\n",
+            "NAME: helm-install-with-name\n",
             "LAST DEPLOYED: ",
             "STATUS: deployed",
             "REVISION: 1"
@@ -90,23 +90,26 @@ class HelmKubernetesTest {
       void withDebug() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("with-debug")
+          .withName("helm-install-with-with-debug")
           .debug()
           .call();
         assertThat(result)
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: with-debug\n",
+            "NAME: helm-install-with-with-debug\n",
             "---\n",
             "creating 3 resource(s)"
           );
       }
 
       @Test
-      void withWait() {
+      void withWaitReady() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("with-wait")
+          .withName("helm-install-with-wait-ready")
+          .set("fullnameOverride", "helm-install-with-wait-ready")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
           .waitReady()
           .debug()
           .call();
@@ -291,17 +294,21 @@ class HelmKubernetesTest {
       void withValidRelease() {
         helm.install()
           .withKubeConfig(kubeConfig)
-          .withName("helm-test")
+          .withName("helm-test-valid-release")
+          .set("fullnameOverride", "helm-test-valid-release")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          // Wait for the deployment to be ready before testing
           .waitReady()
           .call();
-        final Release result = Helm.test("helm-test")
+        final Release result = Helm.test("helm-test-valid-release")
           .withKubeConfig(kubeConfig)
           .call();
         assertThat(result)
-          .hasFieldOrPropertyWithValue("name", "helm-test")
+          .hasFieldOrPropertyWithValue("name", "helm-test-valid-release")
           .extracting(Release::getOutput).asString()
           .contains(
-            "NAME: helm-test\n",
+            "NAME: helm-test-valid-release\n",
             "LAST DEPLOYED: ",
             "STATUS: deployed",
             "REVISION: 1"

@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java-parent</artifactId>
-  <version>0.0-SNAPSHOT-SNAPSHOT</version>
+  <version>0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Helm Java :: Parent</name>
   <description>
@@ -69,8 +69,10 @@
     <!-- https://issues.apache.org/jira/browse/MSOURCES-143?page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel&focusedCommentId=17755616#comment-17755616 -->
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
+    <version.slf4j>2.0.16</version.slf4j>
     <version.sonatype-staging>1.7.0</version.sonatype-staging>
     <version.test-containers>1.20.3</version.test-containers>
+    <version.test-containers-kind>1.4.7</version.test-containers-kind>
   </properties>
 
   <modules>
@@ -146,9 +148,15 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>k3s</artifactId>
-        <version>${version.test-containers}</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.dajudge.kindcontainer</groupId>
+        <artifactId>kindcontainer</artifactId>
+        <version>${version.test-containers-kind}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
