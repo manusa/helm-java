@@ -47,6 +47,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private boolean dryRun;
   private DryRun dryRunOption;
   private boolean wait;
+  private int timeout;
   private final Map<String, String> values;
   private Path kubeConfig;
   private Path certFile;
@@ -91,6 +92,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
       toInt(wait),
+      timeout,
       urlEncode(values),
       toString(kubeConfig),
       toString(certFile),
@@ -313,6 +315,17 @@ public class UpgradeCommand extends HelmCommand<Release> {
    */
   public UpgradeCommand waitReady() {
     this.wait = true;
+    return this;
+  }
+
+  /**
+   * Time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300).
+   *
+   * @param timeout the timeout in seconds.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withTimeout(int timeout) {
+    this.timeout = timeout;
     return this;
   }
 

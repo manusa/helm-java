@@ -121,6 +121,25 @@ class HelmKubernetesTest {
       }
 
       @Test
+      void withWaitReadyAndCustomTimeout() {
+        final Release result = helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-install-with-wait-ready-and-custom-timeout")
+          .set("fullnameOverride", "helm-install-with-wait-ready-and-custom-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          .waitReady()
+          .withTimeout(330)
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m30s"
+          );
+      }
+
+      @Test
       void withNamespaceAndCreateNamespace() {
         final Release result = helm.install()
           .withKubeConfig(kubeConfig)
@@ -153,6 +172,21 @@ class HelmKubernetesTest {
         assertThatThrownBy(install::call)
           .message()
           .isEqualTo("create: failed to create: namespaces \"non-existent\" not found");
+      }
+
+      @Test
+      void lowTimeout() {
+        final InstallCommand installCommand = helm.install()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-install-with-wait-ready-and-low-timeout")
+          .set("fullnameOverride", "helm-install-with-wait-ready-and-low-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          .waitReady()
+          .withTimeout(1);
+        assertThatThrownBy(installCommand::call)
+          .message()
+          .contains("context deadline exceeded");
       }
     }
 
@@ -459,6 +493,45 @@ class HelmKubernetesTest {
           .returns("2", Release::getRevision)
           .returns("deployed", Release::getStatus);
       }
+
+      @Test
+      void withWaitReady() {
+        helm.install().withName("helm-upgrade-with-wait-ready").withKubeConfig(kubeConfig).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-upgrade-with-wait-ready")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          .waitReady()
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m0s"
+          );
+      }
+
+      @Test
+      void withWaitAndCustomTimeout() {
+        helm.install().withName("helm-upgrade-with-wait-ready-and-custom-timeout").withKubeConfig(kubeConfig).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-upgrade-with-wait-ready-and-custom-timeout")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-custom-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          .waitReady()
+          .withTimeout(330)
+          .debug()
+          .call();
+        assertThat(result)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "beginning wait for 3 resources with timeout of 5m30s"
+          );
+      }
     }
 
     @Nested
@@ -471,6 +544,22 @@ class HelmKubernetesTest {
         assertThatThrownBy(upgrade::call)
           .message()
           .isEqualTo("\"upgrade-missing-release\" has no deployed releases");
+      }
+
+      @Test
+      void lowTimeout() {
+        helm.install().withName("helm-upgrade-with-wait-ready-and-low-timeout").withKubeConfig(kubeConfig).call();
+        final UpgradeCommand upgrade = helm.upgrade()
+          .withKubeConfig(kubeConfig)
+          .withName("helm-upgrade-with-wait-ready-and-low-timeout")
+          .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-low-timeout")
+          .set("image.repository", "ghcr.io/linuxserver/nginx")
+          .set("image.tag", "latest")
+          .waitReady()
+          .withTimeout(1);
+        assertThatThrownBy(upgrade::call)
+          .message()
+          .contains("context deadline exceeded");
       }
     }
   }
