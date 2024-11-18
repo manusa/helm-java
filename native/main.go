@@ -58,6 +58,7 @@ struct InstallOptions {
 	int   wait;
 	int   timeout;
 	char* values;
+	char* valuesFile;
 	char* kubeConfig;
 	char* certFile;
 	char* keyFile;
@@ -219,6 +220,7 @@ struct UpgradeOptions {
 	int   wait;
 	int   timeout;
 	char* values;
+	char* valuesFile;
 	char* kubeConfig;
 	char* certFile;
 	char* keyFile;
@@ -348,6 +350,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Wait:                     options.wait == 1,
 			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),
+			ValuesFile:               C.GoString(options.valuesFile),
 			KubeConfig:               C.GoString(options.kubeConfig),
 			CertOptions: helm.CertOptions{
 				CertFile:              C.GoString(options.certFile),
@@ -678,6 +681,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			Wait:                     options.wait == 1,
 			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),
+			ValuesFile:               C.GoString(options.valuesFile),
 			KubeConfig:               C.GoString(options.kubeConfig),
 			CertOptions: helm.CertOptions{
 				CertFile:              C.GoString(options.certFile),
