@@ -3,7 +3,7 @@ module github.com/manusa/helm-java/native
 go 1.23.1
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/distribution/distribution/v3 v3.0.0-rc.1
 	github.com/gofrs/flock v0.12.1
 	github.com/orcaman/concurrent-map/v2 v2.0.1
