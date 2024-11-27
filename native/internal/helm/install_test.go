@@ -119,6 +119,33 @@ func TestInstallValues(t *testing.T) {
 	}
 }
 
+
+func TestInstallWithValuesFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	create, _ := Create(&CreateOptions{
+		Name: "test",
+		Dir:  tmpDir,
+	})
+	valuesFilePath := path.Join(tmpDir, "valuesFile.yaml")
+	valuesBytes := []byte("nix: baz\n")
+	err := os.WriteFile(valuesFilePath, valuesBytes, 0666)
+	out, err := Install(&InstallOptions{
+		Chart:      create,
+		Name:       "test",
+		ValuesFile: valuesFilePath,
+		Debug:      true,
+		ClientOnly: true,
+	})
+	if err != nil {
+		t.Errorf("Expected install to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "USER-SUPPLIED VALUES:") || !strings.Contains(out, "nix: baz") {
+		t.Errorf("Expected install to contain specific values from valuesFile, got %s", out)
+		return
+	}
+}
+
 func TestInstallDependencyUpdate(t *testing.T) {
 	chart, _ := Create(&CreateOptions{
 		Name: "test",

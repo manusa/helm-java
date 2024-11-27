@@ -146,6 +146,8 @@ Release result = installCommand
   .withTimeout(int timeout)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
+  // Optionally set a values file to source values for the chart
+  .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
   // Optionally specify an SSL certificate file to identify the registry client

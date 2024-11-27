@@ -49,6 +49,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
+  private Path valuesFile;
   private Path kubeConfig;
   private Path certFile;
   private Path keyFile;
@@ -94,6 +95,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       toInt(wait),
       timeout,
       urlEncode(values),
+      toString(valuesFile),
       toString(kubeConfig),
       toString(certFile),
       toString(keyFile),
@@ -338,6 +340,17 @@ public class UpgradeCommand extends HelmCommand<Release> {
    */
   public UpgradeCommand set(String key, Object value) {
     this.values.put(key, value == null ? "" : value.toString());
+    return this;
+  }
+
+  /**
+   * Set values file for the chart.
+   *
+   * @param valuesFile the path to a values file
+   * @return this {@link InstallCommand} instance.
+   */
+  public UpgradeCommand withValuesFile(Path valuesFile) {
+    this.valuesFile = valuesFile;
     return this;
   }
 

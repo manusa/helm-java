@@ -24,9 +24,11 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/strvals"
+	"maps"
 	"net/url"
 	"os"
 	"os/signal"
@@ -54,6 +56,7 @@ type InstallOptions struct {
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
+	ValuesFile               string
 	KubeConfig               string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
@@ -152,10 +155,21 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		return nil, outputs, invalidDryRun
 	}
 	// Values
-	var values, invalidValues = parseValues(options.Values)
+	values := make(map[string]interface{})
+	// Values from values file
+	if options.ValuesFile != "" {
+		fileValues, err := chartutil.ReadValuesFile(options.ValuesFile)
+		if err != nil {
+			return nil, outputs, err
+		}
+		maps.Copy(values, fileValues)
+	}
+	// Values from set values
+	var paramValues, invalidValues = parseValues(options.Values)
 	if invalidValues != nil {
 		return nil, outputs, invalidValues
 	}
+	maps.Copy(values, paramValues)
 
 	// Create context that handles SIGINT, SIGTERM
 	ctx := context.Background()
