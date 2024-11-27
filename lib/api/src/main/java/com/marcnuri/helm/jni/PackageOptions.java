@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"path", "destination", "sign", "key", "keyring", "passphraseFile"})
 public class PackageOptions extends Structure {
   public String path;

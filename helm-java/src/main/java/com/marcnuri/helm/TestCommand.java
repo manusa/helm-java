@@ -23,6 +23,9 @@ import java.nio.file.Path;
 
 import static com.marcnuri.helm.Release.parseSingle;
 
+/**
+ * @author Marc Nuri
+ */
 public class TestCommand extends HelmCommand<Release> {
 
   private final String releaseName;

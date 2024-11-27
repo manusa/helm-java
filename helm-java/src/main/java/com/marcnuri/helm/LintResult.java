@@ -18,6 +18,9 @@ package com.marcnuri.helm;
 
 import java.util.List;
 
+/**
+ * @author Marc Nuri
+ */
 public class LintResult {
 
   private final List<String> messages;

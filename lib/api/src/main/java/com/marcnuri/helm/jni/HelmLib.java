@@ -18,6 +18,10 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Library;
 
+/**
+ * @author Marc Nuri
+ * @author Andres F. Vallecilla
+ */
 public interface HelmLib extends Library {
 
   Result Create(CreateOptions options);

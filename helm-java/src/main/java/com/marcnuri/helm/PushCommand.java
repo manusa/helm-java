@@ -22,6 +22,9 @@ import com.marcnuri.helm.jni.PushOptions;
 import java.net.URI;
 import java.nio.file.Path;
 
+/**
+ * @author Marc Nuri
+ */
 public class PushCommand extends HelmCommand<String> {
 
   private Path chart;

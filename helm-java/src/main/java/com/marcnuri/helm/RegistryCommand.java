@@ -21,6 +21,9 @@ import com.marcnuri.helm.jni.RegistryOptions;
 
 import java.nio.file.Path;
 
+/**
+ * @author Marc Nuri
+ */
 public class RegistryCommand {
 
   private final HelmLib helmLib;

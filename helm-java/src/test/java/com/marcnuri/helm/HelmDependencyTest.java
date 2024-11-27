@@ -33,6 +33,9 @@ import java.util.Comparator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ */
 class HelmDependencyTest {
 
   @TempDir

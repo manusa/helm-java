@@ -33,6 +33,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
+/**
+ * @author Marc Nuri
+ */
 class HelmShowTest {
 
   @TempDir

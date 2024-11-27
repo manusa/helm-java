@@ -23,6 +23,9 @@ import com.marcnuri.helm.jni.Result;
 import java.nio.file.Path;
 import java.util.function.Function;
 
+/**
+ * @author Marc Nuri
+ */
 public class DependencyCommand {
 
   private final HelmLib helmLib;

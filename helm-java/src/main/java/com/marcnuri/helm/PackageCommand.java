@@ -21,6 +21,9 @@ import com.marcnuri.helm.jni.PackageOptions;
 
 import java.nio.file.Path;
 
+/**
+ * @author Marc Nuri
+ */
 public class PackageCommand extends HelmCommand<Helm> {
 
   private final Helm helm;

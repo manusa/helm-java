@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"name", "dir"})
 public class CreateOptions extends Structure {
   public String name;

@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"glob", "username", "password"})
 public class RepoServerOptions extends Structure {
   public String glob;

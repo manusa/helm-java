@@ -27,6 +27,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Marc Nuri
+ */
 public class HelmSearchTest {
 
   @Nested

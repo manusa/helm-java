@@ -28,6 +28,9 @@ import java.util.ServiceLoader;
 
 import static com.marcnuri.helm.jni.RemoteJarLoader.remoteJar;
 
+/**
+ * @author Marc Nuri
+ */
 public interface NativeLibrary {
 
   static NativeLibrary getInstance() {

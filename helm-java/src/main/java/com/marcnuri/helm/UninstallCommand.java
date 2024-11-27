@@ -22,6 +22,9 @@ import com.marcnuri.helm.jni.UninstallOptions;
 import java.nio.file.Path;
 import java.util.Locale;
 
+/**
+ * @author Marc Nuri
+ */
 public class UninstallCommand extends HelmCommand<String> {
 
   public enum Cascade {

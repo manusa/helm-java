@@ -21,6 +21,10 @@ import com.marcnuri.helm.jni.NativeLibrary;
 
 import java.nio.file.Path;
 
+/**
+ * @author Marc Nuri
+ * @author Andres F. Vallecilla
+ */
 public class Helm {
 
   // Initialization on demand

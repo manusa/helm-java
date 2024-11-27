@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"out", "err", "stdOut", "stdErr"})
 public class Result extends Structure implements Structure.ByValue {
   public String out;

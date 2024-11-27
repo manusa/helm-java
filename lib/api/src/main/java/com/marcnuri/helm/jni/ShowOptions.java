@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"path", "outputFormat", "version", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
 public class ShowOptions extends Structure {
   public String path;

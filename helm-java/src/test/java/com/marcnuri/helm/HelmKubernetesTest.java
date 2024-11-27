@@ -39,6 +39,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ * @author Miriam Schmidt
+ */
 @EnabledOnOs(OS.LINUX)
 class HelmKubernetesTest {
 

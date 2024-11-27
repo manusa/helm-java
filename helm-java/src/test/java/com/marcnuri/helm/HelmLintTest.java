@@ -35,6 +35,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Marc Nuri
+ */
 class HelmLintTest {
 
   @TempDir

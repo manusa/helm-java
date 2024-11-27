@@ -23,6 +23,9 @@ import com.marcnuri.helm.jni.Result;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+/**
+ * @author Marc Nuri
+ */
 public class LintCommand extends HelmCommand<LintResult> {
 
   private final Path path;

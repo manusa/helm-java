@@ -21,6 +21,9 @@ import com.marcnuri.helm.jni.ShowOptions;
 
 import java.nio.file.Path;
 
+/**
+ * @author Marc Nuri
+ */
 public class ShowCommand {
 
   private final HelmLib helmLib;

@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author Marc Nuri
+ */
 public class DependencyListResult {
   private final String output;
 

@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"repositoryConfig", "name", "names", "url", "username", "password", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify"})
 public class RepoOptions extends Structure {
   public String repositoryConfig;

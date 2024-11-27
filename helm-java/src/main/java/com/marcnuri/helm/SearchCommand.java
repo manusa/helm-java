@@ -24,6 +24,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * @author Marc Nuri
+ */
 public class SearchCommand {
 
   private final HelmLib helmLib;

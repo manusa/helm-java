@@ -18,6 +18,11 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ * @author Miriam Schmidt
+ * @author Kevin J. Mckernan
+ */
 @Structure.FieldOrder({
   "name",
   "generateName",

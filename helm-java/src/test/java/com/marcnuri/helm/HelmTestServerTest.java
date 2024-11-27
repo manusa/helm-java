@@ -28,6 +28,9 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ */
 class HelmTestServerTest {
 
   @AfterEach

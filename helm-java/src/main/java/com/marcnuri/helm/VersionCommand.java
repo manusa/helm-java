@@ -18,6 +18,9 @@ package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.HelmLib;
 
+/**
+ * @author Marc Nuri
+ */
 public class VersionCommand extends HelmCommand<String> {
 
   public VersionCommand(HelmLib helmLib) {

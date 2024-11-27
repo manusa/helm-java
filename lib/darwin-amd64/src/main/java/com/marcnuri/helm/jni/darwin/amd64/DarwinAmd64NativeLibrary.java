@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni.darwin.amd64;
 
 import com.marcnuri.helm.jni.NativeLibrary;
 
+/**
+ * @author Marc Nuri
+ */
 public class DarwinAmd64NativeLibrary implements NativeLibrary {
   @Override
   public String getBinaryName() {

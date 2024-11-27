@@ -17,7 +17,6 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.NativeLibrary;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URLClassLoader;
@@ -25,6 +24,9 @@ import java.net.URLClassLoader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ */
 class NativeLibraryTest {
 
   @Test

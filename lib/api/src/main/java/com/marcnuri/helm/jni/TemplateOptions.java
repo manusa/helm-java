@@ -18,6 +18,10 @@
 
  import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ * @author Andres F. Vallecilla
+ */
 @Structure.FieldOrder({
   "name",
   "version",

@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"chart", "remote", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
 public class PushOptions extends Structure {
   public String chart;

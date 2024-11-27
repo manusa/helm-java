@@ -28,6 +28,11 @@ import java.util.Map;
 
 import static com.marcnuri.helm.Release.parseSingle;
 
+/**
+ * @author Marc Nuri
+ * @author Miriam Schmidt
+ * @author Kevin J. Mckernan
+ */
 public class UpgradeCommand extends HelmCommand<Release> {
 
   private String name;

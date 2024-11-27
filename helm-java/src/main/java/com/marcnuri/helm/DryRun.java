@@ -16,6 +16,9 @@
 
 package com.marcnuri.helm;
 
+/**
+ * @author Marc Nuri
+ */
 public enum DryRun {
   NONE, CLIENT, SERVER
 }

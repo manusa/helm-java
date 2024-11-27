@@ -31,6 +31,10 @@ import java.nio.file.StandardOpenOption;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ * @author Andres F. Vallecilla
+ */
 class HelmTemplateTest {
 
   @Nested

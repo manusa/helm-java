@@ -35,6 +35,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author Marc Nuri
+ */
 public abstract class HelmCommand<T> implements Callable<T> {
 
   private final HelmLib helmLib;

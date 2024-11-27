@@ -25,6 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Marc Nuri
+ * @author Andres F. Vallecilla
+ */
 public class TemplateCommand extends HelmCommand<String> {
 
   private String name;

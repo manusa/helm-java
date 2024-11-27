@@ -28,6 +28,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+/**
+ * @author Marc Nuri
+ */
 public class RepoCommand {
 
   private final HelmLib helmLib;

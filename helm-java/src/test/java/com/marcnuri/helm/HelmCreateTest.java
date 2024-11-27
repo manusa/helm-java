@@ -28,6 +28,9 @@ import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
+/**
+ * @author Marc Nuri
+ */
 class HelmCreateTest {
 
   @Test

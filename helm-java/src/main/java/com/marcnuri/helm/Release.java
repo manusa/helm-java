@@ -26,6 +26,9 @@ import java.util.Map;
 
 import static com.marcnuri.helm.HelmCommand.parseUrlEncodedLines;
 
+/**
+ * @author Marc Nuri
+ */
 public class Release {
   private final String name;
   private final String namespace;

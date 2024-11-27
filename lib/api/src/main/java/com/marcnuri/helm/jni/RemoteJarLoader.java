@@ -37,6 +37,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+/**
+ * @author Marc Nuri
+ */
 class RemoteJarLoader {
 
   private static final String TEMP_DIR = "java.io.tmpdir";

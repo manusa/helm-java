@@ -18,6 +18,9 @@ package com.marcnuri.helm.jni;
 
 import com.sun.jna.Structure;
 
+/**
+ * @author Marc Nuri
+ */
 @Structure.FieldOrder({"hostname", "username", "password", "certFile", "keyFile", "caFile", "insecureSkipTlsVerify", "plainHttp", "debug"})
 public class RegistryOptions extends Structure {
   public String hostname;

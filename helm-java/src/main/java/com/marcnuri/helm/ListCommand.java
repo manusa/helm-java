@@ -24,6 +24,9 @@ import java.util.List;
 
 import static com.marcnuri.helm.Release.parseMultiple;
 
+/**
+ * @author Marc Nuri
+ */
 public class ListCommand extends HelmCommand<List<Release>> {
 
   private boolean all;

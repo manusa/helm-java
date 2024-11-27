@@ -34,6 +34,10 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * @author Marc Nuri
+ * @author Kevin J. Mckernan
+ */
 class HelmInstallTest {
 
   @TempDir

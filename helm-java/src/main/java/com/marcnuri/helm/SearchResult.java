@@ -24,6 +24,9 @@ import java.util.Map;
 
 import static com.marcnuri.helm.HelmCommand.parseUrlEncodedLines;
 
+/**
+ * @author Marc Nuri
+ */
 public class SearchResult {
 
   private final String name;
