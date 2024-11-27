@@ -67,7 +67,7 @@ func TestInstallDryUrl(t *testing.T) {
 func TestInstallFromRepoAndInvalidVersion(t *testing.T) {
 	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := RepoAdd(&RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
@@ -119,22 +119,20 @@ func TestInstallValues(t *testing.T) {
 	}
 }
 
-
 func TestInstallWithValuesFile(t *testing.T) {
-	tmpDir := t.TempDir()
 	create, _ := Create(&CreateOptions{
 		Name: "test",
-		Dir:  tmpDir,
+		Dir:  t.TempDir(),
 	})
-	valuesFilePath := path.Join(tmpDir, "valuesFile.yaml")
-	valuesBytes := []byte("nix: baz\n")
-	err := os.WriteFile(valuesFilePath, valuesBytes, 0666)
+	valuesFile, _ := os.CreateTemp(t.TempDir(), "test-values.yaml")
+	defer func(name string) { _ = os.Remove(name) }(valuesFile.Name())
+	_, _ = valuesFile.WriteString("nix: baz\n")
 	out, err := Install(&InstallOptions{
-		Chart:      create,
-		Name:       "test",
-		ValuesFile: valuesFilePath,
-		Debug:      true,
-		ClientOnly: true,
+		Chart:       create,
+		Name:        "test",
+		ValuesFiles: valuesFile.Name(),
+		Debug:       true,
+		ClientOnly:  true,
 	})
 	if err != nil {
 		t.Errorf("Expected install to succeed, got %s", err)

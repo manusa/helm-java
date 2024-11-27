@@ -20,7 +20,9 @@ import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.TemplateOptions;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TemplateCommand extends HelmCommand<String> {
@@ -31,6 +33,7 @@ public class TemplateCommand extends HelmCommand<String> {
   private String namespace;
   private boolean dependencyUpdate;
   private final Map<String, String> values;
+  private final List<Path> valuesFiles;
   private Path certFile;
   private Path keyFile;
   private Path caFile;
@@ -48,6 +51,7 @@ public class TemplateCommand extends HelmCommand<String> {
     super(helmLib);
     this.chart = toString(chart);
     this.values = new LinkedHashMap<>();
+    this.valuesFiles = new ArrayList<>();
   }
 
   @Override
@@ -59,6 +63,7 @@ public class TemplateCommand extends HelmCommand<String> {
       namespace,
       toInt(dependencyUpdate),
       urlEncode(values),
+      toString(valuesFiles),
       toString(certFile),
       toString(keyFile),
       toString(caFile),
@@ -137,6 +142,17 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand set(String key, Object value) {
     this.values.put(key, value == null ? "" : value.toString());
+    return this;
+  }
+
+  /**
+   * Adds a values (YAML) file to source values for the chart (can specify multiple).
+   *
+   * @param valuesFile the path to a values file.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand withValuesFile(Path valuesFile) {
+    this.valuesFiles.add(valuesFile);
     return this;
   }
 

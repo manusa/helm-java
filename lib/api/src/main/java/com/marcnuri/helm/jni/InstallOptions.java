@@ -36,7 +36,7 @@ import com.sun.jna.Structure;
   "wait",
   "timeout",
   "values",
-  "valuesFile",
+  "valuesFiles",
   "kubeConfig",
   "certFile",
   "keyFile",
@@ -67,7 +67,7 @@ public class InstallOptions extends Structure {
   public int wait;
   public int timeout;
   public String values;
-  public String valuesFile;
+  public String valuesFiles;
   public String kubeConfig;
   public String certFile;
   public String keyFile;
@@ -97,7 +97,7 @@ public class InstallOptions extends Structure {
     int wait,
     int timeout,
     String values,
-    String valuesFile,
+    String valuesFiles,
     String kubeConfig,
     String certFile,
     String keyFile,
@@ -126,7 +126,7 @@ public class InstallOptions extends Structure {
     this.wait = wait;
     this.timeout = timeout;
     this.values = values;
-    this.valuesFile = valuesFile;
+    this.valuesFiles = valuesFiles;
     this.kubeConfig = kubeConfig;
     this.certFile = certFile;
     this.keyFile = keyFile;

@@ -20,9 +20,7 @@ import (
 	"bytes"
 	"context"
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	"maps"
 	"time"
 )
 
@@ -49,7 +47,7 @@ type UpgradeOptions struct {
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
-	ValuesFile               string
+	ValuesFiles              string
 	KubeConfig               string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
@@ -159,23 +157,12 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	}
 	ctx := context.Background()
 	// Values
-	values := make(map[string]interface{})
-	// values from values file
-	if options.ValuesFile != "" {
-		fileValues, err := chartutil.ReadValuesFile(options.ValuesFile)
-		if err != nil {
-			return "", err
-		}
-		maps.Copy(values, fileValues)
+	vals, err := mergeValues(options.Values, options.ValuesFiles)
+	if err != nil {
+		return "", err
 	}
-	// Values from set values
-	var paramValues, invalidValues = parseValues(options.Values)
-	if invalidValues != nil {
-		return "", invalidValues
-	}
-	maps.Copy(values, paramValues)
 	// Run
-	release, err := client.RunWithContext(ctx, options.Name, chartRequested, values)
+	release, err := client.RunWithContext(ctx, options.Name, chartRequested, vals)
 	// Generate report
 	out := StatusReport(release, false, options.Debug)
 	return appendToOutOrErr(concat(cStr(updateOutput), cBuf(registryClientOut), cBuf(kubeOut)), out, err)

@@ -21,8 +21,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -62,6 +66,17 @@ class HelmTemplateTest {
         .call();
       assertThat(result)
         .contains("replicas: 1337");
+    }
+
+    @Test
+    void withValuesFile() throws IOException {
+      final Path valuesFile = Files.write(tempDir.resolve("test-values.yaml"),
+      "replicaCount: 313373\n".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final String result = helm.template()
+        .withValuesFile(valuesFile)
+        .call();
+      assertThat(result)
+        .contains("replicas: 313373");
     }
 
     @Test

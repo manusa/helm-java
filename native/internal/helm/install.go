@@ -24,15 +24,15 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/cli/values"
+	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
-	"helm.sh/helm/v3/pkg/strvals"
-	"maps"
 	"net/url"
 	"os"
 	"os/signal"
 	"slices"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -56,7 +56,7 @@ type InstallOptions struct {
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
-	ValuesFile               string
+	ValuesFiles              string
 	KubeConfig               string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
@@ -155,21 +155,10 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		return nil, outputs, invalidDryRun
 	}
 	// Values
-	values := make(map[string]interface{})
-	// Values from values file
-	if options.ValuesFile != "" {
-		fileValues, err := chartutil.ReadValuesFile(options.ValuesFile)
-		if err != nil {
-			return nil, outputs, err
-		}
-		maps.Copy(values, fileValues)
+	vals, err := mergeValues(options.Values, options.ValuesFiles)
+	if err != nil {
+		return nil, outputs, err
 	}
-	// Values from set values
-	var paramValues, invalidValues = parseValues(options.Values)
-	if invalidValues != nil {
-		return nil, outputs, invalidValues
-	}
-	maps.Copy(values, paramValues)
 
 	// Create context that handles SIGINT, SIGTERM
 	ctx := context.Background()
@@ -185,31 +174,8 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	}()
 
 	// Run
-	rel, err := client.RunWithContext(ctx, chartRequested, values)
+	rel, err := client.RunWithContext(ctx, chartRequested, vals)
 	return rel, outputs, err
-}
-
-var escapedChars = []rune("\"'\\={[,.]}")
-
-func parseValues(values string) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
-	if values != "" {
-		params, err := url.ParseQuery(values)
-		if err != nil {
-			return nil, err
-		}
-		for key, value := range params {
-			escapedValue := bytes.NewBuffer(make([]byte, 0))
-			for _, char := range value[0] {
-				if slices.Contains(escapedChars, char) {
-					escapedValue.WriteString("\\")
-				}
-				escapedValue.WriteRune(char)
-			}
-			_ = strvals.ParseInto(fmt.Sprintf("%s=%s", key, escapedValue), result)
-		}
-	}
-	return result, nil
 }
 
 // https://github.com/helm/helm/blob/ef02cafdd0a0be75b1f83f1b2c9ca4d1ac3edda5/cmd/helm/install.go#L309-L318
@@ -296,4 +262,45 @@ func dryRunOption(dryRunOption string) string {
 	} else {
 		return dryRunOption
 	}
+}
+
+var escapedChars = []rune("\"'\\={[,.]}")
+
+func parseValuesSet(values string) ([]string, error) {
+	result := make([]string, 0)
+	if values != "" {
+		params, err := url.ParseQuery(values)
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range params {
+			escapedValue := bytes.NewBuffer(make([]byte, 0))
+			for _, char := range value[0] {
+				if slices.Contains(escapedChars, char) {
+					escapedValue.WriteString("\\")
+				}
+				escapedValue.WriteRune(char)
+			}
+			result = append(result, fmt.Sprintf("%s=%s", key, escapedValue))
+		}
+	}
+	return result, nil
+}
+
+// mergeValues returns a map[string]interface{} with the provided processed values
+func mergeValues(encodedValuesMap, encodedValuesFiles string) (map[string]interface{}, error) {
+	valuesSet, err := parseValuesSet(encodedValuesMap)
+	if err != nil {
+		return nil, err
+	}
+	valueFiles := make([]string, 0)
+	if encodedValuesFiles != "" {
+		for _, valuesFile := range strings.Split(encodedValuesFiles, ",") {
+			valueFiles = append(valueFiles, valuesFile)
+		}
+	}
+	return (&values.Options{
+		Values:     valuesSet,
+		ValueFiles: valueFiles,
+	}).MergeValues(make(getter.Providers, 0))
 }
