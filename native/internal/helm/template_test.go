@@ -91,7 +91,7 @@ func TestTemplateFromLocal(t *testing.T) {
 func TestTemplateFromReference(t *testing.T) {
 	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := RepoAdd(&RepoOptions{
 		Name:                  "ingress-nginx",
 		Url:                   "https://kubernetes.github.io/ingress-nginx",
@@ -136,6 +136,25 @@ func TestTemplateFromReference(t *testing.T) {
 			return
 		}
 		if !strings.Contains(manifests, "image: helm-java.registry.example.com/ingress-nginx/controller") {
+			t.Errorf("Expected template to include overridden value, got %s", manifests)
+			return
+		}
+	})
+	t.Run("with values file", func(t *testing.T) {
+		valuesFile, _ := os.CreateTemp(t.TempDir(), "test-values.yaml")
+		defer func(name string) { _ = os.Remove(name) }(valuesFile.Name())
+		_, _ = valuesFile.WriteString("controller:\n  image:\n    registry: file.helm-java.registry.example.com\n")
+		manifests, err := Template(&TemplateOptions{
+			Chart:            "ingress-nginx/ingress-nginx",
+			RepositoryConfig: repositoryConfigFile.Name(),
+			ValuesFiles:      valuesFile.Name(),
+			Debug:            true,
+		})
+		if err != nil {
+			t.Errorf("Expected template to succeed, got %s", err)
+			return
+		}
+		if !strings.Contains(manifests, "image: file.helm-java.registry.example.com/ingress-nginx/controller") {
 			t.Errorf("Expected template to include overridden value, got %s", manifests)
 			return
 		}

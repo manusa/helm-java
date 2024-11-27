@@ -20,7 +20,9 @@ import com.marcnuri.helm.jni.HelmLib;
 import com.marcnuri.helm.jni.UpgradeOptions;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
-  private Path valuesFile;
+  private final List<Path> valuesFiles;
   private Path kubeConfig;
   private Path certFile;
   private Path keyFile;
@@ -69,6 +71,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
     super(helmLib);
     this.chart = toString(chart);
     this.values = new LinkedHashMap<>();
+    this.valuesFiles = new ArrayList<>();
   }
 
   @Override
@@ -95,7 +98,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       toInt(wait),
       timeout,
       urlEncode(values),
-      toString(valuesFile),
+      toString(valuesFiles),
       toString(kubeConfig),
       toString(certFile),
       toString(keyFile),
@@ -344,13 +347,13 @@ public class UpgradeCommand extends HelmCommand<Release> {
   }
 
   /**
-   * Set values file for the chart.
+   * Adds a values (YAML) file to source values for the chart (can specify multiple).
    *
-   * @param valuesFile the path to a values file
-   * @return this {@link InstallCommand} instance.
+   * @param valuesFile the path to a values file.
+   * @return this {@link UpgradeCommand} instance.
    */
   public UpgradeCommand withValuesFile(Path valuesFile) {
-    this.valuesFile = valuesFile;
+    this.valuesFiles.add(valuesFile);
     return this;
   }
 

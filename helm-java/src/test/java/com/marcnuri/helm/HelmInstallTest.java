@@ -185,27 +185,30 @@ class HelmInstallTest {
     }
 
     @Test
-    void withValuesFile(@TempDir Path tempDir) throws IOException {
-      final Path valuesFile = Files.write(tempDir.resolve("newValues.yaml"),
+    void withValuesFile() throws IOException {
+      final Path valuesFile1 = Files.write(tempDir.resolve("values-file-1.yaml"),
         (
             "nix: baz\n" +
             "foo: bar"
-        ).getBytes(StandardCharsets.UTF_8),
-        StandardOpenOption.CREATE);
+        ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final Path valuesFile2 = Files.write(tempDir.resolve("values-file-2.yaml"),
+        "quz: quux\n".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
       final Release result = helm.install()
         .clientOnly()
         .debug()
         .withName("test")
         .set("foo", "notBar") // set values override values file.
-        .withValuesFile(valuesFile)
+        .withValuesFile(valuesFile1)
+        .withValuesFile(valuesFile2)
         .call();
       assertThat(result)
         .extracting(Release::getOutput).asString()
         .contains(
                 "NAME: test\n",
                 "foo: notBar",
-                "nix: baz"
+                "nix: baz",
+                "quz: quux"
         );
     }
 

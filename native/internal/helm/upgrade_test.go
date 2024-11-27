@@ -24,8 +24,8 @@ import (
 
 func TestUpgradeFromRepoAndInvalidVersion(t *testing.T) {
 	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	repositoryConfigFile, _ := os.CreateTemp(t.TempDir(), "repositories.yaml")
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := RepoAdd(&RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",

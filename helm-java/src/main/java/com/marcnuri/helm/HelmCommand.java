@@ -25,6 +25,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,6 +93,10 @@ public abstract class HelmCommand<T> implements Callable<T> {
       throw new IllegalStateException("Encoded object cannot be parsed: " + line, e);
     }
     return entries;
+  }
+
+  static String toString(Collection<Path> paths) {
+    return paths == null ? null : paths.stream().map(HelmCommand::toString).collect(Collectors.joining(","));
   }
 
   static String toString(Path path) {

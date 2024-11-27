@@ -146,7 +146,7 @@ Release result = installCommand
   .withTimeout(int timeout)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
-  // Optionally set a values file to source values for the chart
+  // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
@@ -592,6 +592,8 @@ String result = templateCommand
   .dependencyUpdate()
   // Optionally set values for the chart
   .set("key", "value")
+  // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
+  .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -715,6 +717,8 @@ Release result = upgradeCommand
   .withTimeout(int timeout)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
+  // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
+  .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
   // Optionally specify an SSL certificate file to identify the registry client

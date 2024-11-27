@@ -30,6 +30,7 @@ type TemplateOptions struct {
 	Namespace        string
 	DependencyUpdate bool
 	Values           string
+	ValuesFiles      string
 	Debug            bool
 	RepositoryConfig string
 }
@@ -51,6 +52,7 @@ func Template(options *TemplateOptions) (string, error) {
 		Namespace:        options.Namespace,
 		DependencyUpdate: options.DependencyUpdate,
 		Values:           options.Values,
+		ValuesFiles:      options.ValuesFiles,
 		Debug:            options.Debug,
 		RepositoryConfig: options.RepositoryConfig,
 	})

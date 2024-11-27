@@ -250,7 +250,7 @@ func TestRegistryLogout(t *testing.T) {
 
 func TestRepoAdd(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
@@ -273,7 +273,7 @@ func TestRepoAdd(t *testing.T) {
 
 func TestRepoAddInvalidName(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:             "helm/invalid",
 		Url:              "https://charts.helm.sh/stable",
@@ -302,7 +302,7 @@ func TestRepoAddInvalidPath(t *testing.T) {
 
 func TestRepoAddInvalidRepo(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:             "helm",
 		Url:              "https://localhost/stable",
@@ -319,7 +319,7 @@ func TestRepoAddInvalidRepo(t *testing.T) {
 
 func TestRepoList(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -340,7 +340,7 @@ func TestRepoList(t *testing.T) {
 
 func TestRepoRemove(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -366,7 +366,7 @@ func TestRepoRemove(t *testing.T) {
 
 func TestRepoRemoveWithMissing(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -388,7 +388,7 @@ func TestRepoRemoveWithMissing(t *testing.T) {
 
 func TestRepoUpdateAll(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -407,7 +407,7 @@ func TestRepoUpdateAll(t *testing.T) {
 
 func TestRepoUpdateByName(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -429,7 +429,7 @@ func TestRepoUpdateByName(t *testing.T) {
 
 func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
@@ -456,7 +456,7 @@ func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
 
 func TestRepoUpdateByNameWithInvalidAndValidRepo(t *testing.T) {
 	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer os.Remove(repositoryConfigFile.Name())
+	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
 	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
 		"repositories:\n" +
 		"  - name: stable\n" +
