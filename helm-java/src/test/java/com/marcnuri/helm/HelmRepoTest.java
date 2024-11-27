@@ -46,7 +46,7 @@ class HelmRepoTest {
       final Path config = tempDir.resolve("repositories.yaml");
       Helm.repo().add().withRepositoryConfig(config)
         .withName("repo-1")
-        .withUrl(URI.create("https://charts.helm.sh/stable"))
+        .withUrl(URI.create("http://charts.gitlab.io"))
         .withUsername("not-needed")
         .withPassword("not-needed-pass")
         .insecureSkipTlsVerify()
@@ -54,7 +54,7 @@ class HelmRepoTest {
       final List<Repository> result = Helm.repo().list().withRepositoryConfig(config).call();
       assertThat(result).singleElement()
         .extracting(Repository::getName, r -> r.getUrl().toString(), Repository::getUsername, Repository::getPassword, Repository::isInsecureSkipTlsVerify)
-        .containsExactly("repo-1", "https://charts.helm.sh/stable", "not-needed", "not-needed-pass", true);
+        .containsExactly("repo-1", "http://charts.gitlab.io", "not-needed", "not-needed-pass", true);
     }
 
     @Test
@@ -89,8 +89,8 @@ class HelmRepoTest {
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
           "    username: user-name\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n" +
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n" +
           "  - name: other\n" +
           "    url: https://charts.example.sh/other\n" +
           "    ignored: field"
@@ -101,7 +101,7 @@ class HelmRepoTest {
         .extracting(Repository::getName, r -> r.getUrl().toString(), Repository::getUsername)
         .containsExactly(
           tuple("repo-1", "https://charts.example.com/repo-1?i=31&test", "user-name"),
-          tuple("stable", "https://charts.helm.sh/stable", null),
+          tuple("valid-repo", "http://charts.gitlab.io", null),
           tuple("other", "https://charts.example.sh/other", null)
         );
     }
@@ -128,8 +128,8 @@ class HelmRepoTest {
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
           "    username: user-name\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n" +
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n" +
           "  - name: other\n" +
           "    url: https://charts.example.sh/other\n" +
           "    ignored: field"
@@ -142,7 +142,7 @@ class HelmRepoTest {
       Helm.repo().remove()
         .withRepositoryConfig(repositoryConfig)
         .withRepo("repo-1")
-        .withRepo("stable")
+        .withRepo("valid-repo")
         .call();
       final List<Repository> result = Helm.repo().list().withRepositoryConfig(repositoryConfig).call();
       assertThat(result)
@@ -158,7 +158,7 @@ class HelmRepoTest {
       final List<Repository> result = Helm.repo().list().withRepositoryConfig(repositoryConfig).call();
       assertThat(result)
         .extracting(Repository::getName)
-        .containsExactly("repo-1", "stable", "other");
+        .containsExactly("repo-1", "valid-repo", "other");
     }
 
     @Test
@@ -187,12 +187,12 @@ class HelmRepoTest {
     void updateAllWithValidRepos() throws IOException {
       Files.write(repositoryConfig,
         ("repositories:\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n"
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n"
         ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
       final List<Repository> updated = Helm.repo().update().withRepositoryConfig(repositoryConfig).call();
       assertThat(updated)
-        .singleElement().hasFieldOrPropertyWithValue("name", "stable");
+        .singleElement().hasFieldOrPropertyWithValue("name", "valid-repo");
     }
 
     @Test
@@ -202,8 +202,8 @@ class HelmRepoTest {
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
           "    username: user-name\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n"
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n"
         ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
       final RepoCommand.WithRepositoryConfig<List<Repository>> callable = Helm.repo().update()
         .withRepositoryConfig(repositoryConfig);
@@ -220,12 +220,12 @@ class HelmRepoTest {
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
           "    username: user-name\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n"
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n"
         ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
       final RepoCommand.WithRepositoryConfig<List<Repository>> callable = Helm.repo().update()
         .withRepositoryConfig(repositoryConfig)
-        .withRepo("stable")
+        .withRepo("valid-repo")
         .withRepo("repo-1");
       assertThatThrownBy(callable::call)
         .isInstanceOf(IllegalStateException.class)
@@ -239,15 +239,15 @@ class HelmRepoTest {
         ("repositories:\n" +
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n"
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n"
         ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
       final List<Repository> updated = Helm.repo().update()
         .withRepositoryConfig(repositoryConfig)
-        .withRepo("stable")
+        .withRepo("valid-repo")
         .call();
       assertThat(updated)
-        .singleElement().hasFieldOrPropertyWithValue("name", "stable");
+        .singleElement().hasFieldOrPropertyWithValue("name", "valid-repo");
     }
 
     @Test
@@ -256,8 +256,8 @@ class HelmRepoTest {
         ("repositories:\n" +
           "  - name: repo-1\n" +
           "    url: https://charts.example.com/repo-1?i=31&test\n" +
-          "  - name: stable\n" +
-          "    url: https://charts.helm.sh/stable\n"
+          "  - name: valid-repo\n" +
+          "    url: http://charts.gitlab.io\n"
         ).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
       final List<Repository> updated = Helm.repo().update()
         .withRepositoryConfig(repositoryConfig)
