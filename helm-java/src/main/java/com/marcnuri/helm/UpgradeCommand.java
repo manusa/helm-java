@@ -57,7 +57,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private int timeout;
   private final Map<String, String> values;
   private final List<Path> valuesFiles;
-  private Path kubeConfig;
+  private String kubeConfig;
   private Path certFile;
   private Path keyFile;
   private Path caFile;
@@ -104,7 +104,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       timeout,
       urlEncode(values),
       toString(valuesFiles),
-      toString(kubeConfig),
+      kubeConfig,
       toString(certFile),
       toString(keyFile),
       toString(caFile),
@@ -369,6 +369,17 @@ public class UpgradeCommand extends HelmCommand<Release> {
    * @return this {@link UpgradeCommand} instance.
    */
   public UpgradeCommand withKubeConfig(Path kubeConfig) {
+    this.kubeConfig = toString(kubeConfig);
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfig the content of the kube config file.
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withKubeConfig(String kubeConfig) {
     this.kubeConfig = kubeConfig;
     return this;
   }
