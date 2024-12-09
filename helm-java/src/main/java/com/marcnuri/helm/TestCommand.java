@@ -31,7 +31,7 @@ public class TestCommand extends HelmCommand<Release> {
   private final String releaseName;
   private int timeout;
   private String namespace;
-  private Path kubeConfig;
+  private String kubeConfig;
   private boolean debug;
 
   public TestCommand(HelmLib helmLib, String releaseName) {
@@ -45,7 +45,7 @@ public class TestCommand extends HelmCommand<Release> {
       releaseName,
       timeout,
       namespace,
-      toString(kubeConfig),
+      kubeConfig,
       toInt(debug)
     ))));
   }
@@ -79,6 +79,17 @@ public class TestCommand extends HelmCommand<Release> {
    * @return this {@link TestCommand} instance.
    */
   public TestCommand withKubeConfig(Path kubeConfig) {
+    this.kubeConfig = toString(kubeConfig);
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfig the content of the kube config file.
+   * @return this {@link TestCommand} instance.
+   */
+  public TestCommand withKubeConfig(String kubeConfig) {
     this.kubeConfig = kubeConfig;
     return this;
   }

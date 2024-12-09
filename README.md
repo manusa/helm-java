@@ -148,8 +148,9 @@ Release result = installCommand
   .set("key", "value")
   // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
-  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  // Optionally specify the path to the kubeconfig file or the contents as a string to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  .withKubeConfig("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -197,8 +198,9 @@ Lists all the releases for a specified namespace (uses current namespace context
 List<Release> releases = Helm.list()
   // Optionally specify the Kubernetes namespace to list the releases from
   .withNamespace("namespace")
-  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  // Optionally specify the path to the kubeconfig file or the contents as a string to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  .withKubeConfig("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally show all releases without any filter applied
   .all()
   // Optionally show releases across all namespaces
@@ -626,8 +628,9 @@ Release result = Helm.test("chart/reference")
   .withTimeout(int timeout)
   // Optionally specify the Kubernetes namespace
   .withNamespace("namespace")
-  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  // Optionally specify the path to the kubeconfig file or the contents as a string to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  .withKubeConfig("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally enable verbose output
   .debug()
   .call();
@@ -653,8 +656,9 @@ String result = Helm.uninstall("chart/reference")
   .withCascade(Cascade.BACKGROUND)
   // Optionally specify the Kubernetes namespace to uninstall the release from
   .withNamespace("namespace")
-  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  // Optionally specify the path to the kubeconfig file or the contents as a string to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  .withKubeConfig("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally enable verbose output
   .debug()
   .call();
@@ -719,8 +723,9 @@ Release result = upgradeCommand
   .set("key", "value")
   // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
-  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  // Optionally specify the path to the kubeconfig file or the contents as a string to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  .withKubeConfig("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
