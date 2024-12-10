@@ -38,7 +38,7 @@ public class UninstallCommand extends HelmCommand<String> {
   private boolean keepHistory;
   private Cascade cascade;
   private String namespace;
-  private Path kubeConfig;
+  private String kubeConfig;
   private boolean debug;
 
   public UninstallCommand(HelmLib helmLib, String releaseName) {
@@ -56,7 +56,7 @@ public class UninstallCommand extends HelmCommand<String> {
       toInt(keepHistory),
       cascade == null ? null : cascade.name().toLowerCase(Locale.ROOT),
       namespace,
-      toString(kubeConfig),
+      kubeConfig,
       toInt(debug)
     ))).out;
   }
@@ -131,6 +131,17 @@ public class UninstallCommand extends HelmCommand<String> {
    * @return this {@link UninstallCommand} instance.
    */
   public UninstallCommand withKubeConfig(Path kubeConfig) {
+    this.kubeConfig = toString(kubeConfig);
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfig the content of the kube config file.
+   * @return this {@link UninstallCommand} instance.
+   */
+  public UninstallCommand withKubeConfig(String kubeConfig) {
     this.kubeConfig = kubeConfig;
     return this;
   }

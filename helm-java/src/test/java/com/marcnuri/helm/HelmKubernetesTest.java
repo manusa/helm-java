@@ -272,6 +272,23 @@ class HelmKubernetesTest {
     }
 
     @Test
+    void listsCurrentNamespaceWithKubeConfigContents() {
+      final List<Release> result = Helm.list().withKubeConfig(kindContainer.getKubeconfig()).call();
+      assertThat(result)
+              .filteredOn(r -> r.getName().equals("list-default"))
+              .singleElement()
+              .returns("list-default", Release::getName)
+              .returns(null, Release::getNamespace)
+              .returns("deployed", Release::getStatus)
+              .returns("1", Release::getRevision)
+              .returns("test-0.1.0", Release::getChart)
+              .returns("1.16.0", Release::getAppVersion)
+              .returns("", Release::getOutput)
+              .extracting(Release::getLastDeployed)
+              .matches(d -> d.toLocalDate().equals(LocalDate.now()));
+    }
+
+    @Test
     void listsSpecificNamespace() {
       final List<Release> result = Helm.list().withKubeConfig(kubeConfig)
         .withNamespace("list-namespace")

@@ -38,7 +38,7 @@ public class ListCommand extends HelmCommand<List<Release>> {
   private boolean uninstalled;
   private boolean uninstalling;
   private String namespace;
-  private Path kubeConfig;
+  private String kubeConfig;
 
   public ListCommand(HelmLib helmLib) {
     super(helmLib);
@@ -56,7 +56,7 @@ public class ListCommand extends HelmCommand<List<Release>> {
       toInt(uninstalled),
       toInt(uninstalling),
       namespace,
-      toString(kubeConfig)
+      kubeConfig
     ))));
   }
 
@@ -158,6 +158,17 @@ public class ListCommand extends HelmCommand<List<Release>> {
    * @return this {@link ListCommand} instance.
    */
   public ListCommand withKubeConfig(Path kubeConfig) {
+    this.kubeConfig = toString(kubeConfig);
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfig the content of the kube config file.
+   * @return this {@link ListCommand} instance.
+   */
+  public ListCommand withKubeConfig(String kubeConfig) {
     this.kubeConfig = kubeConfig;
     return this;
   }

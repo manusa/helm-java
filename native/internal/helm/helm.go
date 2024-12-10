@@ -19,6 +19,11 @@ package helm
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -27,10 +32,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
-	"io"
-	"os"
-	"strings"
-	"time"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 type CfgOptions struct {
@@ -50,6 +52,8 @@ type CertOptions struct {
 	Keyring               string
 }
 
+const KUBECONFIG_IDENTIFIER = "kind: Config"
+
 func NewCfg(options *CfgOptions) *action.Configuration {
 	settings := cli.New()
 	settings.KubeConfig = options.KubeConfig
@@ -66,7 +70,13 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	if options.AllNamespaces {
 		effectiveNamespace = ""
 	}
-	err := actionConfig.Init(settings.RESTClientGetter(), effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
+	var restClientGetter genericclioptions.RESTClientGetter
+	if isKubeConfig(options.KubeConfig) {
+		restClientGetter = NewRESTClientGetter(effectiveNamespace, options.KubeConfig)
+	} else {
+		restClientGetter = settings.RESTClientGetter()
+	}
+	err := actionConfig.Init(restClientGetter, effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
 		panic(err)
 	}
@@ -180,4 +190,8 @@ func repositoryConfig(options *RepoOptions) string {
 	} else {
 		return options.RepositoryConfig
 	}
+}
+
+func isKubeConfig(potentialConfig string) bool {
+	return strings.Contains(potentialConfig, KUBECONFIG_IDENTIFIER)
 }
