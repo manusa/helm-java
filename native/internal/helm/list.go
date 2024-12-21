@@ -26,23 +26,25 @@ import (
 )
 
 type ListOptions struct {
-	All           bool
-	AllNamespaces bool
-	Deployed      bool
-	Failed        bool
-	Pending       bool
-	Superseded    bool
-	Uninstalled   bool
-	Uninstalling  bool
-	Namespace     string
-	KubeConfig    string
+	All                bool
+	AllNamespaces      bool
+	Deployed           bool
+	Failed             bool
+	Pending            bool
+	Superseded         bool
+	Uninstalled        bool
+	Uninstalling       bool
+	Namespace          string
+	KubeConfig         string
+	KubeConfigContents string
 }
 
 func List(options *ListOptions) (string, error) {
 	cfg := NewCfg(&CfgOptions{
-		KubeConfig:    options.KubeConfig,
-		Namespace:     options.Namespace,
-		AllNamespaces: options.AllNamespaces,
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
+		AllNamespaces:      options.AllNamespaces,
 	})
 	client := action.NewList(cfg)
 	client.All = options.All

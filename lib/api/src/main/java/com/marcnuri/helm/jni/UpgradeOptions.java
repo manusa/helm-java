@@ -22,6 +22,7 @@ import com.sun.jna.Structure;
  * @author Marc Nuri
  * @author Miriam Schmidt
  * @author Kevin J. Mckernan
+ * @author Christian Gebhard
  */
 @Structure.FieldOrder({
   "name",
@@ -47,6 +48,7 @@ import com.sun.jna.Structure;
   "values",
   "valuesFiles",
   "kubeConfig",
+  "kubeConfigContents",
   "certFile",
   "keyFile",
   "caFile",
@@ -81,6 +83,7 @@ public class UpgradeOptions extends Structure {
   public String values;
   public String valuesFiles;
   public String kubeConfig;
+  public String kubeConfigContents;
   public String certFile;
   public String keyFile;
   public String caFile;
@@ -115,6 +118,7 @@ public class UpgradeOptions extends Structure {
     String values,
     String valuesFiles,
     String kubeConfig,
+    String kubeConfigContents,
     String certFile,
     String keyFile,
     String caFile,
@@ -148,6 +152,7 @@ public class UpgradeOptions extends Structure {
     this.values = values;
     this.valuesFiles = valuesFiles;
     this.kubeConfig = kubeConfig;
+    this.kubeConfigContents = kubeConfigContents;
     this.certFile = certFile;
     this.keyFile = keyFile;
     this.caFile = caFile;

@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"strings"
 	"time"
@@ -32,15 +35,15 @@ import (
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 type CfgOptions struct {
-	RegistryClient *registry.Client
-	KubeConfig     string
-	Namespace      string
-	AllNamespaces  bool
-	KubeOut        io.Writer
+	RegistryClient     *registry.Client
+	KubeConfig         string
+	KubeConfigContents string
+	Namespace          string
+	AllNamespaces      bool
+	KubeOut            io.Writer
 }
 
 type CertOptions struct {
@@ -51,8 +54,6 @@ type CertOptions struct {
 	PlainHttp             bool
 	Keyring               string
 }
-
-const KUBECONFIG_IDENTIFIER = "kind: Config"
 
 func NewCfg(options *CfgOptions) *action.Configuration {
 	settings := cli.New()
@@ -70,11 +71,17 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	if options.AllNamespaces {
 		effectiveNamespace = ""
 	}
-	var restClientGetter genericclioptions.RESTClientGetter
-	if isKubeConfig(options.KubeConfig) {
-		restClientGetter = NewRESTClientGetter(effectiveNamespace, options.KubeConfig)
-	} else {
-		restClientGetter = settings.RESTClientGetter()
+	restClientGetter := settings.RESTClientGetter()
+	restClientGetter.(*genericclioptions.ConfigFlags).WrapConfigFn = func(original *rest.Config) *rest.Config {
+		if options.KubeConfigContents != "" {
+			// TODO: we could actually merge both kubeconfigs
+			config, err := clientcmd.RESTConfigFromKubeConfig([]byte(options.KubeConfigContents))
+			if err != nil {
+				panic(err)
+			}
+			return config
+		}
+		return original
 	}
 	err := actionConfig.Init(restClientGetter, effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
@@ -190,8 +197,4 @@ func repositoryConfig(options *RepoOptions) string {
 	} else {
 		return options.RepositoryConfig
 	}
-}
-
-func isKubeConfig(potentialConfig string) bool {
-	return strings.Contains(potentialConfig, KUBECONFIG_IDENTIFIER)
 }

@@ -23,21 +23,23 @@ import (
 )
 
 type UninstallOptions struct {
-	ReleaseName    string
-	DryRun         bool
-	NoHooks        bool
-	IgnoreNotFound bool
-	KeepHistory    bool
-	Cascade        string
-	Namespace      string
-	KubeConfig     string
-	Debug          bool
+	ReleaseName        string
+	DryRun             bool
+	NoHooks            bool
+	IgnoreNotFound     bool
+	KeepHistory        bool
+	Cascade            string
+	Namespace          string
+	KubeConfig         string
+	KubeConfigContents string
+	Debug              bool
 }
 
 func Uninstall(options *UninstallOptions) (string, error) {
 	cfgOptions := &CfgOptions{
-		KubeConfig: options.KubeConfig,
-		Namespace:  options.Namespace,
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
 	}
 	kubeOut := bytes.NewBuffer(make([]byte, 0))
 	if options.Debug {

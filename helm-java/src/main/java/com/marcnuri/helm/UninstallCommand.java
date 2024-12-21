@@ -24,6 +24,7 @@ import java.util.Locale;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 public class UninstallCommand extends HelmCommand<String> {
 
@@ -38,7 +39,8 @@ public class UninstallCommand extends HelmCommand<String> {
   private boolean keepHistory;
   private Cascade cascade;
   private String namespace;
-  private String kubeConfig;
+  private Path kubeConfig;
+  private String kubeConfigContents;
   private boolean debug;
 
   public UninstallCommand(HelmLib helmLib, String releaseName) {
@@ -56,7 +58,8 @@ public class UninstallCommand extends HelmCommand<String> {
       toInt(keepHistory),
       cascade == null ? null : cascade.name().toLowerCase(Locale.ROOT),
       namespace,
-      kubeConfig,
+      toString(kubeConfig),
+      kubeConfigContents,
       toInt(debug)
     ))).out;
   }
@@ -131,18 +134,18 @@ public class UninstallCommand extends HelmCommand<String> {
    * @return this {@link UninstallCommand} instance.
    */
   public UninstallCommand withKubeConfig(Path kubeConfig) {
-    this.kubeConfig = toString(kubeConfig);
+    this.kubeConfig = kubeConfig;
     return this;
   }
 
   /**
    * Set the kube config to use
    *
-   * @param kubeConfig the content of the kube config file.
+   * @param kubeConfigContents the contents of the kube config file.
    * @return this {@link UninstallCommand} instance.
    */
-  public UninstallCommand withKubeConfig(String kubeConfig) {
-    this.kubeConfig = kubeConfig;
+  public UninstallCommand withKubeConfigContents(String kubeConfigContents) {
+    this.kubeConfigContents = kubeConfigContents;
     return this;
   }
 

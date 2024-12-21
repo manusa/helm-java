@@ -17,41 +17,46 @@
 package helm
 
 import (
-	"reflect"
 	"testing"
-
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-func TestNewCfgKubeConfigContent(t *testing.T) {
-	cfg := NewCfg(&CfgOptions{
-		RegistryClient: nil,
-		KubeConfig:     KUBECONFIG,
-		Namespace:      "default",
-		AllNamespaces:  false,
-		KubeOut:        nil,
-	})
-	expectedGetter := NewRESTClientGetter("default", KUBECONFIG)
+const kubeConfigContentsForTests = `
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://host.example.com
+  name: development
+contexts:
+- context:
+    cluster: development
+    namespace: the-namespace
+    user: developer
+  name: kube-config-test-contents
+current-context: kube-config-test-contents
+kind: Config
+preferences: {}
+users:
+- name: developer
+  user:
+    username: test-user
+    password: test-password
+`
 
-	if !reflect.DeepEqual(cfg.RESTClientGetter, expectedGetter) {
-		t.Errorf("Expected %s, got %s", expectedGetter, cfg.RESTClientGetter)
-		return
+func TestNewCfg_KubeConfigContents(t *testing.T) {
+	cfg := NewCfg(&CfgOptions{
+		KubeConfigContents: kubeConfigContentsForTests,
+	})
+	restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
+	if err != nil {
+		t.Fatalf("Expected converting to succeed, got %s", err)
 	}
-}
-
-func TestNewCfgKubeConfigPath(t *testing.T) {
-	path := "/path/to/kubeconfig"
-	cfg := NewCfg(&CfgOptions{
-		RegistryClient: nil,
-		KubeConfig:     path,
-		Namespace:      "default",
-		AllNamespaces:  false,
-		KubeOut:        nil,
-	})
-	expectedGetter := &genericclioptions.ConfigFlags{}
-
-	if reflect.TypeOf(cfg.RESTClientGetter) != reflect.TypeOf(expectedGetter) {
-		t.Errorf("Expected type %v \n got %v", reflect.TypeOf(expectedGetter), reflect.TypeOf(cfg.RESTClientGetter))
-		return
+	if restConfig.Host != "https://host.example.com" {
+		t.Fatalf("Expected https://host.example.com, got %s", restConfig.Host)
+	}
+	if restConfig.Username != "test-user" {
+		t.Fatalf("Expected test-user, got %s", restConfig.Username)
+	}
+	if restConfig.Password != "test-password" {
+		t.Fatalf("Expected test-password, got %s", restConfig.Password)
 	}
 }

@@ -32,6 +32,7 @@ import static com.marcnuri.helm.Release.parseSingle;
  * @author Marc Nuri
  * @author Miriam Schmidt
  * @author Kevin J. Mckernan
+ * @author Christian Gebhard
  */
 public class UpgradeCommand extends HelmCommand<Release> {
 
@@ -57,7 +58,8 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private int timeout;
   private final Map<String, String> values;
   private final List<Path> valuesFiles;
-  private String kubeConfig;
+  private Path kubeConfig;
+  private String kubeConfigContents;
   private Path certFile;
   private Path keyFile;
   private Path caFile;
@@ -104,7 +106,8 @@ public class UpgradeCommand extends HelmCommand<Release> {
       timeout,
       urlEncode(values),
       toString(valuesFiles),
-      kubeConfig,
+      toString(kubeConfig),
+      kubeConfigContents,
       toString(certFile),
       toString(keyFile),
       toString(caFile),
@@ -369,18 +372,18 @@ public class UpgradeCommand extends HelmCommand<Release> {
    * @return this {@link UpgradeCommand} instance.
    */
   public UpgradeCommand withKubeConfig(Path kubeConfig) {
-    this.kubeConfig = toString(kubeConfig);
+    this.kubeConfig = kubeConfig;
     return this;
   }
 
   /**
    * Set the kube config to use
    *
-   * @param kubeConfig the content of the kube config file.
+   * @param kubeConfigContents the contents of the kube config file.
    * @return this {@link UpgradeCommand} instance.
    */
-  public UpgradeCommand withKubeConfig(String kubeConfig) {
-    this.kubeConfig = kubeConfig;
+  public UpgradeCommand withKubeConfigContents(String kubeConfigContents) {
+    this.kubeConfigContents = kubeConfigContents;
     return this;
   }
 

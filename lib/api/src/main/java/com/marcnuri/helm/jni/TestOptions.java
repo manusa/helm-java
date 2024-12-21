@@ -20,12 +20,14 @@ import com.sun.jna.Structure;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 @Structure.FieldOrder({
   "releaseName",
   "timeout",
   "namespace",
   "kubeConfig",
+  "kubeConfigContents",
   "debug"
 })
 public class TestOptions extends Structure {
@@ -33,6 +35,7 @@ public class TestOptions extends Structure {
   public int timeout;
   public String namespace;
   public String kubeConfig;
+  public String kubeConfigContents;
   public int debug;
 
   public TestOptions(
@@ -40,12 +43,14 @@ public class TestOptions extends Structure {
     int timeout,
     String namespace,
     String kubeConfig,
+    String kubeConfigContents,
     int debug
   ) {
     this.releaseName = releaseName;
     this.timeout = timeout;
     this.namespace = namespace;
     this.kubeConfig = kubeConfig;
+    this.kubeConfigContents = kubeConfigContents;
     this.debug = debug;
   }
 

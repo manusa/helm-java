@@ -25,13 +25,15 @@ import static com.marcnuri.helm.Release.parseSingle;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 public class TestCommand extends HelmCommand<Release> {
 
   private final String releaseName;
   private int timeout;
   private String namespace;
-  private String kubeConfig;
+  private Path kubeConfig;
+  private String kubeConfigContents;
   private boolean debug;
 
   public TestCommand(HelmLib helmLib, String releaseName) {
@@ -45,7 +47,8 @@ public class TestCommand extends HelmCommand<Release> {
       releaseName,
       timeout,
       namespace,
-      kubeConfig,
+      toString(kubeConfig),
+      kubeConfigContents,
       toInt(debug)
     ))));
   }
@@ -79,18 +82,18 @@ public class TestCommand extends HelmCommand<Release> {
    * @return this {@link TestCommand} instance.
    */
   public TestCommand withKubeConfig(Path kubeConfig) {
-    this.kubeConfig = toString(kubeConfig);
+    this.kubeConfig = kubeConfig;
     return this;
   }
 
   /**
    * Set the kube config to use
    *
-   * @param kubeConfig the content of the kube config file.
+   * @param kubeConfigContents the contents of the kube config file.
    * @return this {@link TestCommand} instance.
    */
-  public TestCommand withKubeConfig(String kubeConfig) {
-    this.kubeConfig = kubeConfig;
+  public TestCommand withKubeConfigContents(String kubeConfigContents) {
+    this.kubeConfigContents = kubeConfigContents;
     return this;
   }
 

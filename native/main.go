@@ -60,6 +60,7 @@ struct InstallOptions {
 	char* values;
 	char* valuesFiles;
 	char* kubeConfig;
+	char* kubeConfigContents;
 	char* certFile;
 	char* keyFile;
 	char* caFile;
@@ -88,6 +89,7 @@ struct ListOptions {
 	int   uninstalling;
 	char* namespace;
 	char* kubeConfig;
+	char* kubeConfigContents;
 };
 
 struct PackageOptions {
@@ -184,6 +186,7 @@ struct TestOptions {
 	int   timeout;
 	char* namespace;
 	char* kubeConfig;
+	char* kubeConfigContents;
 	int   debug;
 };
 
@@ -196,6 +199,7 @@ struct UninstallOptions {
 	char* cascade;
 	char* namespace;
 	char* kubeConfig;
+	char* kubeConfigContents;
 	int   debug;
 };
 
@@ -223,6 +227,7 @@ struct UpgradeOptions {
 	char* values;
 	char* valuesFiles;
 	char* kubeConfig;
+	char* kubeConfigContents;
 	char* certFile;
 	char* keyFile;
 	char* caFile;
@@ -353,6 +358,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Values:                   C.GoString(options.values),
 			ValuesFiles:              C.GoString(options.valuesFiles),
 			KubeConfig:               C.GoString(options.kubeConfig),
+			KubeConfigContents:       C.GoString(options.kubeConfigContents),
 			CertOptions: helm.CertOptions{
 				CertFile:              C.GoString(options.certFile),
 				KeyFile:               C.GoString(options.keyFile),
@@ -386,16 +392,17 @@ func Lint(options *C.struct_LintOptions) C.Result {
 func List(options *C.struct_ListOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.List(&helm.ListOptions{
-			All:           options.all == 1,
-			AllNamespaces: options.allNamespaces == 1,
-			Deployed:      options.deployed == 1,
-			Failed:        options.failed == 1,
-			Pending:       options.pending == 1,
-			Superseded:    options.superseded == 1,
-			Uninstalled:   options.uninstalled == 1,
-			Uninstalling:  options.uninstalling == 1,
-			Namespace:     C.GoString(options.namespace),
-			KubeConfig:    C.GoString(options.kubeConfig),
+			All:                options.all == 1,
+			AllNamespaces:      options.allNamespaces == 1,
+			Deployed:           options.deployed == 1,
+			Failed:             options.failed == 1,
+			Pending:            options.pending == 1,
+			Superseded:         options.superseded == 1,
+			Uninstalled:        options.uninstalled == 1,
+			Uninstalling:       options.uninstalling == 1,
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
 		})
 	})
 }
@@ -626,11 +633,12 @@ func Test(options *C.struct_TestOptions) C.Result {
 	}
 	return runCommand(func() (string, error) {
 		return helm.Test(&helm.TestOptions{
-			ReleaseName: C.GoString(options.releaseName),
-			Namespace:   C.GoString(options.namespace),
-			KubeConfig:  C.GoString(options.kubeConfig),
-			Timeout:     timeout,
-			Debug:       options.debug == 1,
+			ReleaseName:        C.GoString(options.releaseName),
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
+			Timeout:            timeout,
+			Debug:              options.debug == 1,
 		})
 	})
 }
@@ -639,15 +647,16 @@ func Test(options *C.struct_TestOptions) C.Result {
 func Uninstall(options *C.struct_UninstallOptions) C.Result {
 	return runCommand(func() (string, error) {
 		return helm.Uninstall(&helm.UninstallOptions{
-			ReleaseName:    C.GoString(options.releaseName),
-			DryRun:         options.dryRun == 1,
-			NoHooks:        options.noHooks == 1,
-			IgnoreNotFound: options.ignoreNotFound == 1,
-			KeepHistory:    options.keepHistory == 1,
-			Cascade:        C.GoString(options.cascade),
-			Namespace:      C.GoString(options.namespace),
-			KubeConfig:     C.GoString(options.kubeConfig),
-			Debug:          options.debug == 1,
+			ReleaseName:        C.GoString(options.releaseName),
+			DryRun:             options.dryRun == 1,
+			NoHooks:            options.noHooks == 1,
+			IgnoreNotFound:     options.ignoreNotFound == 1,
+			KeepHistory:        options.keepHistory == 1,
+			Cascade:            C.GoString(options.cascade),
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
+			Debug:              options.debug == 1,
 		})
 	})
 }
@@ -685,6 +694,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			Values:                   C.GoString(options.values),
 			ValuesFiles:              C.GoString(options.valuesFiles),
 			KubeConfig:               C.GoString(options.kubeConfig),
+			KubeConfigContents:       C.GoString(options.kubeConfigContents),
 			CertOptions: helm.CertOptions{
 				CertFile:              C.GoString(options.certFile),
 				KeyFile:               C.GoString(options.keyFile),
