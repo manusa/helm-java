@@ -32,6 +32,7 @@ import static com.marcnuri.helm.Release.parseSingle;
  * @author Marc Nuri
  * @author Miriam Schmidt
  * @author Kevin J. Mckernan
+ * @author Christian Gebhard
  */
 public class InstallCommand extends HelmCommand<Release> {
 
@@ -54,6 +55,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private final Map<String, String> values;
   private final List<Path> valuesFiles;
   private Path kubeConfig;
+  private String kubeConfigContents;
   private Path certFile;
   private Path keyFile;
   private Path caFile;
@@ -97,6 +99,7 @@ public class InstallCommand extends HelmCommand<Release> {
       urlEncode(values),
       toString(valuesFiles),
       toString(kubeConfig),
+      kubeConfigContents,
       toString(certFile),
       toString(keyFile),
       toString(caFile),
@@ -318,6 +321,17 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand withKubeConfig(Path kubeConfig) {
     this.kubeConfig = kubeConfig;
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfigContents the contents of the kube config file.
+   * @return this {@link TestCommand} instance.
+   */
+  public InstallCommand withKubeConfigContents(String kubeConfigContents) {
+    this.kubeConfigContents = kubeConfigContents;
     return this;
   }
 

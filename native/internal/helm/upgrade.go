@@ -49,6 +49,7 @@ type UpgradeOptions struct {
 	Values                   string
 	ValuesFiles              string
 	KubeConfig               string
+	KubeConfigContents       string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly       bool
@@ -69,9 +70,10 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	}
 	kubeOut := bytes.NewBuffer(make([]byte, 0))
 	cfgOptions := &CfgOptions{
-		RegistryClient: registryClient,
-		KubeConfig:     options.KubeConfig,
-		Namespace:      options.Namespace,
+		RegistryClient:     registryClient,
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
 	}
 	if options.Debug {
 		cfgOptions.KubeOut = kubeOut

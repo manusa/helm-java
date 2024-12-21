@@ -20,6 +20,7 @@ import com.sun.jna.Structure;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 @Structure.FieldOrder({
   "all",
@@ -31,7 +32,8 @@ import com.sun.jna.Structure;
   "uninstalled",
   "uninstalling",
   "namespace",
-  "kubeConfig"
+  "kubeConfig",
+  "kubeConfigContents"
 })
 public class ListOptions extends Structure {
   public int all;
@@ -44,8 +46,9 @@ public class ListOptions extends Structure {
   public int uninstalling;
   public String namespace;
   public String kubeConfig;
+  public String kubeConfigContents;
 
-  public ListOptions(int all, int allNamespaces, int deployed, int failed, int pending, int superseded, int uninstalled, int uninstalling, String namespace, String kubeConfig) {
+  public ListOptions(int all, int allNamespaces, int deployed, int failed, int pending, int superseded, int uninstalled, int uninstalling, String namespace, String kubeConfig, String kubeConfigContents) {
     this.all = all;
     this.allNamespaces = allNamespaces;
     this.deployed = deployed;
@@ -56,5 +59,6 @@ public class ListOptions extends Structure {
     this.uninstalling = uninstalling;
     this.namespace = namespace;
     this.kubeConfig = kubeConfig;
+    this.kubeConfigContents = kubeConfigContents;
   }
 }

@@ -244,6 +244,36 @@ func TestList(t *testing.T) {
 	}
 }
 
+func TestListUsingKubeConfigContents(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	kubeConfigContents, _ := os.ReadFile(kubeConfigFile.Name())
+	create, _ := Create(&CreateOptions{
+		Name: "test-list",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfigContents: string(kubeConfigContents),
+		Chart:              create,
+		Name:               "test-list",
+	})
+	out, err := List(&ListOptions{
+		KubeConfig: kubeConfigFile.Name(),
+	})
+	if err != nil {
+		t.Errorf("Expected list to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "name=test-list") {
+		t.Errorf("Expected list to include test-list, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "chart=test-list-0.1.0") {
+		t.Errorf("Expected list to include test-list, got %s", out)
+		return
+	}
+}
+
 func TestTest(t *testing.T) {
 	cleanUp, kubeConfigFile := setupEnvTest()
 	defer cleanUp()

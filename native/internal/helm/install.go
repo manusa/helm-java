@@ -58,6 +58,7 @@ type InstallOptions struct {
 	Values                   string
 	ValuesFiles              string
 	KubeConfig               string
+	KubeConfigContents       string
 	Debug                    bool
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly       bool
@@ -97,9 +98,10 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		return nil, outputs, err
 	}
 	cfgOptions := &CfgOptions{
-		RegistryClient: registryClient,
-		KubeConfig:     options.KubeConfig,
-		Namespace:      options.Namespace,
+		RegistryClient:     registryClient,
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
 	}
 	if options.Debug {
 		cfgOptions.KubeOut = outputs.kubeOut

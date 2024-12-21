@@ -150,6 +150,8 @@ Release result = installCommand
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
@@ -199,6 +201,8 @@ List<Release> releases = Helm.list()
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally show all releases without any filter applied
   .all()
   // Optionally show releases across all namespaces
@@ -628,6 +632,8 @@ Release result = Helm.test("chart/reference")
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally enable verbose output
   .debug()
   .call();
@@ -655,6 +661,8 @@ String result = Helm.uninstall("chart/reference")
   .withNamespace("namespace")
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally enable verbose output
   .debug()
   .call();
@@ -721,6 +729,8 @@ Release result = upgradeCommand
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
   .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
   // Optionally specify an SSL certificate file to identify the registry client
   .withCertFile(Paths.get("path", "to", "cert"))
   // Optionally specify an SSL key file to identify the registry client
