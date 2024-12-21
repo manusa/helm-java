@@ -56,7 +56,7 @@
     <com.marcnuri.jkube-helm.repository.stable>https://repo1.maven.org/maven2</com.marcnuri.jkube-helm.repository.stable>
     <version.assertj>3.27.0</version.assertj>
     <version.jna>5.15.0</version.jna>
-    <version.junit>5.11.3</version.junit>
+    <version.junit>5.11.4</version.junit>
     <version.maven-core>3.9.5</version.maven-core>
     <version.maven-plugin-annotations>3.10.1</version.maven-plugin-annotations>
     <version.maven-plugin-plugin>3.9.0</version.maven-plugin-plugin>
