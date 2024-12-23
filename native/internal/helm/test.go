@@ -22,17 +22,19 @@ import (
 )
 
 type TestOptions struct {
-	ReleaseName string
-	Timeout     time.Duration
-	Namespace   string
-	KubeConfig  string
-	Debug       bool
+	ReleaseName        string
+	Timeout            time.Duration
+	Namespace          string
+	KubeConfig         string
+	KubeConfigContents string
+	Debug              bool
 }
 
 func Test(options *TestOptions) (string, error) {
 	cfgOptions := &CfgOptions{
-		KubeConfig: options.KubeConfig,
-		Namespace:  options.Namespace,
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
 	}
 	client := action.NewReleaseTesting(NewCfg(cfgOptions))
 	client.Namespace = options.Namespace

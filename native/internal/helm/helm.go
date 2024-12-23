@@ -19,6 +19,14 @@ package helm
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -27,18 +35,15 @@ import (
 	"helm.sh/helm/v3/pkg/cli/output"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
-	"io"
-	"os"
-	"strings"
-	"time"
 )
 
 type CfgOptions struct {
-	RegistryClient *registry.Client
-	KubeConfig     string
-	Namespace      string
-	AllNamespaces  bool
-	KubeOut        io.Writer
+	RegistryClient     *registry.Client
+	KubeConfig         string
+	KubeConfigContents string
+	Namespace          string
+	AllNamespaces      bool
+	KubeOut            io.Writer
 }
 
 type CertOptions struct {
@@ -66,7 +71,19 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 	if options.AllNamespaces {
 		effectiveNamespace = ""
 	}
-	err := actionConfig.Init(settings.RESTClientGetter(), effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
+	restClientGetter := settings.RESTClientGetter()
+	restClientGetter.(*genericclioptions.ConfigFlags).WrapConfigFn = func(original *rest.Config) *rest.Config {
+		if options.KubeConfigContents != "" {
+			// TODO: we could actually merge both kubeconfigs
+			config, err := clientcmd.RESTConfigFromKubeConfig([]byte(options.KubeConfigContents))
+			if err != nil {
+				panic(err)
+			}
+			return config
+		}
+		return original
+	}
+	err := actionConfig.Init(restClientGetter, effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
 		panic(err)
 	}

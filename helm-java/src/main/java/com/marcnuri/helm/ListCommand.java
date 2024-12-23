@@ -26,6 +26,7 @@ import static com.marcnuri.helm.Release.parseMultiple;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 public class ListCommand extends HelmCommand<List<Release>> {
 
@@ -39,6 +40,7 @@ public class ListCommand extends HelmCommand<List<Release>> {
   private boolean uninstalling;
   private String namespace;
   private Path kubeConfig;
+  private String kubeConfigContents;
 
   public ListCommand(HelmLib helmLib) {
     super(helmLib);
@@ -56,7 +58,8 @@ public class ListCommand extends HelmCommand<List<Release>> {
       toInt(uninstalled),
       toInt(uninstalling),
       namespace,
-      toString(kubeConfig)
+      toString(kubeConfig),
+      kubeConfigContents
     ))));
   }
 
@@ -159,6 +162,17 @@ public class ListCommand extends HelmCommand<List<Release>> {
    */
   public ListCommand withKubeConfig(Path kubeConfig) {
     this.kubeConfig = kubeConfig;
+    return this;
+  }
+
+  /**
+   * Set the kube config to use
+   *
+   * @param kubeConfigContents the contents of the kube config file.
+   * @return this {@link ListCommand} instance.
+   */
+  public ListCommand withKubeConfigContents(String kubeConfigContents) {
+    this.kubeConfigContents = kubeConfigContents;
     return this;
   }
 }

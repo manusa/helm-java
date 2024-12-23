@@ -20,6 +20,7 @@ import com.sun.jna.Structure;
 
 /**
  * @author Marc Nuri
+ * @author Christian Gebhard
  */
 @Structure.FieldOrder({
   "releaseName",
@@ -30,6 +31,7 @@ import com.sun.jna.Structure;
   "cascade",
   "namespace",
   "kubeConfig",
+  "kubeConfigContents",
   "debug"
 })
 public class UninstallOptions extends Structure {
@@ -41,6 +43,7 @@ public class UninstallOptions extends Structure {
   public String cascade;
   public String namespace;
   public String kubeConfig;
+  public String kubeConfigContents;
   public int debug;
 
   public UninstallOptions(
@@ -52,6 +55,7 @@ public class UninstallOptions extends Structure {
     String cascade,
     String namespace,
     String kubeConfig,
+    String kubeConfigContents,
     int debug
   ) {
     this.releaseName = releaseName;
@@ -62,6 +66,7 @@ public class UninstallOptions extends Structure {
     this.cascade = cascade;
     this.namespace = namespace;
     this.kubeConfig = kubeConfig;
+    this.kubeConfigContents = kubeConfigContents;
     this.debug = debug;
   }
 }

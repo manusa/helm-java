@@ -47,7 +47,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class HelmKubernetesTest {
 
   static KindContainer<?> kindContainer;
-  static Path kubeConfig;
+  static String kubeConfigContents;
+  static Path kubeConfigFile;
 
   private Helm helm;
 
@@ -55,8 +56,9 @@ class HelmKubernetesTest {
   static void setUpKubernetes(@TempDir Path tempDir) throws IOException {
     kindContainer = new KindContainer<>(KindContainerVersion.VERSION_1_31_0);
     kindContainer.start();
-    kubeConfig = tempDir.resolve("config.yaml");
-    Files.write(kubeConfig, kindContainer.getKubeconfig().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+    kubeConfigContents = kindContainer.getKubeconfig();
+    kubeConfigFile = tempDir.resolve("config.yaml");
+    Files.write(kubeConfigFile,kubeConfigContents.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
   }
 
   @AfterAll
@@ -77,7 +79,7 @@ class HelmKubernetesTest {
       @Test
       void withName() {
         final Release result = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-install-with-name")
           .call();
         assertThat(result)
@@ -93,7 +95,7 @@ class HelmKubernetesTest {
       @Test
       void withDebug() {
         final Release result = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-install-with-with-debug")
           .debug()
           .call();
@@ -109,7 +111,7 @@ class HelmKubernetesTest {
       @Test
       void withWaitReady() {
         final Release result = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-install-with-wait-ready")
           .set("fullnameOverride", "helm-install-with-wait-ready")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -127,7 +129,7 @@ class HelmKubernetesTest {
       @Test
       void withWaitReadyAndCustomTimeout() {
         final Release result = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-install-with-wait-ready-and-custom-timeout")
           .set("fullnameOverride", "helm-install-with-wait-ready-and-custom-timeout")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -146,7 +148,7 @@ class HelmKubernetesTest {
       @Test
       void withNamespaceAndCreateNamespace() {
         final Release result = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("created-namespace")
           .withNamespace("to-be-created")
           .createNamespace()
@@ -170,7 +172,7 @@ class HelmKubernetesTest {
       @Test
       void missingNamespace() {
         final InstallCommand install = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("missing-namespace")
           .withNamespace("non-existent");
         assertThatThrownBy(install::call)
@@ -181,7 +183,7 @@ class HelmKubernetesTest {
       @Test
       void lowTimeout() {
         final InstallCommand installCommand = helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-install-with-wait-ready-and-low-timeout")
           .set("fullnameOverride", "helm-install-with-wait-ready-and-low-timeout")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -216,11 +218,11 @@ class HelmKubernetesTest {
 
       @Test
       void withoutAtomic() {
-        InstallCommand installCommand = failingHelm.install().withKubeConfig(kubeConfig).withName("test-fail");
+        InstallCommand installCommand = failingHelm.install().withKubeConfig(kubeConfigFile).withName("test-fail");
         assertThatThrownBy(installCommand::call).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Pod \"test-fail-test-failing\" is invalid: spec.containers: Required value");
 
-        assertThat(Helm.list().withKubeConfig(kubeConfig).call()).filteredOn(r -> r.getName().equals("test-fail"))
+        assertThat(Helm.list().withKubeConfig(kubeConfigFile).call()).filteredOn(r -> r.getName().equals("test-fail"))
                 .singleElement()
                 .returns("failed", Release::getStatus);
       }
@@ -228,11 +230,11 @@ class HelmKubernetesTest {
       @Test
       void withAtomic() {
         InstallCommand atomicInstallCommand =
-                failingHelm.install().withKubeConfig(kubeConfig).withName("test-rollback").atomic();
+                failingHelm.install().withKubeConfig(kubeConfigFile).withName("test-rollback").atomic();
         assertThatThrownBy(atomicInstallCommand::call).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Pod \"test-rollback-test-failing\" is invalid: spec.containers: Required value");
 
-        assertThat(Helm.list().withKubeConfig(kubeConfig).call()).filteredOn(r -> r.getName().equals("test-rollback"))
+        assertThat(Helm.list().withKubeConfig(kubeConfigFile).call()).filteredOn(r -> r.getName().equals("test-rollback"))
                 .isEmpty();
       }
     }
@@ -243,20 +245,20 @@ class HelmKubernetesTest {
 
     @BeforeEach
     void setUp() {
-      helm.install().withKubeConfig(kubeConfig).withName("list-default").call();
-      helm.install().withKubeConfig(kubeConfig)
+      helm.install().withKubeConfig(kubeConfigFile).withName("list-default").call();
+      helm.install().withKubeConfig(kubeConfigFile)
         .withName("list-namespace").withNamespace("list-namespace").createNamespace().call();
     }
 
     @AfterEach()
     void tearDown() {
-      Helm.uninstall("list-default").withKubeConfig(kubeConfig).call();
-      Helm.uninstall("list-namespace").withKubeConfig(kubeConfig).withNamespace("list-namespace").call();
+      Helm.uninstall("list-default").withKubeConfig(kubeConfigFile).call();
+      Helm.uninstall("list-namespace").withKubeConfig(kubeConfigFile).withNamespace("list-namespace").call();
     }
 
     @Test
     void listsCurrentNamespace() {
-      final List<Release> result = Helm.list().withKubeConfig(kubeConfig).call();
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfigFile).call();
       assertThat(result)
         .filteredOn(r -> r.getName().equals("list-default"))
         .singleElement()
@@ -272,8 +274,25 @@ class HelmKubernetesTest {
     }
 
     @Test
+    void listsCurrentNamespaceWithKubeConfigContents() {
+      final List<Release> result = Helm.list().withKubeConfigContents(kubeConfigContents).call();
+      assertThat(result)
+              .filteredOn(r -> r.getName().equals("list-default"))
+              .singleElement()
+              .returns("list-default", Release::getName)
+              .returns(null, Release::getNamespace)
+              .returns("deployed", Release::getStatus)
+              .returns("1", Release::getRevision)
+              .returns("test-0.1.0", Release::getChart)
+              .returns("1.16.0", Release::getAppVersion)
+              .returns("", Release::getOutput)
+              .extracting(Release::getLastDeployed)
+              .matches(d -> d.toLocalDate().equals(LocalDate.now()));
+    }
+
+    @Test
     void listsSpecificNamespace() {
-      final List<Release> result = Helm.list().withKubeConfig(kubeConfig)
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfigFile)
         .withNamespace("list-namespace")
         .call();
       assertThat(result)
@@ -284,7 +303,7 @@ class HelmKubernetesTest {
 
     @Test
     void listsAllNamespaces() {
-      final List<Release> result = Helm.list().withKubeConfig(kubeConfig)
+      final List<Release> result = Helm.list().withKubeConfig(kubeConfigFile)
         .allNamespaces()
         .call();
       assertThat(result)
@@ -303,7 +322,7 @@ class HelmKubernetesTest {
       @Test
       void withValidRelease() {
         helm.install()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-test-valid-release")
           .set("fullnameOverride", "helm-test-valid-release")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -312,7 +331,7 @@ class HelmKubernetesTest {
           .waitReady()
           .call();
         final Release result = Helm.test("helm-test-valid-release")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .call();
         assertThat(result)
           .hasFieldOrPropertyWithValue("name", "helm-test-valid-release")
@@ -332,7 +351,7 @@ class HelmKubernetesTest {
       @Test
       void missingRelease() {
         final TestCommand testCommand = Helm.test("i-was-never-created")
-          .withKubeConfig(kubeConfig);
+          .withKubeConfig(kubeConfigFile);
         assertThatThrownBy(testCommand::call)
           .message()
           .isEqualTo("release: not found");
@@ -340,9 +359,9 @@ class HelmKubernetesTest {
 
       @Test
       void lowTimeout() {
-        helm.install().withKubeConfig(kubeConfig).withName("test-low-timeout").call();
+        helm.install().withKubeConfig(kubeConfigFile).withName("test-low-timeout").call();
         final TestCommand testCommand = Helm.test("test-low-timeout")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withTimeout(1);
         assertThatThrownBy(testCommand::call)
           .message()
@@ -359,8 +378,8 @@ class HelmKubernetesTest {
 
       @Test
       void withValidRelease() {
-        helm.install().withKubeConfig(kubeConfig).withName("uninstall").call();
-        final String out = Helm.uninstall("uninstall").withKubeConfig(kubeConfig).call();
+        helm.install().withKubeConfig(kubeConfigFile).withName("uninstall").call();
+        final String out = Helm.uninstall("uninstall").withKubeConfig(kubeConfigFile).call();
         assertThat(out).contains(
           "release \"uninstall\" uninstalled\n"
         );
@@ -368,10 +387,10 @@ class HelmKubernetesTest {
 
       @Test
       void withNamespace() {
-        helm.install().withKubeConfig(kubeConfig).withName("uninstall-with-namespace")
+        helm.install().withKubeConfig(kubeConfigFile).withName("uninstall-with-namespace")
           .withNamespace("uninstall-with-namespace").createNamespace().call();
         final String out = Helm.uninstall("uninstall-with-namespace")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withNamespace("uninstall-with-namespace")
           .call();
         assertThat(out).contains(
@@ -381,9 +400,9 @@ class HelmKubernetesTest {
 
       @Test
       void withValidReleaseAndDebug() {
-        helm.install().withKubeConfig(kubeConfig).withName("uninstall-with-debug").call();
+        helm.install().withKubeConfig(kubeConfigFile).withName("uninstall-with-debug").call();
         final String out = Helm.uninstall("uninstall-with-debug")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .debug()
           .call();
         assertThat(out).contains(
@@ -399,9 +418,9 @@ class HelmKubernetesTest {
 
       @Test
       void withValidReleaseAndDryRunAndDebug() {
-        helm.install().withKubeConfig(kubeConfig).withName("uninstall-with-dry-run").call();
+        helm.install().withKubeConfig(kubeConfigFile).withName("uninstall-with-dry-run").call();
         final String out = Helm.uninstall("uninstall-with-dry-run")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .dryRun()
           .debug()
           .call();
@@ -419,9 +438,9 @@ class HelmKubernetesTest {
 
       @Test
       void withValidReleaseAndNoHooksAndDebug() {
-        helm.install().withKubeConfig(kubeConfig).withName("uninstall-with-no-hooks-debug").call();
+        helm.install().withKubeConfig(kubeConfigFile).withName("uninstall-with-no-hooks-debug").call();
         final String out = Helm.uninstall("uninstall-with-no-hooks-debug")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .debug()
           .withCascade(UninstallCommand.Cascade.FOREGROUND)
           .keepHistory()
@@ -445,7 +464,7 @@ class HelmKubernetesTest {
       @Test
       void missingReleaseWithIgnoreNotFound() {
         final String out = Helm.uninstall("i-was-never-created")
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .ignoreNotFound()
           .call();
         assertThat(out).contains(
@@ -460,7 +479,7 @@ class HelmKubernetesTest {
       @Test
       void missingRelease() {
         final UninstallCommand uninstall = Helm.uninstall("i-was-never-created")
-          .withKubeConfig(kubeConfig);
+          .withKubeConfig(kubeConfigFile);
         assertThatThrownBy(uninstall::call)
           .message()
           .isEqualTo("uninstall: Release not loaded: i-was-never-created: release: not found");
@@ -477,7 +496,7 @@ class HelmKubernetesTest {
       @Test
       void withInstall() {
         final Release result = helm.upgrade()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .install()
           .withName("upgrade-with-install")
           .call();
@@ -488,9 +507,9 @@ class HelmKubernetesTest {
 
       @Test
       void withPriorInstall() {
-        helm.install().withName("upgrade-prior-install").withKubeConfig(kubeConfig).call();
+        helm.install().withName("upgrade-prior-install").withKubeConfig(kubeConfigFile).call();
         final Release result = helm.upgrade()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("upgrade-prior-install")
           .call();
         assertThat(result)
@@ -500,9 +519,9 @@ class HelmKubernetesTest {
 
       @Test
       void withWaitReady() {
-        helm.install().withName("helm-upgrade-with-wait-ready").withKubeConfig(kubeConfig).call();
+        helm.install().withName("helm-upgrade-with-wait-ready").withKubeConfig(kubeConfigFile).call();
         final Release result = helm.upgrade()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-upgrade-with-wait-ready")
           .set("fullnameOverride", "helm-upgrade-with-wait-ready")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -519,9 +538,9 @@ class HelmKubernetesTest {
 
       @Test
       void withWaitAndCustomTimeout() {
-        helm.install().withName("helm-upgrade-with-wait-ready-and-custom-timeout").withKubeConfig(kubeConfig).call();
+        helm.install().withName("helm-upgrade-with-wait-ready-and-custom-timeout").withKubeConfig(kubeConfigFile).call();
         final Release result = helm.upgrade()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-upgrade-with-wait-ready-and-custom-timeout")
           .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-custom-timeout")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
@@ -544,7 +563,7 @@ class HelmKubernetesTest {
       void missingRelease() {
         final UpgradeCommand upgrade = helm.upgrade()
           .withName("upgrade-missing-release")
-          .withKubeConfig(kubeConfig);
+          .withKubeConfig(kubeConfigFile);
         assertThatThrownBy(upgrade::call)
           .message()
           .isEqualTo("\"upgrade-missing-release\" has no deployed releases");
@@ -552,9 +571,9 @@ class HelmKubernetesTest {
 
       @Test
       void lowTimeout() {
-        helm.install().withName("helm-upgrade-with-wait-ready-and-low-timeout").withKubeConfig(kubeConfig).call();
+        helm.install().withName("helm-upgrade-with-wait-ready-and-low-timeout").withKubeConfig(kubeConfigFile).call();
         final UpgradeCommand upgrade = helm.upgrade()
-          .withKubeConfig(kubeConfig)
+          .withKubeConfig(kubeConfigFile)
           .withName("helm-upgrade-with-wait-ready-and-low-timeout")
           .set("fullnameOverride", "helm-upgrade-with-wait-ready-and-low-timeout")
           .set("image.repository", "ghcr.io/linuxserver/nginx")
