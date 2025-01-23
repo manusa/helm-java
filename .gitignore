@@ -7,6 +7,7 @@ target/
 *.so
 *.dylib
 *.h
+*.wasm
 
 *.test
 

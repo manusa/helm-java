@@ -42,6 +42,15 @@ build-native-cross-platform:
 	go install src.techknowlogick.com/xgo@latest
 	xgo $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
+.PHONY: build-native-wasi
+build-native-wasi:
+	#cd native && GOOS=wasip1 GOARCH=wasm go build -o ./out/helm.wasm ./wasm/main.go
+	# Andrea recommends using TinyGo
+	# Doesn't work, need to find the right combination of ENV variables
+	#cd native && GOOS=wasip1 GOARCH=wasm tinygo build -o ./out/helm.wasm
+	# Working Version:
+	cd native && tinygo build -target=wasi -o ./out/helm.wasm ./wasm/main.go
+
 .PHONY: build-java
 build-java:
 	mvn $(MAVEN_OPTIONS) clean verify
