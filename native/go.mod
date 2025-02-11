@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
-	github.com/distribution/distribution/v3 v3.0.0-rc.2
+	github.com/distribution/distribution/v3 v3.0.0-rc.3
 	github.com/gofrs/flock v0.12.1
 	github.com/orcaman/concurrent-map/v2 v2.0.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
