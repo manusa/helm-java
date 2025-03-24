@@ -1,17 +1,18 @@
 module github.com/manusa/helm-java/native
 
 go 1.23.1
+toolchain go1.24.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
-	github.com/distribution/distribution/v3 v3.0.0-rc.2
+	github.com/distribution/distribution/v3 v3.0.0-rc.4
 	github.com/gofrs/flock v0.12.1
 	github.com/orcaman/concurrent-map/v2 v2.0.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.12.0
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.35.0
 	helm.sh/helm/v3 v3.17.0
 	k8s.io/cli-runtime v0.32.1
 	k8s.io/client-go v0.32.1
@@ -153,12 +154,12 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect
