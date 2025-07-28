@@ -35,6 +35,7 @@ public class TemplateCommand extends HelmCommand<String> {
   private String version;
   private String chart;
   private String namespace;
+  private String kubeVersion;
   private boolean dependencyUpdate;
   private final Map<String, String> values;
   private final List<Path> valuesFiles;
@@ -65,6 +66,7 @@ public class TemplateCommand extends HelmCommand<String> {
       version,
       chart,
       namespace,
+      kubeVersion,
       toInt(dependencyUpdate),
       urlEncode(values),
       toString(valuesFiles),
@@ -124,6 +126,17 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand withNamespace(String namespace) {
     this.namespace = namespace;
+    return this;
+  }
+
+  /**
+   * Kubernetes version for this request.
+   *
+   * @param kubeVersion the Kubernetes version for this request.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand withKubeVersion(String kubeVersion) {
+    this.kubeVersion = kubeVersion;
     return this;
   }
 

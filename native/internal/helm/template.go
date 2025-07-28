@@ -28,6 +28,7 @@ type TemplateOptions struct {
 	Version          string
 	Chart            string
 	Namespace        string
+	KubeVersion      string
 	DependencyUpdate bool
 	Values           string
 	ValuesFiles      string
@@ -50,6 +51,7 @@ func Template(options *TemplateOptions) (string, error) {
 		Version:          options.Version,
 		Chart:            options.Chart,
 		Namespace:        options.Namespace,
+		KubeVersion:      options.KubeVersion,
 		DependencyUpdate: options.DependencyUpdate,
 		Values:           options.Values,
 		ValuesFiles:      options.ValuesFiles,

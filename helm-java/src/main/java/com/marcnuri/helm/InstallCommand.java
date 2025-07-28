@@ -42,6 +42,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private String version;
   private String chart;
   private String namespace;
+  private String kubeVersion;
   private boolean atomic;
   private boolean createNamespace;
   private String description;
@@ -86,6 +87,7 @@ public class InstallCommand extends HelmCommand<Release> {
       version,
       chart,
       namespace,
+      kubeVersion,
       toInt(atomic),
       toInt(createNamespace),
       description,
@@ -178,6 +180,17 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand withNamespace(String namespace) {
     this.namespace = namespace;
+    return this;
+  }
+
+  /**
+   * Kubernetes version for this request.
+   *
+   * @param kubeVersion the Kubernetes version for this request.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand withKubeVersion(String kubeVersion) {
+    this.kubeVersion = kubeVersion;
     return this;
   }
 

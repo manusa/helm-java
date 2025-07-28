@@ -31,6 +31,7 @@ import com.sun.jna.Structure;
   "version",
   "chart",
   "namespace",
+  "kubeVersion",
   "atomic",
   "createNamespace",
   "description",
@@ -63,6 +64,7 @@ public class InstallOptions extends Structure {
   public String version;
   public String chart;
   public String namespace;
+  public String kubeVersion;
   public int atomic;
   public int createNamespace;
   public String description;
@@ -94,6 +96,7 @@ public class InstallOptions extends Structure {
     String version,
     String chart,
     String namespace,
+    String kubeVersion,
     int atomic,
     int createNamespace,
     String description,
@@ -124,6 +127,7 @@ public class InstallOptions extends Structure {
     this.version = version;
     this.chart = chart;
     this.namespace = namespace;
+    this.kubeVersion = kubeVersion;
     this.atomic = atomic;
     this.createNamespace = createNamespace;
     this.description = description;
