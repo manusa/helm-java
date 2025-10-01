@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.15.0
 	golang.org/x/crypto v0.42.0
-	helm.sh/helm/v3 v3.17.3
+	helm.sh/helm/v3 v3.17.4
 	k8s.io/cli-runtime v0.34.1
 	k8s.io/client-go v0.34.1
 	sigs.k8s.io/controller-runtime v0.22.1
