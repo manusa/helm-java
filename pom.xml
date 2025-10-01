@@ -62,7 +62,7 @@
     <version.maven-core>3.9.5</version.maven-core>
     <version.maven-plugin-annotations>3.10.1</version.maven-plugin-annotations>
     <version.maven-plugin-plugin>3.9.0</version.maven-plugin-plugin>
-    <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
+    <version.maven-enforcer-plugin>3.6.1</version.maven-enforcer-plugin>
     <version.maven-gpg>3.2.7</version.maven-gpg>
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
     <version.maven-javadoc-plugin>3.11.2</version.maven-javadoc-plugin>
