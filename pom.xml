@@ -38,8 +38,9 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central-portal</id>
+      <name>Central Portal (Snapshots)</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
     <repository>
       <id>ossrh</id>
@@ -52,9 +53,10 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <com.marcnuri.jkube-helm.repository.snapshots>https://oss.sonatype.org/content/repositories/snapshots</com.marcnuri.jkube-helm.repository.snapshots>
+    <com.marcnuri.jkube-helm.repository.snapshots>https://central.sonatype.com/repository/maven-snapshots/</com.marcnuri.jkube-helm.repository.snapshots>
     <com.marcnuri.jkube-helm.repository.stable>https://repo1.maven.org/maven2</com.marcnuri.jkube-helm.repository.stable>
     <version.assertj>3.27.3</version.assertj>
+    <version.central-publishing-maven-plugin>0.9.0</version.central-publishing-maven-plugin>
     <version.jna>5.16.0</version.jna>
     <version.junit>5.12.1</version.junit>
     <version.maven-core>3.9.5</version.maven-core>
@@ -70,7 +72,6 @@
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
     <version.slf4j>2.0.17</version.slf4j>
-    <version.sonatype-staging>1.7.0</version.sonatype-staging>
     <version.test-containers>1.20.3</version.test-containers>
     <version.test-containers-kind>1.4.9</version.test-containers-kind>
   </properties>
@@ -279,14 +280,13 @@
             </configuration>
           </plugin>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${version.sonatype-staging}</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${version.central-publishing-maven-plugin}</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              <publishingServerId>central-portal</publishingServerId>
+              <autoPublish>true</autoPublish>
             </configuration>
           </plugin>
         </plugins>
