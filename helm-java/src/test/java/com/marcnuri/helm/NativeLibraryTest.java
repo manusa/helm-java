@@ -17,7 +17,6 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.NativeLibrary;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URLClassLoader;
@@ -42,8 +41,6 @@ class NativeLibraryTest {
   }
 
   @Test
-  @Disabled("Disabled until SNAPSHOTS are published again")
-  // TODO: Re-enable once snapshots are published again
   void getSnapshotInstanceFromRemoteJar() {
     final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
     // Use a PUBLISHED snapshot version
