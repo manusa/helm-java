@@ -81,11 +81,11 @@ release:
 
 .PHONY: license
 license:
-	@license_len=$$(wc -l $(LICENSE_FILE) | cut -f1 -d ' ') &&								\
+	@license_len=$$(cat $(LICENSE_FILE) | wc -l) &&											\
 	 files=$$(git ls-files | grep -E "\.go|\.java") &&											\
 	 for file in $$files; do																	\
 	   echo "Applying license to $$file";														\
-	   head -n $$license_len $$file | diff -q $(LICENSE_FILE) - > /dev/null ||					\
+	   head -n $$license_len $$file | cmp -s $(LICENSE_FILE) - ||								\
 	     ( ( cat $(LICENSE_FILE); echo; cat $$file ) > $$file.temp; mv $$file.temp $$file )		\
 	 done
 
