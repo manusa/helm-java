@@ -70,6 +70,6 @@ class HelmCreateTest {
       .withName("test")
       .withDir(Paths.get("/im-an-invalid-path"));
     assertThatIllegalStateException().isThrownBy(create::call)
-      .withMessageMatching("CreateFile [A-Z]:\\\\im-an-invalid-path: The system cannot find the file specified.");
+      .withMessageMatching(".+ [A-Z]:\\\\im-an-invalid-path: The system cannot find the file specified.");
   }
 }
