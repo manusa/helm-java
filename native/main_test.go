@@ -17,15 +17,116 @@
 package main
 
 import (
-	"github.com/manusa/helm-java/native/internal/helm"
-	"helm.sh/helm/v3/pkg/repo/repotest"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/manusa/helm-java/native/internal/helm"
+	"helm.sh/helm/v3/pkg/repo/repotest"
 )
+
+// helmEnvVars contains the list of Helm-related environment variables that should be isolated
+var helmEnvVars = []string{
+	"HELM_CACHE_HOME",
+	"HELM_CONFIG_HOME",
+	"HELM_DATA_HOME",
+	"HELM_DEBUG",
+	"HELM_DRIVER",
+	"HELM_KUBEAPISERVER",
+	"HELM_KUBECONTEXT",
+	"HELM_KUBETOKEN",
+	"HELM_NAMESPACE",
+	"HELM_REGISTRY_CONFIG",
+	"HELM_REPOSITORY_CACHE",
+	"HELM_REPOSITORY_CONFIG",
+	"KUBECONFIG",
+	// Docker/Registry credential storage
+	"DOCKER_CONFIG",
+	"REGISTRY_AUTH_FILE",
+	// GPG-related environment variables
+	"GNUPGHOME",
+	"GPG_TTY",
+	// Pass credential helper (uses GPG)
+	"PASSWORD_STORE_DIR",
+	"PASSWORD_STORE_GPG_OPTS",
+	// Other credential helpers
+	"DOCKER_CREDENTIAL_HELPERS",
+	// PATH to avoid credential helpers
+	"PATH",
+}
+
+// TestMain sets up an isolated environment for tests by clearing Helm-related
+// environment variables and setting up temporary directories
+func TestMain(m *testing.M) {
+	// Save original environment
+	originalEnv := make(map[string]string)
+	for _, envVar := range helmEnvVars {
+		if val, exists := os.LookupEnv(envVar); exists {
+			originalEnv[envVar] = val
+		}
+	}
+
+	// Create temporary directories for Helm
+	tempDir, err := os.MkdirTemp("", "helm-test-*")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	helmCacheHome := filepath.Join(tempDir, "cache")
+	helmConfigHome := filepath.Join(tempDir, "config")
+	helmDataHome := filepath.Join(tempDir, "data")
+	dockerConfigHome := filepath.Join(tempDir, "docker")
+	gnupgHome := filepath.Join(tempDir, "gnupg")
+
+	// Create the directories
+	_ = os.MkdirAll(helmCacheHome, 0755)
+	_ = os.MkdirAll(helmConfigHome, 0755)
+	_ = os.MkdirAll(helmDataHome, 0755)
+	_ = os.MkdirAll(dockerConfigHome, 0755)
+	_ = os.MkdirAll(gnupgHome, 0700)
+
+	// Create a minimal Docker config to avoid GPG credential helper
+	dockerConfigFile := filepath.Join(dockerConfigHome, "config.json")
+	dockerConfig := `{
+	"auths": {},
+	"credHelpers": {},
+	"credsStore": ""
+}`
+	_ = os.WriteFile(dockerConfigFile, []byte(dockerConfig), 0644)
+
+	// Clear all Helm-related environment variables
+	for _, envVar := range helmEnvVars {
+		_ = os.Unsetenv(envVar)
+	}
+
+	// Set up clean test environment
+	_ = os.Setenv("HELM_CACHE_HOME", helmCacheHome)
+	_ = os.Setenv("HELM_CONFIG_HOME", helmConfigHome)
+	_ = os.Setenv("HELM_DATA_HOME", helmDataHome)
+	_ = os.Setenv("HELM_DRIVER", "memory")
+	_ = os.Setenv("DOCKER_CONFIG", dockerConfigHome)
+	_ = os.Setenv("GNUPGHOME", gnupgHome)
+	// Set minimal PATH to avoid credential helper binaries
+	_ = os.Setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+
+	// Run tests
+	exitCode := m.Run()
+
+	// Restore original environment
+	for _, envVar := range helmEnvVars {
+		_ = os.Unsetenv(envVar)
+		if val, exists := originalEnv[envVar]; exists {
+			_ = os.Setenv(envVar, val)
+		}
+	}
+
+	os.Exit(exitCode)
+}
 
 func TestCreate(t *testing.T) {
 	create, _ := helm.Create(&helm.CreateOptions{
@@ -185,11 +286,9 @@ func TestPushUnauthorized(t *testing.T) {
 		Debug:  true,
 	})
 	if err == nil {
-		t.Error("Expected push to fail")
+		t.Fatal("Expected push to fail")
 	}
-	if !strings.Contains(err.Error(), "push access denied, repository does not exist or may require authorization") &&
-		!(strings.Contains(err.Error(), "unexpected status from HEAD request") && strings.Contains(err.Error(), "401 Unauthorized")) &&
-		!strings.Contains(err.Error(), "basic credential not found") {
+	if !strings.Contains(err.Error(), "basic credential not found") {
 		t.Errorf("Expected push to fail with message, got %s", err.Error())
 	}
 }
@@ -219,10 +318,9 @@ func TestRegistryLoginInvalidCredentials(t *testing.T) {
 		Password: "invalid",
 	})
 	if err == nil {
-		t.Error("Expected login to fail")
+		t.Fatal("Expected login to fail")
 	}
-	if !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") &&
-		!strings.Contains(err.Error(), "authenticating to") {
+	if !strings.Contains(err.Error(), "401: unauthorized: authentication required") {
 		t.Errorf("Expected login to fail with authentication error, got %s", err.Error())
 	}
 }
