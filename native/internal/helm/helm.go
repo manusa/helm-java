@@ -20,13 +20,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"os"
 	"strings"
 	"time"
+
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
