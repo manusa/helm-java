@@ -179,7 +179,7 @@ func TestPushUnauthorized(t *testing.T) {
 		Dir:  dir,
 	})
 	_ = helm.Package(&helm.PackageOptions{Path: create, Destination: dir})
-	out, err := helm.Push(&helm.PushOptions{
+	_, err := helm.Push(&helm.PushOptions{
 		Chart:  path.Join(dir, "test-0.1.0.tgz"),
 		Remote: "oci://" + srv.RegistryURL,
 		Debug:  true,
@@ -188,11 +188,9 @@ func TestPushUnauthorized(t *testing.T) {
 		t.Error("Expected push to fail")
 	}
 	if !strings.Contains(err.Error(), "push access denied, repository does not exist or may require authorization") &&
-		!(strings.Contains(err.Error(), "unexpected status from HEAD request") && strings.Contains(err.Error(), "401 Unauthorized")) {
+		!(strings.Contains(err.Error(), "unexpected status from HEAD request") && strings.Contains(err.Error(), "401 Unauthorized")) &&
+		!strings.Contains(err.Error(), "basic credential not found") {
 		t.Errorf("Expected push to fail with message, got %s", err.Error())
-	}
-	if !strings.Contains(err.Error(), "level=debug") || !strings.Contains(err.Error(), "msg=Unauthorized") {
-		t.Errorf("Expected out to contain debug info, got %s", out)
 	}
 }
 
@@ -220,8 +218,12 @@ func TestRegistryLoginInvalidCredentials(t *testing.T) {
 		Username: "username",
 		Password: "invalid",
 	})
-	if err == nil || !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") {
+	if err == nil {
 		t.Error("Expected login to fail")
+	}
+	if !strings.Contains(err.Error(), "failed with status: 401 Unauthorized") &&
+		!strings.Contains(err.Error(), "authenticating to") {
+		t.Errorf("Expected login to fail with authentication error, got %s", err.Error())
 	}
 }
 

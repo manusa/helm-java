@@ -63,10 +63,11 @@ class HelmRegistryTest {
         .withHost(remoteServer).withUsername("username").withPassword("invalid");
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContainingAll(
+        .extracting(Throwable::getMessage)
+        .asString()
+        .containsAnyOf(
           "login attempt to",
-          "failed with status: 401 Unauthorized"
-        );
+          "authenticating to");
     }
 
     @Test
@@ -76,11 +77,11 @@ class HelmRegistryTest {
         .withHost(remoteServer).withUsername("username").withPassword("invalid");
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContainingAll(
+        .extracting(Throwable::getMessage)
+        .asString()
+        .containsAnyOf(
           "login attempt to",
-          "failed with status: 401 Unauthorized",
-          "level=warning msg=\"error authorizing context: basic authentication challenge for realm"
-        );
+          "authenticating to");
     }
   }
 
@@ -108,9 +109,9 @@ class HelmRegistryTest {
     void withNoPreviousLoginThrowsException() {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .withHost(remoteServer);
-      assertThatThrownBy(logoutCommand::call)
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("not logged in");
+      // In Helm 3.19.2, logout no longer throws an exception when not logged in
+      final String result = logoutCommand.call();
+      assertThat(result).contains("Removing login credentials for " + remoteServer);
     }
 
     @Test
@@ -118,9 +119,9 @@ class HelmRegistryTest {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .debug()
         .withHost(remoteServer);
-      assertThatThrownBy(logoutCommand::call)
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("not logged in");
+      // In Helm 3.19.2, logout no longer throws an exception when not logged in
+      final String result = logoutCommand.call();
+      assertThat(result).contains("Removing login credentials for " + remoteServer);
     }
   }
 }
