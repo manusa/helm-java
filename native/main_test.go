@@ -281,9 +281,10 @@ func TestPushUnauthorized(t *testing.T) {
 	})
 	_ = helm.Package(&helm.PackageOptions{Path: create, Destination: dir})
 	_, err := helm.Push(&helm.PushOptions{
-		Chart:  path.Join(dir, "test-0.1.0.tgz"),
-		Remote: "oci://" + srv.RegistryURL,
-		Debug:  true,
+		Chart:       path.Join(dir, "test-0.1.0.tgz"),
+		Remote:      "oci://" + srv.RegistryURL,
+		Debug:       true,
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	if err == nil {
 		t.Fatal("Expected push to fail")
