@@ -103,7 +103,7 @@ class HelmRegistryTest {
     }
 
     @Test
-    void withNoPreviousLoginThrowsException() {
+    void withNoPreviousLoginSucceeds() {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .withHost(remoteServer);
       // In Helm 3.19.2, logout no longer throws an exception when not logged in
@@ -112,7 +112,7 @@ class HelmRegistryTest {
     }
 
     @Test
-    void withDebugAndNoPreviousLoginThrowsException() {
+    void withDebugAndNoPreviousLoginSucceeds() {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .debug()
         .withHost(remoteServer);
