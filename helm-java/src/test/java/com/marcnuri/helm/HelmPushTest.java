@@ -82,7 +82,7 @@ class HelmPushTest {
       .contains("basic credential not found")
       .contains(
         "level=DEBUG",
-        "\"Date\"",
+        "\\\"Date\\\"",
         "status=\"401 Unauthorized\"");
   }
 
@@ -106,6 +106,6 @@ class HelmPushTest {
       .debug()
       .call();
     assertThat(result)
-      .contains("level=DEBUG", "checking and pushing to", "Pushed: ", "test:0.1.0", "Digest: ");
+      .contains("level=DEBUG", "status=\"201 Created\"", "Pushed: ", "test:0.1.0", "Digest: ");
   }
 }
