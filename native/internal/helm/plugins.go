@@ -16,7 +16,15 @@
 
 package helm
 
-import _ "k8s.io/client-go/plugin/pkg/client/auth/azure"
+// Import client-go auth plugins to enable authentication with Kubernetes clusters.
+// See: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins
+//
+// exec: Supports exec-based credential plugins (recommended for Azure via kubelogin and GCP via gke-gcloud-auth-plugin)
+// oidc: Supports OpenID Connect authentication
+//
+// Note: The legacy azure and gcp auth-provider plugins have been removed as of Kubernetes v1.26.
+// Users should migrate to:
+// - Azure: https://github.com/Azure/kubelogin (exec plugin)
+// - GCP: gke-gcloud-auth-plugin (exec plugin, part of gcloud CLI)
 import _ "k8s.io/client-go/plugin/pkg/client/auth/exec"
-import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 import _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"

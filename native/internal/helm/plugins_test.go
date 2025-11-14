@@ -23,7 +23,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const azureKubeConfig = `
+const azureExecKubeConfig = `
 apiVersion: v1
 clusters:
 - cluster:
@@ -39,16 +39,22 @@ kind: Config
 users:
 - name: azure-user
   user:
-    auth-provider:
-      name: azure
-      config:
-        apiserver-id: test-id
-        tenant-id: test-tenant
-        client-id: test-client
-        environment: AzurePublicCloud
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: kubelogin
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - test-server-id
+      - --client-id
+      - test-client-id
+      - --tenant-id
+      - test-tenant-id
 `
 
-const gcpKubeConfig = `
+const gcpExecKubeConfig = `
 apiVersion: v1
 clusters:
 - cluster:
@@ -64,13 +70,11 @@ kind: Config
 users:
 - name: gcp-user
   user:
-    auth-provider:
-      name: gcp
-      config:
-        cmd-args: config config-helper --format=json
-        cmd-path: /usr/bin/gcloud
-        expiry-key: '{.credential.token_expiry}'
-        token-key: '{.credential.access_token}'
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: gke-gcloud-auth-plugin
+      installHint: Install gke-gcloud-auth-plugin for use with kubectl by following https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#install_plugin
+      provideClusterInfo: true
 `
 
 const oidcKubeConfig = `
@@ -123,48 +127,38 @@ users:
 `
 
 func TestAuthPlugins(t *testing.T) {
-	t.Run("should load azure auth provider plugin with deprecation message", func(t *testing.T) {
+	t.Run("should support azure via exec plugin (kubelogin)", func(t *testing.T) {
 		cfg := NewCfg(&CfgOptions{
-			KubeConfigContents: azureKubeConfig,
+			KubeConfigContents: azureExecKubeConfig,
 		})
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
-			t.Errorf("Expected azure kubeconfig to parse successfully, got %s", err)
+			t.Errorf("Expected azure exec kubeconfig to parse successfully, got %s", err)
 			return
 		}
-		if restConfig.AuthProvider == nil {
-			t.Error("Expected AuthProvider to be configured for azure")
+		if restConfig.ExecProvider == nil {
+			t.Error("Expected ExecProvider to be configured for azure")
 			return
 		}
-		_, err = rest.TransportFor(restConfig)
-		if err == nil {
-			t.Error("Expected azure auth provider to be deprecated")
-			return
-		}
-		if !strings.Contains(err.Error(), "azure auth plugin has been removed") {
-			t.Errorf("Expected deprecation error message, got %s", err)
+		if restConfig.ExecProvider.Command != "kubelogin" {
+			t.Errorf("Expected ExecProvider command to be 'kubelogin', got %s", restConfig.ExecProvider.Command)
 		}
 	})
-	t.Run("should load gcp auth provider plugin with deprecation message", func(t *testing.T) {
+	t.Run("should support gcp via exec plugin (gke-gcloud-auth-plugin)", func(t *testing.T) {
 		cfg := NewCfg(&CfgOptions{
-			KubeConfigContents: gcpKubeConfig,
+			KubeConfigContents: gcpExecKubeConfig,
 		})
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
-			t.Errorf("Expected gcp kubeconfig to parse successfully, got %s", err)
+			t.Errorf("Expected gcp exec kubeconfig to parse successfully, got %s", err)
 			return
 		}
-		if restConfig.AuthProvider == nil {
-			t.Error("Expected AuthProvider to be configured for gcp")
+		if restConfig.ExecProvider == nil {
+			t.Error("Expected ExecProvider to be configured for gcp")
 			return
 		}
-		_, err = rest.TransportFor(restConfig)
-		if err == nil {
-			t.Error("Expected gcp auth provider to be deprecated")
-			return
-		}
-		if !strings.Contains(err.Error(), "gcp auth plugin has been removed") {
-			t.Errorf("Expected deprecation error message, got %s", err)
+		if restConfig.ExecProvider.Command != "gke-gcloud-auth-plugin" {
+			t.Errorf("Expected ExecProvider command to be 'gke-gcloud-auth-plugin', got %s", restConfig.ExecProvider.Command)
 		}
 	})
 	t.Run("should register oidc auth provider plugin", func(t *testing.T) {
