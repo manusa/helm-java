@@ -63,11 +63,9 @@ class HelmRegistryTest {
         .withHost(remoteServer).withUsername("username").withPassword("invalid");
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
-        .extracting(Throwable::getMessage)
-        .asString()
-        .containsAnyOf(
-          "login attempt to",
-          "authenticating to");
+        .hasMessageContainingAll(
+          "401: unauthorized: authentication required"
+        );
     }
 
     @Test
@@ -77,11 +75,10 @@ class HelmRegistryTest {
         .withHost(remoteServer).withUsername("username").withPassword("invalid");
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
-        .extracting(Throwable::getMessage)
-        .asString()
-        .containsAnyOf(
-          "login attempt to",
-          "authenticating to");
+        .hasMessageContainingAll(
+          "401: unauthorized: authentication required",
+          "level=warning msg=\"error authorizing context: basic authentication challenge for realm"
+        );
     }
   }
 

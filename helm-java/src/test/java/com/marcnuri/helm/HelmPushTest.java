@@ -83,7 +83,11 @@ class HelmPushTest {
       .asString()
       .containsAnyOf(
         "push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials",
-        "basic credential not found");
+        "basic credential not found")
+      .contains(
+        "time=",
+        "response.status",
+        "401 Unauthorized");
   }
 
   @Test
@@ -106,6 +110,6 @@ class HelmPushTest {
       .debug()
       .call();
     assertThat(result)
-      .contains("Pushed: ", "test:0.1.0", "Digest: ");
+      .contains("time=", "checking and pushing to", "Pushed: ", "test:0.1.0", "Digest: ");
   }
 }
