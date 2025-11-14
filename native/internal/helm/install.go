@@ -66,16 +66,16 @@ type InstallOptions struct {
 }
 
 type installOutputs struct {
-	updateOutput      string
-	registryClientOut *bytes.Buffer
-	kubeOut           *bytes.Buffer
+	updateOutput         string
+	getRegistryClientOut func() *bytes.Buffer
+	kubeOut              *bytes.Buffer
 }
 
 func Install(options *InstallOptions) (string, error) {
 	rel, outputs, err := install(options)
 	// Generate report
 	out := StatusReport(rel, false, options.Debug)
-	return appendToOutOrErr(concat(cStr(outputs.updateOutput), cBuf(outputs.registryClientOut), cBuf(outputs.kubeOut)), out, err)
+	return appendToOutOrErr(concat(cStr(outputs.updateOutput), cBuf(outputs.getRegistryClientOut()), cBuf(outputs.kubeOut)), out, err)
 }
 
 func install(options *InstallOptions) (*release.Release, *installOutputs, error) {
@@ -85,7 +85,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	if options.Version == "" && options.Devel {
 		options.Version = ">0.0.0-0"
 	}
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
@@ -93,7 +93,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		options.PlainHttp,
 		options.Debug,
 	)
-	outputs.registryClientOut = registryClientOut
+	outputs.getRegistryClientOut = getRegistryClientOut
 	if err != nil {
 		return nil, outputs, err
 	}

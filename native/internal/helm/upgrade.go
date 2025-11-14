@@ -57,7 +57,7 @@ type UpgradeOptions struct {
 }
 
 func Upgrade(options *UpgradeOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
@@ -167,5 +167,5 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	release, err := client.RunWithContext(ctx, options.Name, chartRequested, vals)
 	// Generate report
 	out := StatusReport(release, false, options.Debug)
-	return appendToOutOrErr(concat(cStr(updateOutput), cBuf(registryClientOut), cBuf(kubeOut)), out, err)
+	return appendToOutOrErr(concat(cStr(updateOutput), cBuf(getRegistryClientOut()), cBuf(kubeOut)), out, err)
 }

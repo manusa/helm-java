@@ -72,8 +72,8 @@ func NewDebugCapture(enabled bool) *DebugCapture {
 	return dc
 }
 
-// AppendTo appends the captured stdout/stderr to the provided buffer and cleans up
-func (dc *DebugCapture) AppendTo(buf *bytes.Buffer) {
+// StopAndAppendTo stops capturing, appends the captured stdout/stderr to the provided buffer, and cleans up
+func (dc *DebugCapture) StopAndAppendTo(buf *bytes.Buffer) {
 	if !dc.enabled || dc.cleanupExecuted {
 		return
 	}

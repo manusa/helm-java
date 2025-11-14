@@ -280,7 +280,7 @@ func TestPushUnauthorized(t *testing.T) {
 		Dir:  dir,
 	})
 	_ = helm.Package(&helm.PackageOptions{Path: create, Destination: dir})
-	out, err := helm.Push(&helm.PushOptions{
+	_, err := helm.Push(&helm.PushOptions{
 		Chart:       path.Join(dir, "test-0.1.0.tgz"),
 		Remote:      "oci://" + srv.RegistryURL,
 		Debug:       true,
@@ -292,8 +292,8 @@ func TestPushUnauthorized(t *testing.T) {
 	if !strings.Contains(err.Error(), "basic credential not found") {
 		t.Errorf("Expected push to fail with message, got %v", err)
 	}
-	if !strings.Contains(out, "level=debug") || !strings.Contains(out, "msg=Unauthorized") {
-		t.Errorf("Expected out to contain debug info, got %s", out)
+	if !strings.Contains(err.Error(), "level=DEBUG") || !strings.Contains(err.Error(), `status="401 Unauthorized"`) {
+		t.Errorf("Expected out to contain debug info, got %v", err)
 	}
 }
 
