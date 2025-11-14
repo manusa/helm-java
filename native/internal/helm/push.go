@@ -28,6 +28,8 @@ type PushOptions struct {
 }
 
 func Push(options *PushOptions) (string, error) {
+	debugCapture := NewDebugCapture(options.Debug)
+
 	registryClient, registryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
@@ -39,6 +41,9 @@ func Push(options *PushOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	defer debugCapture.AppendTo(registryClientOut)
+
 	pushOptions := []action.PushOpt{
 		action.WithPushConfig(NewCfg(&CfgOptions{RegistryClient: registryClient})),
 		action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CaFile),
