@@ -18,6 +18,7 @@ package helm
 
 import (
 	"bytes"
+
 	"github.com/sirupsen/logrus"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/registry"
@@ -32,7 +33,7 @@ type RegistryOptions struct {
 }
 
 func RegistryLogin(options *RegistryOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
@@ -56,11 +57,11 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		action.WithCAFile(options.CaFile),
 		action.WithInsecure(options.InsecureSkipTLSverify),
 	)
-	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
+	return appendToOutOrErr(debugBuffer, getRegistryClientOut().String(), err)
 }
 
 func RegistryLogout(options *RegistryOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		options.CertFile,
 		options.KeyFile,
 		options.CaFile,
@@ -79,10 +80,11 @@ func RegistryLogout(options *RegistryOptions) (string, error) {
 	}
 	err = action.NewRegistryLogout(NewCfg(&CfgOptions{RegistryClient: registryClient})).Run(
 		debugBuffer /* ignored */, options.Hostname)
-	return appendToOutOrErr(debugBuffer, registryClientOut.String(), err)
+	return appendToOutOrErr(debugBuffer, getRegistryClientOut().String(), err)
 }
 
-func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, plainHttp, debug bool) (*registry.Client, *bytes.Buffer, error) {
+func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, plainHttp, debug bool) (*registry.Client, func() *bytes.Buffer, error) {
+	debugCapture := NewDebugCapture(debug)
 	var registryClient *registry.Client
 	out := bytes.NewBuffer(make([]byte, 0))
 	var err error
@@ -101,5 +103,11 @@ func newRegistryClient(certFile, keyFile, caFile string, insecureSkipTlsverify, 
 		}
 		registryClient, err = registry.NewClient(opts...)
 	}
-	return registryClient, out, err
+
+	getOutput := func() *bytes.Buffer {
+		debugCapture.StopAndAppendTo(out)
+		return out
+	}
+
+	return registryClient, getOutput, err
 }

@@ -34,7 +34,7 @@ type DependencyOptions struct {
 }
 
 func DependencyBuild(options *DependencyOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		"", "", "", false, false,
 		options.Debug,
 	)
@@ -47,7 +47,7 @@ func DependencyBuild(options *DependencyOptions) (string, error) {
 		manager.Verify = downloader.VerifyIfPossible
 	}
 	err = manager.Build() // needs to be evaluated first so that out gets populated during the update
-	return appendToOutOrErr(registryClientOut, out.String(), err)
+	return appendToOutOrErr(getRegistryClientOut(), out.String(), err)
 }
 
 func DependencyList(options *DependencyOptions) (string, error) {
@@ -58,7 +58,7 @@ func DependencyList(options *DependencyOptions) (string, error) {
 }
 
 func DependencyUpdate(options *DependencyOptions) (string, error) {
-	registryClient, registryClientOut, err := newRegistryClient(
+	registryClient, getRegistryClientOut, err := newRegistryClient(
 		"", "", "", false, false,
 		options.Debug,
 	)
@@ -71,7 +71,7 @@ func DependencyUpdate(options *DependencyOptions) (string, error) {
 		manager.Verify = downloader.VerifyAlways
 	}
 	err = manager.Update() // needs to be evaluated first so that out gets populated during the update
-	return appendToOutOrErr(registryClientOut, out.String(), err)
+	return appendToOutOrErr(getRegistryClientOut(), out.String(), err)
 }
 
 func newManager(options *DependencyOptions, registryClient *registry.Client) (*downloader.Manager, *bytes.Buffer) {

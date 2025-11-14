@@ -64,8 +64,7 @@ class HelmRegistryTest {
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContainingAll(
-          "login attempt to",
-          "failed with status: 401 Unauthorized"
+          "401: unauthorized: authentication required"
         );
     }
 
@@ -77,8 +76,7 @@ class HelmRegistryTest {
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContainingAll(
-          "login attempt to",
-          "failed with status: 401 Unauthorized",
+          "401: unauthorized: authentication required",
           "level=warning msg=\"error authorizing context: basic authentication challenge for realm"
         );
     }
@@ -105,22 +103,22 @@ class HelmRegistryTest {
     }
 
     @Test
-    void withNoPreviousLoginThrowsException() {
+    void withNoPreviousLoginSucceeds() {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .withHost(remoteServer);
-      assertThatThrownBy(logoutCommand::call)
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("not logged in");
+      // In Helm 3.19.2, logout no longer throws an exception when not logged in
+      final String result = logoutCommand.call();
+      assertThat(result).contains("Removing login credentials for " + remoteServer);
     }
 
     @Test
-    void withDebugAndNoPreviousLoginThrowsException() {
+    void withDebugAndNoPreviousLoginSucceeds() {
       final RegistryCommand.LogoutCommand logoutCommand = Helm.registry().logout()
         .debug()
         .withHost(remoteServer);
-      assertThatThrownBy(logoutCommand::call)
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("not logged in");
+      // In Helm 3.19.2, logout no longer throws an exception when not logged in
+      final String result = logoutCommand.call();
+      assertThat(result).contains("Removing login credentials for " + remoteServer);
     }
   }
 }
