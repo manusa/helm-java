@@ -17,8 +17,23 @@
 package helm
 
 import (
+	"os"
 	"testing"
+
+	"github.com/manusa/helm-java/native/internal/test"
 )
+
+// TestMain sets up an isolated environment for tests by clearing Helm-related
+// environment variables and setting up temporary directories
+func TestMain(m *testing.M) {
+	cleanup, err := test.SetupIsolatedEnv()
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
+
+	os.Exit(m.Run())
+}
 
 const kubeConfigContentsForTests = `
 apiVersion: v1
