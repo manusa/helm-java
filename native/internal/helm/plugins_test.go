@@ -128,9 +128,13 @@ users:
 
 func TestAuthPlugins(t *testing.T) {
 	t.Run("should support azure via exec plugin (kubelogin)", func(t *testing.T) {
-		cfg := NewCfg(&CfgOptions{
+		cfg, err := NewCfg(&CfgOptions{
 			KubeConfigContents: azureExecKubeConfig,
 		})
+		if err != nil {
+			t.Errorf("Expected NewCfg to succeed, got %s", err)
+			return
+		}
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
 			t.Errorf("Expected azure exec kubeconfig to parse successfully, got %s", err)
@@ -145,9 +149,13 @@ func TestAuthPlugins(t *testing.T) {
 		}
 	})
 	t.Run("should support gcp via exec plugin (gke-gcloud-auth-plugin)", func(t *testing.T) {
-		cfg := NewCfg(&CfgOptions{
+		cfg, err := NewCfg(&CfgOptions{
 			KubeConfigContents: gcpExecKubeConfig,
 		})
+		if err != nil {
+			t.Errorf("Expected NewCfg to succeed, got %s", err)
+			return
+		}
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
 			t.Errorf("Expected gcp exec kubeconfig to parse successfully, got %s", err)
@@ -162,9 +170,13 @@ func TestAuthPlugins(t *testing.T) {
 		}
 	})
 	t.Run("should register oidc auth provider plugin", func(t *testing.T) {
-		cfg := NewCfg(&CfgOptions{
+		cfg, err := NewCfg(&CfgOptions{
 			KubeConfigContents: oidcKubeConfig,
 		})
+		if err != nil {
+			t.Errorf("Expected NewCfg to succeed, got %s", err)
+			return
+		}
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
 			t.Errorf("Expected oidc kubeconfig to parse successfully, got %s", err)
@@ -180,9 +192,13 @@ func TestAuthPlugins(t *testing.T) {
 		}
 	})
 	t.Run("should support exec auth provider", func(t *testing.T) {
-		cfg := NewCfg(&CfgOptions{
+		cfg, err := NewCfg(&CfgOptions{
 			KubeConfigContents: execKubeConfig,
 		})
+		if err != nil {
+			t.Errorf("Expected NewCfg to succeed, got %s", err)
+			return
+		}
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
 			t.Errorf("Expected exec kubeconfig to parse successfully, got %s", err)
@@ -219,9 +235,13 @@ users:
       config:
         some-key: some-value
 `
-		cfg := NewCfg(&CfgOptions{
+		cfg, err := NewCfg(&CfgOptions{
 			KubeConfigContents: unknownAuthConfig,
 		})
+		if err != nil {
+			t.Errorf("Expected NewCfg to succeed, got %s", err)
+			return
+		}
 		restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 		if err != nil {
 			t.Errorf("Expected parsing to succeed, got %s", err)

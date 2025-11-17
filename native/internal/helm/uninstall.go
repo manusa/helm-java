@@ -45,7 +45,11 @@ func Uninstall(options *UninstallOptions) (string, error) {
 	if options.Debug {
 		cfgOptions.KubeOut = kubeOut
 	}
-	client := action.NewUninstall(NewCfg(cfgOptions))
+	cfg, err := NewCfg(cfgOptions)
+	if err != nil {
+		return "", err
+	}
+	client := action.NewUninstall(cfg)
 	client.DryRun = options.DryRun
 	client.DisableHooks = options.NoHooks
 	client.IgnoreNotFound = options.IgnoreNotFound

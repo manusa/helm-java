@@ -78,7 +78,10 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	if options.Debug {
 		cfgOptions.KubeOut = kubeOut
 	}
-	cfg := NewCfg(cfgOptions)
+	cfg, err := NewCfg(cfgOptions)
+	if err != nil {
+		return "", err
+	}
 
 	// Install if release doesn't exist
 	if options.Install {

@@ -50,7 +50,11 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		// Manually set the logrus (which is used) output to out
 		logrus.SetOutput(debugBuffer)
 	}
-	err = action.NewRegistryLogin(NewCfg(&CfgOptions{RegistryClient: registryClient})).Run(
+	cfg, err := NewCfg(&CfgOptions{RegistryClient: registryClient})
+	if err != nil {
+		return "", err
+	}
+	err = action.NewRegistryLogin(cfg).Run(
 		debugBuffer /* ignored */, options.Hostname, options.Username, options.Password,
 		action.WithCertFile(options.CertFile),
 		action.WithKeyFile(options.KeyFile),
@@ -78,7 +82,11 @@ func RegistryLogout(options *RegistryOptions) (string, error) {
 		// Manually set the logrus (which is used) output to out
 		logrus.SetOutput(debugBuffer)
 	}
-	err = action.NewRegistryLogout(NewCfg(&CfgOptions{RegistryClient: registryClient})).Run(
+	cfg, err := NewCfg(&CfgOptions{RegistryClient: registryClient})
+	if err != nil {
+		return "", err
+	}
+	err = action.NewRegistryLogout(cfg).Run(
 		debugBuffer /* ignored */, options.Hostname)
 	return appendToOutOrErr(debugBuffer, getRegistryClientOut().String(), err)
 }

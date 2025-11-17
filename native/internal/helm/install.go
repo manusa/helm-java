@@ -106,7 +106,11 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	if options.Debug {
 		cfgOptions.KubeOut = outputs.kubeOut
 	}
-	client := action.NewInstall(NewCfg(cfgOptions))
+	cfg, err := NewCfg(cfgOptions)
+	if err != nil {
+		return nil, outputs, err
+	}
+	client := action.NewInstall(cfg)
 	client.GenerateName = options.GenerateName
 	client.NameTemplate = options.NameTemplate
 	client.Version = options.Version

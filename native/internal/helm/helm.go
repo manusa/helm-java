@@ -56,7 +56,7 @@ type CertOptions struct {
 	Keyring               string
 }
 
-func NewCfg(options *CfgOptions) *action.Configuration {
+func NewCfg(options *CfgOptions) (*action.Configuration, error) {
 	settings := cli.New()
 	settings.KubeConfig = options.KubeConfig
 	actionConfig := new(action.Configuration)
@@ -73,23 +73,24 @@ func NewCfg(options *CfgOptions) *action.Configuration {
 		effectiveNamespace = ""
 	}
 	restClientGetter := settings.RESTClientGetter()
-	restClientGetter.(*genericclioptions.ConfigFlags).WrapConfigFn = func(original *rest.Config) *rest.Config {
-		if options.KubeConfigContents != "" {
-			// TODO: we could actually merge both kubeconfigs
-			config, err := clientcmd.RESTConfigFromKubeConfig([]byte(options.KubeConfigContents))
-			if err != nil {
-				panic(err)
-			}
-			return config
+	// Validate KubeConfigContents upfront if provided
+	if options.KubeConfigContents != "" {
+		// TODO: we could actually merge both kubeconfigs
+		parsedConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(options.KubeConfigContents))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse kubeconfig contents: %w", err)
 		}
-		return original
+		// Use the validated config in the wrapper
+		restClientGetter.(*genericclioptions.ConfigFlags).WrapConfigFn = func(original *rest.Config) *rest.Config {
+			return parsedConfig
+		}
 	}
 	err := actionConfig.Init(restClientGetter, effectiveNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to initialize action configuration: %w", err)
 	}
 	actionConfig.RegistryClient = options.RegistryClient
-	return actionConfig
+	return actionConfig, nil
 }
 
 func StatusReport(release *release.Release, showDescription bool, debug bool) string {
