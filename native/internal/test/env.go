@@ -67,7 +67,7 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 	}
 
 	// Create temporary directories for Helm
-	tempDir, err := os.MkdirTemp("", "helm-test-*")
+	tempDir, err := os.MkdirTemp(os.TempDir(), "helm-test-*")
 	if err != nil {
 		return nil, err
 	}
