@@ -36,7 +36,11 @@ func Test(options *TestOptions) (string, error) {
 		KubeConfigContents: options.KubeConfigContents,
 		Namespace:          options.Namespace,
 	}
-	client := action.NewReleaseTesting(NewCfg(cfgOptions))
+	cfg, err := NewCfg(cfgOptions)
+	if err != nil {
+		return "", err
+	}
+	client := action.NewReleaseTesting(cfg)
 	client.Namespace = options.Namespace
 	client.Timeout = options.Timeout
 	release, err := client.Run(options.ReleaseName)

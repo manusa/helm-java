@@ -40,12 +40,15 @@ type ListOptions struct {
 }
 
 func List(options *ListOptions) (string, error) {
-	cfg := NewCfg(&CfgOptions{
+	cfg, err := NewCfg(&CfgOptions{
 		KubeConfig:         options.KubeConfig,
 		KubeConfigContents: options.KubeConfigContents,
 		Namespace:          options.Namespace,
 		AllNamespaces:      options.AllNamespaces,
 	})
+	if err != nil {
+		return "", err
+	}
 	client := action.NewList(cfg)
 	client.All = options.All
 	client.AllNamespaces = options.AllNamespaces

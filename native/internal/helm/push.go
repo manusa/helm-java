@@ -40,8 +40,13 @@ func Push(options *PushOptions) (string, error) {
 		return "", err
 	}
 
+	cfg, err := NewCfg(&CfgOptions{RegistryClient: registryClient})
+	if err != nil {
+		return "", err
+	}
+
 	pushOptions := []action.PushOpt{
-		action.WithPushConfig(NewCfg(&CfgOptions{RegistryClient: registryClient})),
+		action.WithPushConfig(cfg),
 		action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CaFile),
 		action.WithInsecureSkipTLSVerify(options.InsecureSkipTLSverify),
 		action.WithPlainHTTP(options.PlainHttp),

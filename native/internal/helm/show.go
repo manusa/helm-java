@@ -64,7 +64,11 @@ func Show(options *ShowOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	client := action.NewShowWithConfig(format, NewCfg(&CfgOptions{}))
+	cfg, err := NewCfg(&CfgOptions{})
+	if err != nil {
+		return "", err
+	}
+	client := action.NewShowWithConfig(format, cfg)
 	client.SetRegistryClient(registryClient)
 	client.Version = options.Version
 	cp, err := client.ChartPathOptions.LocateChart(options.Path, cli.New())

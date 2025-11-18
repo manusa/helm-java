@@ -58,9 +58,12 @@ users:
 `
 
 func TestNewCfg_KubeConfigContents(t *testing.T) {
-	cfg := NewCfg(&CfgOptions{
+	cfg, err := NewCfg(&CfgOptions{
 		KubeConfigContents: kubeConfigContentsForTests,
 	})
+	if err != nil {
+		t.Fatalf("Expected NewCfg to succeed, got %s", err)
+	}
 	restConfig, err := cfg.RESTClientGetter.ToRESTConfig()
 	if err != nil {
 		t.Fatalf("Expected converting to succeed, got %s", err)
@@ -74,4 +77,36 @@ func TestNewCfg_KubeConfigContents(t *testing.T) {
 	if restConfig.Password != "test-password" {
 		t.Fatalf("Expected test-password, got %s", restConfig.Password)
 	}
+}
+
+func TestNewCfg_InvalidKubeConfigContents(t *testing.T) {
+	t.Run("should return error for invalid kubeconfig contents", func(t *testing.T) {
+		cfg, err := NewCfg(&CfgOptions{
+			KubeConfigContents: "invalid yaml content {[}",
+		})
+		if err == nil {
+			t.Fatal("Expected NewCfg to return error for invalid kubeconfig, got nil")
+		}
+		if cfg != nil {
+			t.Errorf("Expected cfg to be nil when error occurs, got %v", cfg)
+		}
+	})
+
+	t.Run("should return error for malformed kubeconfig", func(t *testing.T) {
+		malformedConfig := `
+apiVersion: v1
+kind: Config
+clusters:
+  - this is not valid yaml structure
+`
+		cfg, err := NewCfg(&CfgOptions{
+			KubeConfigContents: malformedConfig,
+		})
+		if err == nil {
+			t.Fatal("Expected NewCfg to return error for malformed kubeconfig, got nil")
+		}
+		if cfg != nil {
+			t.Errorf("Expected cfg to be nil when error occurs, got %v", cfg)
+		}
+	})
 }
