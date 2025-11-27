@@ -28,6 +28,7 @@
   "chart",
   "namespace",
   "dependencyUpdate",
+  "skipCRDs",
   "values",
   "valuesFiles",
   "certFile",
@@ -45,6 +46,7 @@ public class TemplateOptions extends Structure {
   public String chart;
   public String namespace;
   public int dependencyUpdate;
+  public int skipCRDs;
   public String values;
   public String valuesFiles;
   public String certFile;
@@ -62,6 +64,7 @@ public class TemplateOptions extends Structure {
     String chart,
     String namespace,
     int dependencyUpdate,
+    int skipCRDs,
     String values,
     String valuesFiles,
     String certFile,
@@ -78,6 +81,7 @@ public class TemplateOptions extends Structure {
     this.chart = chart;
     this.namespace = namespace;
     this.dependencyUpdate = dependencyUpdate;
+    this.skipCRDs = skipCRDs;
     this.values = values;
     this.valuesFiles = valuesFiles;
     this.certFile = certFile;

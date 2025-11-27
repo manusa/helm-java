@@ -29,6 +29,7 @@ type TemplateOptions struct {
 	Chart            string
 	Namespace        string
 	DependencyUpdate bool
+	SkipCRDs         bool
 	Values           string
 	ValuesFiles      string
 	Debug            bool
@@ -51,6 +52,7 @@ func Template(options *TemplateOptions) (string, error) {
 		Chart:            options.Chart,
 		Namespace:        options.Namespace,
 		DependencyUpdate: options.DependencyUpdate,
+		SkipCRDs:         options.SkipCRDs,
 		Values:           options.Values,
 		ValuesFiles:      options.ValuesFiles,
 		Debug:            options.Debug,
