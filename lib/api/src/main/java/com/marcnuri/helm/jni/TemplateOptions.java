@@ -29,6 +29,7 @@
   "namespace",
   "dependencyUpdate",
   "values",
+  "setFiles",
   "valuesFiles",
   "certFile",
   "keyFile",
@@ -46,6 +47,7 @@ public class TemplateOptions extends Structure {
   public String namespace;
   public int dependencyUpdate;
   public String values;
+  public String setFiles;
   public String valuesFiles;
   public String certFile;
   public String keyFile;
@@ -63,6 +65,7 @@ public class TemplateOptions extends Structure {
     String namespace,
     int dependencyUpdate,
     String values,
+    String setFiles,
     String valuesFiles,
     String certFile,
     String keyFile,
@@ -79,6 +82,7 @@ public class TemplateOptions extends Structure {
     this.namespace = namespace;
     this.dependencyUpdate = dependencyUpdate;
     this.values = values;
+    this.setFiles = setFiles;
     this.valuesFiles = valuesFiles;
     this.certFile = certFile;
     this.keyFile = keyFile;

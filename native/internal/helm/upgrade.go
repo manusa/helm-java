@@ -47,6 +47,7 @@ type UpgradeOptions struct {
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
+	SetFiles                 string
 	ValuesFiles              string
 	KubeConfig               string
 	KubeConfigContents       string
@@ -105,6 +106,8 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				Wait:                     options.Wait,
 				Timeout:                  options.Timeout,
 				Values:                   options.Values,
+				SetFiles:                 options.SetFiles,
+				ValuesFiles:              options.ValuesFiles,
 				KubeConfig:               options.KubeConfig,
 				CertOptions:              options.CertOptions,
 				Debug:                    options.Debug,
@@ -162,7 +165,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	}
 	ctx := context.Background()
 	// Values
-	vals, err := mergeValues(options.Values, options.ValuesFiles)
+	vals, err := mergeValues(options.Values, options.SetFiles, options.ValuesFiles)
 	if err != nil {
 		return "", err
 	}
