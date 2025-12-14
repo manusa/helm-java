@@ -107,6 +107,17 @@ class HelmTemplateTest {
         .hasMessageContaining("# Source: local-chart-test")
         .hasMessageContaining("name: release-name-local-chart-test");
     }
+
+    @Test
+    void withSetFile() throws IOException {
+      final Path replicaFile = Files.write(tempDir.resolve("replica-count.txt"),
+        "42".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final String result = helm.template()
+        .setFile("replicaCount", replicaFile)
+        .call();
+      assertThat(result)
+        .contains("replicas: 42");
+    }
   }
 
   @Nested
