@@ -13,7 +13,7 @@ require (
 	github.com/spf13/afero v1.15.0
 	golang.org/x/crypto v0.46.0
 	helm.sh/helm/v3 v3.19.2
-	k8s.io/cli-runtime v0.34.2
+	k8s.io/cli-runtime v0.34.3
 	k8s.io/client-go v0.34.3
 	sigs.k8s.io/controller-runtime v0.22.4
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20241005135803-3f6485a69964
