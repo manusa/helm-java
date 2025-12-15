@@ -54,6 +54,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private boolean disableOpenApiValidation;
   private boolean dryRun;
   private DryRun dryRunOption;
+  private boolean skipCrds;
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
@@ -102,6 +103,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       toInt(disableOpenApiValidation),
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
+      toInt(skipCrds),
       toInt(wait),
       timeout,
       urlEncode(values),
@@ -316,6 +318,18 @@ public class UpgradeCommand extends HelmCommand<Release> {
    */
   public UpgradeCommand withDryRunOption(DryRun dryRunOption) {
     this.dryRunOption = dryRunOption;
+    return this;
+  }
+
+  /**
+   * Skip CRDs during upgrade.
+   * <p>
+   * If set, no CRDs will be installed or upgraded. By default, CRDs are installed if not already present.
+   *
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand skipCrds() {
+    this.skipCrds = true;
     return this;
   }
 

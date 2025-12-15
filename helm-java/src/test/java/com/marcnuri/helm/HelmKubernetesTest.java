@@ -555,6 +555,19 @@ class HelmKubernetesTest {
             "beginning wait for 3 resources with timeout of 5m30s"
           );
       }
+
+      @Test
+      void skipCrds() {
+        helm.install().withName("upgrade-skip-crds").withKubeConfig(kubeConfigFile).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("upgrade-skip-crds")
+          .skipCrds()
+          .call();
+        assertThat(result)
+          .returns("2", Release::getRevision)
+          .returns("deployed", Release::getStatus);
+      }
     }
 
     @Nested

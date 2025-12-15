@@ -53,6 +53,7 @@ type InstallOptions struct {
 	DisableOpenApiValidation bool
 	DryRun                   bool
 	DryRunOption             string
+	SkipCRDs                 bool
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
@@ -130,6 +131,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	client.Devel = options.Devel
 	client.DryRun = options.DryRun
 	client.DryRunOption = dryRunOption(options.DryRunOption)
+	client.SkipCRDs = options.SkipCRDs
 	client.Wait = options.Wait
 	client.Timeout = options.Timeout
 	client.ClientOnly = options.ClientOnly

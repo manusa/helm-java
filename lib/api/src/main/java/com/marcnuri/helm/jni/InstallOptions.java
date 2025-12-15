@@ -39,6 +39,7 @@ import com.sun.jna.Structure;
   "disableOpenApiValidation",
   "dryRun",
   "dryRunOption",
+  "skipCRDs",
   "wait",
   "timeout",
   "values",
@@ -71,6 +72,7 @@ public class InstallOptions extends Structure {
   public int disableOpenApiValidation;
   public int dryRun;
   public String dryRunOption;
+  public int skipCRDs;
   public int wait;
   public int timeout;
   public String values;
@@ -102,6 +104,7 @@ public class InstallOptions extends Structure {
     int disableOpenApiValidation,
     int dryRun,
     String dryRunOption,
+    int skipCRDs,
     int wait,
     int timeout,
     String values,
@@ -132,6 +135,7 @@ public class InstallOptions extends Structure {
     this.disableOpenApiValidation = disableOpenApiValidation;
     this.dryRun = dryRun;
     this.dryRunOption = dryRunOption;
+    this.skipCRDs = skipCRDs;
     this.wait = wait;
     this.timeout = timeout;
     this.values = values;

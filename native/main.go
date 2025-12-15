@@ -55,6 +55,7 @@ struct InstallOptions {
 	int   disableOpenApiValidation;
 	int   dryRun;
 	char* dryRunOption;
+	int   skipCRDs;
 	int   wait;
 	int   timeout;
 	char* values;
@@ -169,6 +170,7 @@ struct TemplateOptions {
 	char* chart;
 	char* namespace;
 	int   dependencyUpdate;
+	int   skipCRDs;
 	char* values;
 	char* valuesFiles;
 	char* certFile;
@@ -222,6 +224,7 @@ struct UpgradeOptions {
 	int   disableOpenApiValidation;
 	int   dryRun;
 	char* dryRunOption;
+	int   skipCRDs;
 	int   wait;
 	int   timeout;
 	char* values;
@@ -353,6 +356,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			DisableOpenApiValidation: options.disableOpenApiValidation == 1,
 			DryRun:                   options.dryRun == 1,
 			DryRunOption:             C.GoString(options.dryRunOption),
+			SkipCRDs:                 options.skipCRDs == 1,
 			Wait:                     options.wait == 1,
 			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),
@@ -607,6 +611,7 @@ func Template(options *C.struct_TemplateOptions) C.Result {
 			Chart:            C.GoString(options.chart),
 			Namespace:        C.GoString(options.namespace),
 			DependencyUpdate: options.dependencyUpdate == 1,
+			SkipCRDs:         options.skipCRDs == 1,
 			Values:           C.GoString(options.values),
 			ValuesFiles:      C.GoString(options.valuesFiles),
 			CertOptions: helm.CertOptions{
@@ -689,6 +694,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			DisableOpenApiValidation: options.disableOpenApiValidation == 1,
 			DryRun:                   options.dryRun == 1,
 			DryRunOption:             C.GoString(options.dryRunOption),
+			SkipCRDs:                 options.skipCRDs == 1,
 			Wait:                     options.wait == 1,
 			Timeout:                  timeout,
 			Values:                   C.GoString(options.values),

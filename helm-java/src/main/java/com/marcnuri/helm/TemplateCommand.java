@@ -36,6 +36,7 @@ public class TemplateCommand extends HelmCommand<String> {
   private String chart;
   private String namespace;
   private boolean dependencyUpdate;
+  private boolean skipCrds;
   private final Map<String, String> values;
   private final List<Path> valuesFiles;
   private Path certFile;
@@ -66,6 +67,7 @@ public class TemplateCommand extends HelmCommand<String> {
       chart,
       namespace,
       toInt(dependencyUpdate),
+      toInt(skipCrds),
       urlEncode(values),
       toString(valuesFiles),
       toString(certFile),
@@ -134,6 +136,18 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand dependencyUpdate() {
     this.dependencyUpdate = true;
+    return this;
+  }
+
+  /**
+   * Skip CRDs during template rendering.
+   * <p>
+   * If set, no CRDs will be included in the rendered templates.
+   *
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand skipCrds() {
+    this.skipCrds = true;
     return this;
   }
 

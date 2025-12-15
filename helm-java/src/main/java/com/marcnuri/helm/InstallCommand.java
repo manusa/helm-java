@@ -50,6 +50,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private boolean disableOpenApiValidation;
   private boolean dryRun;
   private DryRun dryRunOption;
+  private boolean skipCrds;
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
@@ -94,6 +95,7 @@ public class InstallCommand extends HelmCommand<Release> {
       toInt(disableOpenApiValidation),
       toInt(dryRun),
       dryRunOption == null ? null : dryRunOption.name().toLowerCase(Locale.ROOT),
+      toInt(skipCrds),
       toInt(wait),
       timeout,
       urlEncode(values),
@@ -264,6 +266,18 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand withDryRunOption(DryRun dryRunOption) {
     this.dryRunOption = dryRunOption;
+    return this;
+  }
+
+  /**
+   * Skip CRDs during installation.
+   * <p>
+   * If set, no CRDs will be installed. By default, CRDs are installed if not already present.
+   *
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand skipCrds() {
+    this.skipCrds = true;
     return this;
   }
 

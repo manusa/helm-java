@@ -107,6 +107,15 @@ class HelmTemplateTest {
         .hasMessageContaining("# Source: local-chart-test")
         .hasMessageContaining("name: release-name-local-chart-test");
     }
+
+    @Test
+    void skipCrds() {
+      final String result = helm.template()
+        .skipCrds()
+        .call();
+      assertThat(result)
+        .contains("name: release-name-local-chart-test");
+    }
   }
 
   @Nested

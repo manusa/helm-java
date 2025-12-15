@@ -44,6 +44,7 @@ type UpgradeOptions struct {
 	DisableOpenApiValidation bool
 	DryRun                   bool
 	DryRunOption             string
+	SkipCRDs                 bool
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
@@ -102,6 +103,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				DisableOpenApiValidation: options.DisableOpenApiValidation,
 				DryRun:                   options.DryRun,
 				DryRunOption:             options.DryRunOption,
+				SkipCRDs:                 options.SkipCRDs,
 				Wait:                     options.Wait,
 				Timeout:                  options.Timeout,
 				Values:                   options.Values,
@@ -133,6 +135,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 	client.DisableOpenAPIValidation = options.DisableOpenApiValidation
 	client.DryRun = options.DryRun
 	client.DryRunOption = dryRunOption(options.DryRunOption)
+	client.SkipCRDs = options.SkipCRDs
 	client.Wait = options.Wait
 	client.Timeout = options.Timeout
 	client.CertFile = options.CertFile

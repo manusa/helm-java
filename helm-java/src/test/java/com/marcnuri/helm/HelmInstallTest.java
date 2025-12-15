@@ -228,6 +228,19 @@ class HelmInstallTest {
         .hasFieldOrPropertyWithValue("name", "test")
         .hasFieldOrPropertyWithValue("status", "deployed");
     }
+
+    @Test
+    void skipCrds() {
+      final Release result = helm.install()
+        .clientOnly()
+        .debug()
+        .withName("test-skip-crds")
+        .skipCrds()
+        .call();
+      assertThat(result)
+        .returns("test-skip-crds", Release::getName)
+        .returns("deployed", Release::getStatus);
+    }
   }
 
   @Nested
