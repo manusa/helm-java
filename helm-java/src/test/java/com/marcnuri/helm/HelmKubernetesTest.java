@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * @author Marc Nuri
  * @author Miriam Schmidt
+ * @author Christian Gebhard
  * @author Antonio Fernandez Alhambra
  */
 @EnabledOnOs(OS.LINUX)
