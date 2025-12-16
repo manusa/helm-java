@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * @author Marc Nuri
  * @author Miriam Schmidt
+ * @author Antonio Fernandez Alhambra
  */
 @EnabledOnOs(OS.LINUX)
 class HelmKubernetesTest {
@@ -164,6 +165,67 @@ class HelmKubernetesTest {
       }
 
       // TODO: Add withDescription test when we can check the status (status command implementation)
+    }
+
+    @Nested
+    class WithCrds {
+
+      @TempDir
+      private Path crdTempDir;
+      private Helm helmWithCrds;
+
+      @BeforeEach
+      void setUp() throws IOException {
+        helmWithCrds = Helm.create().withName("install-crd-chart").withDir(crdTempDir).call();
+        Files.write(Files.createDirectories(crdTempDir.resolve("install-crd-chart").resolve("crds")).resolve("crd.yaml"),
+          ("apiVersion: apiextensions.k8s.io/v1\n" +
+            "kind: CustomResourceDefinition\n" +
+            "metadata:\n" +
+            "  name: installwidgets.helm-java.example.com\n" +
+            "spec:\n" +
+            "  group: helm-java.example.com\n" +
+            "  names:\n" +
+            "    kind: InstallWidget\n" +
+            "    plural: installwidgets\n" +
+            "  scope: Namespaced\n" +
+            "  versions:\n" +
+            "    - name: v1\n" +
+            "      served: true\n" +
+            "      storage: true\n" +
+            "      schema:\n" +
+            "        openAPIV3Schema:\n" +
+            "          type: object\n").getBytes(StandardCharsets.UTF_8),
+          StandardOpenOption.CREATE);
+      }
+
+      @Test
+      void withoutSkipCrdsInstallsCrds() {
+        final Release result = helmWithCrds.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("helm-install-with-crds")
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("helm-install-with-crds", Release::getName)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .contains("installwidgets.helm-java.example.com");
+      }
+
+      @Test
+      void skipCrdsDoesNotInstallCrds() {
+        final Release result = helmWithCrds.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("helm-install-skip-crds")
+          .skipCrds()
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("helm-install-skip-crds", Release::getName)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .doesNotContain("installwidgets.helm-java.example.com");
+      }
     }
 
     @Nested
@@ -557,7 +619,7 @@ class HelmKubernetesTest {
       }
 
       @Test
-      void skipCrds() {
+      void skipCrdsWithoutCrdsInChart() {
         helm.install().withName("upgrade-skip-crds").withKubeConfig(kubeConfigFile).call();
         final Release result = helm.upgrade()
           .withKubeConfig(kubeConfigFile)
@@ -567,6 +629,70 @@ class HelmKubernetesTest {
         assertThat(result)
           .returns("2", Release::getRevision)
           .returns("deployed", Release::getStatus);
+      }
+    }
+
+    @Nested
+    class WithCrds {
+
+      @TempDir
+      private Path crdTempDir;
+      private Helm helmWithCrds;
+
+      @BeforeEach
+      void setUp() throws IOException {
+        helmWithCrds = Helm.create().withName("upgrade-crd-chart").withDir(crdTempDir).call();
+        Files.write(Files.createDirectories(crdTempDir.resolve("upgrade-crd-chart").resolve("crds")).resolve("crd.yaml"),
+          ("apiVersion: apiextensions.k8s.io/v1\n" +
+            "kind: CustomResourceDefinition\n" +
+            "metadata:\n" +
+            "  name: upgradewidgets.helm-java.example.com\n" +
+            "spec:\n" +
+            "  group: helm-java.example.com\n" +
+            "  names:\n" +
+            "    kind: UpgradeWidget\n" +
+            "    plural: upgradewidgets\n" +
+            "  scope: Namespaced\n" +
+            "  versions:\n" +
+            "    - name: v1\n" +
+            "      served: true\n" +
+            "      storage: true\n" +
+            "      schema:\n" +
+            "        openAPIV3Schema:\n" +
+            "          type: object\n").getBytes(StandardCharsets.UTF_8),
+          StandardOpenOption.CREATE);
+        // Install the chart first to have a release to upgrade
+        helmWithCrds.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("upgrade-crd-release")
+          .call();
+      }
+
+      @Test
+      void withoutSkipCrdsIncludesCrds() {
+        final Release result = helmWithCrds.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("upgrade-crd-release")
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("2", Release::getRevision)
+          .returns("deployed", Release::getStatus);
+      }
+
+      @Test
+      void skipCrdsExcludesCrds() {
+        final Release result = helmWithCrds.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("upgrade-crd-release")
+          .skipCrds()
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("2", Release::getRevision)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .doesNotContain("upgradewidgets.helm-java.example.com");
       }
     }
 

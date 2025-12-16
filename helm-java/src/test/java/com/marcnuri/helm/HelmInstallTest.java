@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * @author Marc Nuri
  * @author Kevin J. Mckernan
+ * @author Antonio Fernandez Alhambra
  */
 class HelmInstallTest {
 
@@ -230,7 +231,7 @@ class HelmInstallTest {
     }
 
     @Test
-    void skipCrds() {
+    void skipCrdsWithoutCrdsInChart() {
       final Release result = helm.install()
         .clientOnly()
         .debug()

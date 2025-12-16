@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * @author Marc Nuri
  * @author Andres F. Vallecilla
+ * @author Antonio Fernandez Alhambra
  */
 class HelmTemplateTest {
 
@@ -109,12 +110,65 @@ class HelmTemplateTest {
     }
 
     @Test
-    void skipCrds() {
+    void skipCrdsWithoutCrdsInChart() {
       final String result = helm.template()
         .skipCrds()
         .call();
       assertThat(result)
         .contains("name: release-name-local-chart-test");
+    }
+  }
+
+  @Nested
+  class FromLocalChartWithCrds {
+
+    @TempDir
+    private Path tempDir;
+    private Helm helm;
+
+    @BeforeEach
+    void setUp() throws IOException {
+      helm = Helm.create().withName("chart-with-crds").withDir(tempDir).call();
+      Files.write(Files.createDirectories(tempDir.resolve("chart-with-crds").resolve("crds")).resolve("crd.yaml"),
+        ("apiVersion: apiextensions.k8s.io/v1\n" +
+          "kind: CustomResourceDefinition\n" +
+          "metadata:\n" +
+          "  name: widgets.example.com\n" +
+          "spec:\n" +
+          "  group: example.com\n" +
+          "  names:\n" +
+          "    kind: Widget\n" +
+          "    plural: widgets\n" +
+          "  scope: Namespaced\n" +
+          "  versions:\n" +
+          "    - name: v1\n" +
+          "      served: true\n" +
+          "      storage: true\n" +
+          "      schema:\n" +
+          "        openAPIV3Schema:\n" +
+          "          type: object\n").getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.CREATE);
+    }
+
+    @Test
+    void withDefaultsDoesNotIncludeCrds() {
+      // Helm template by default does not include CRDs from the crds/ directory
+      final String result = helm.template().call();
+      assertThat(result)
+        .doesNotContain("kind: CustomResourceDefinition")
+        .contains("name: release-name-chart-with-crds");
+    }
+
+    @Test
+    void skipCrdsWithCrdsInChartWorks() {
+      // skipCrds ensures CRDs are not included even when the chart contains them
+      final String result = helm.template()
+        .skipCrds()
+        .call();
+      assertThat(result)
+        .doesNotContain("kind: CustomResourceDefinition")
+        .doesNotContain("name: widgets.example.com")
+        .contains("name: release-name-chart-with-crds");
     }
   }
 

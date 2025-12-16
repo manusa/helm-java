@@ -23,6 +23,7 @@ import com.sun.jna.Structure;
  * @author Miriam Schmidt
  * @author Kevin J. Mckernan
  * @author Christian Gebhard
+ * @author Antonio Fernandez Alhambra
  */
 @Structure.FieldOrder({
   "name",

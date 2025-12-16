@@ -28,6 +28,7 @@ import java.util.Map;
 /**
  * @author Marc Nuri
  * @author Andres F. Vallecilla
+ * @author Antonio Fernandez Alhambra
  */
 public class TemplateCommand extends HelmCommand<String> {
 

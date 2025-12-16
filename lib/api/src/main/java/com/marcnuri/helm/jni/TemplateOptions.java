@@ -21,6 +21,7 @@
 /**
  * @author Marc Nuri
  * @author Andres F. Vallecilla
+ * @author Antonio Fernandez Alhambra
  */
 @Structure.FieldOrder({
   "name",

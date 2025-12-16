@@ -33,6 +33,7 @@ import static com.marcnuri.helm.Release.parseSingle;
  * @author Miriam Schmidt
  * @author Kevin J. Mckernan
  * @author Christian Gebhard
+ * @author Antonio Fernandez Alhambra
  */
 public class UpgradeCommand extends HelmCommand<Release> {
 
