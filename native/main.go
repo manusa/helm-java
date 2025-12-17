@@ -212,6 +212,7 @@ struct UpgradeOptions {
 	char* version;
 	char* chart;
 	char* namespace;
+	char* kubeVersion;
 	int   install;
 	int   force;
 	int   resetValues;
@@ -684,6 +685,7 @@ func Upgrade(options *C.struct_UpgradeOptions) C.Result {
 			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
+			KubeVersion:              C.GoString(options.kubeVersion),
 			Install:                  options.install == 1,
 			Force:                    options.force == 1,
 			ResetValues:              options.resetValues == 1,

@@ -124,8 +124,8 @@ Release result = installCommand
   .withNamespace("namespace")
   // Optionally create the namespace if not present
   .createNamespace()
-  // Optionally, specify the kubernetes version
-  .withKubeVersion("1.21.0")
+  // Optionally specify the Kubernetes version used for capabilities and deprecation checks (e.g. "v1.21.0", "1.21.0")
+  .withKubeVersion("v1.21.0")
   // Optionally, if set, the installation process deletes the installation on failure
   .atomic()
   // Optionally specify a custom description for the release
@@ -596,8 +596,8 @@ String result = templateCommand
   .withVersion("^1.0.0")
   // Optionally specify the Kubernetes namespace for the release
   .withNamespace("namespace")
-  // Optionally, specify the kubernetes version
-  .withKubeVersion("1.21.0")
+  // Optionally specify the Kubernetes version used for capabilities and deprecation checks (e.g. "v1.21.0", "1.21.0")
+  .withKubeVersion("v1.21.0")
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
   // Optionally set values for the chart
@@ -696,6 +696,8 @@ Release result = upgradeCommand
   .withNamespace("namespace")
   // Optionally run an installation if a release by this name doesn't already exist
   .install()
+  // Optionally specify the Kubernetes version for capabilities checks (only used with install() when release doesn't exist)
+  .withKubeVersion("v1.21.0")
   // Optionally force resource updates through a replacement strategy
   .force()
   // Optionally reset the values to the ones built into the chart when upgrading

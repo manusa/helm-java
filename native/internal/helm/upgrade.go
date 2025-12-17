@@ -30,6 +30,7 @@ type UpgradeOptions struct {
 	Version                  string
 	Chart                    string
 	Namespace                string
+	KubeVersion              string
 	Install                  bool
 	Force                    bool
 	ResetValues              bool
@@ -96,6 +97,7 @@ func Upgrade(options *UpgradeOptions) (string, error) {
 				Version:                  options.Version,
 				Chart:                    options.Chart,
 				Namespace:                options.Namespace,
+				KubeVersion:              options.KubeVersion,
 				CreateNamespace:          options.CreateNamespace,
 				Description:              options.Description,
 				Devel:                    options.Devel,

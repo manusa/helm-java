@@ -230,6 +230,19 @@ class HelmInstallTest {
         .hasFieldOrPropertyWithValue("status", "deployed");
     }
 
+      @Test
+      void withKubeVersion() {
+          final Release result = helm.install()
+                  .clientOnly()
+                  .debug()
+                  .withName("test-kube-version")
+                  .withKubeVersion("1.21.0")
+                  .call();
+          assertThat(result)
+                  .returns("test-kube-version", Release::getName)
+                  .returns("deployed", Release::getStatus);
+      }
+
     @Test
     void skipCrdsWithoutCrdsInChart() {
       final Release result = helm.install()
@@ -299,6 +312,17 @@ class HelmInstallTest {
         .hasMessageContaining(
           "chart \"nginx-ingress\" matching 9999.9999.9999 not found"
         );
+    }
+
+    @Test
+    void withInvalidKubeVersion() {
+      final InstallCommand install = helm.install()
+        .clientOnly()
+        .withName("test-invalid-kube-version")
+        .withKubeVersion("invalid");
+      assertThatThrownBy(install::call)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Invalid semantic version");
     }
 
 //    @Test

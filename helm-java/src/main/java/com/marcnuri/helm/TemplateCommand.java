@@ -133,9 +133,14 @@ public class TemplateCommand extends HelmCommand<String> {
   }
 
   /**
-   * Kubernetes version for this request.
+   * Kubernetes version used for capabilities and deprecation checks.
+   * <p>
+   * This is useful when rendering charts without connecting to a cluster, or when you want to
+   * validate chart compatibility with a specific Kubernetes version.
+   * <p>
+   * Accepts versions with or without the "v" prefix (e.g., "v1.21.0" or "1.21.0").
    *
-   * @param kubeVersion the Kubernetes version for this request.
+   * @param kubeVersion the Kubernetes version to use (e.g., "v1.21.0", "1.21.0").
    * @return this {@link TemplateCommand} instance.
    */
   public TemplateCommand withKubeVersion(String kubeVersion) {

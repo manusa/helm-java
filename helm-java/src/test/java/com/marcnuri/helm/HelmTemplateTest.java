@@ -109,6 +109,15 @@ class HelmTemplateTest {
         .hasMessageContaining("name: release-name-local-chart-test");
     }
 
+      @Test
+      void withKubeVersion() {
+          final String result = helm.template()
+                  .withKubeVersion("1.21.0")
+                  .call();
+          assertThat(result)
+                  .contains("name: release-name-local-chart-test");
+      }
+
     @Test
     void skipCrdsWithoutCrdsInChart() {
       final String result = helm.template()

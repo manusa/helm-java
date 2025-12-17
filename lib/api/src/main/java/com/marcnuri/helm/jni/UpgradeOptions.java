@@ -30,6 +30,7 @@ import com.sun.jna.Structure;
   "version",
   "chart",
   "namespace",
+  "kubeVersion",
   "install",
   "force",
   "resetValues",
@@ -66,6 +67,7 @@ public class UpgradeOptions extends Structure {
   public String version;
   public String chart;
   public String namespace;
+  public String kubeVersion;
   public int install;
   public int force;
   public int resetValues;
@@ -102,6 +104,7 @@ public class UpgradeOptions extends Structure {
     String version,
     String chart,
     String namespace,
+    String kubeVersion,
     int install,
     int force,
     int resetValues,
@@ -137,6 +140,7 @@ public class UpgradeOptions extends Structure {
     this.version = version;
     this.chart = chart;
     this.namespace = namespace;
+    this.kubeVersion = kubeVersion;
     this.install = install;
     this.force = force;
     this.resetValues = resetValues;

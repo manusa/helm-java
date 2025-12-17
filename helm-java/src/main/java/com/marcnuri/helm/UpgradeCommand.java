@@ -41,6 +41,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
   private String version;
   private String chart;
   private String namespace;
+  private String kubeVersion;
   private boolean install;
   private boolean force;
   private boolean resetValues;
@@ -90,6 +91,7 @@ public class UpgradeCommand extends HelmCommand<Release> {
       version,
       chart,
       namespace,
+      kubeVersion,
       toInt(install),
       toInt(force),
       toInt(resetValues),
@@ -168,6 +170,22 @@ public class UpgradeCommand extends HelmCommand<Release> {
    */
   public UpgradeCommand withNamespace(String namespace) {
     this.namespace = namespace;
+    return this;
+  }
+
+  /**
+   * Kubernetes version used for capabilities and deprecation checks.
+   * <p>
+   * This is only used when the release doesn't exist and {@link #install()} is set,
+   * in which case an installation is performed instead of an upgrade.
+   * <p>
+   * Accepts versions with or without the "v" prefix (e.g., "v1.21.0" or "1.21.0").
+   *
+   * @param kubeVersion the Kubernetes version to use (e.g., "v1.21.0", "1.21.0").
+   * @return this {@link UpgradeCommand} instance.
+   */
+  public UpgradeCommand withKubeVersion(String kubeVersion) {
+    this.kubeVersion = kubeVersion;
     return this;
   }
 
