@@ -210,7 +210,8 @@ class HelmKubernetesTest {
           .returns("helm-install-with-crds", Release::getName)
           .returns("deployed", Release::getStatus)
           .extracting(Release::getOutput).asString()
-          .contains("installwidgets.helm-java.example.com");
+          .contains("creating 1 resource(s)") // CRD creation
+          .contains("creating 3 resource(s)"); // Rest of the resources
       }
 
       @Test
@@ -225,7 +226,8 @@ class HelmKubernetesTest {
           .returns("helm-install-skip-crds", Release::getName)
           .returns("deployed", Release::getStatus)
           .extracting(Release::getOutput).asString()
-          .doesNotContain("installwidgets.helm-java.example.com");
+          .doesNotContain("creating 1 resource(s)") // CRD creation
+          .contains("creating 3 resource(s)"); // Rest of the resources
       }
     }
 
@@ -662,11 +664,11 @@ class HelmKubernetesTest {
             "        openAPIV3Schema:\n" +
             "          type: object\n").getBytes(StandardCharsets.UTF_8),
           StandardOpenOption.CREATE);
-        // Install the chart first to have a release to upgrade
-        helmWithCrds.install()
-          .withKubeConfig(kubeConfigFile)
-          .withName("upgrade-crd-release")
-          .call();
+      }
+
+      @AfterEach
+      void tearDown() {
+        Helm.uninstall("upgrade-crd-release").withKubeConfig(kubeConfigFile).call();
       }
 
       @Test
@@ -674,11 +676,15 @@ class HelmKubernetesTest {
         final Release result = helmWithCrds.upgrade()
           .withKubeConfig(kubeConfigFile)
           .withName("upgrade-crd-release")
+          .install()// Forces an installation if no prior release exists (including CRDs)
           .debug()
           .call();
         assertThat(result)
-          .returns("2", Release::getRevision)
-          .returns("deployed", Release::getStatus);
+          .returns("1", Release::getRevision)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .contains("creating 1 resource(s)") // CRD creation
+          .contains("creating 3 resource(s)"); // Rest of the resources
       }
 
       @Test
@@ -686,14 +692,16 @@ class HelmKubernetesTest {
         final Release result = helmWithCrds.upgrade()
           .withKubeConfig(kubeConfigFile)
           .withName("upgrade-crd-release")
+          .install() // Forces an installation if no prior release exists (including CRDs)
           .skipCrds()
           .debug()
           .call();
         assertThat(result)
-          .returns("2", Release::getRevision)
+          .returns("1", Release::getRevision)
           .returns("deployed", Release::getStatus)
           .extracting(Release::getOutput).asString()
-          .doesNotContain("upgradewidgets.helm-java.example.com");
+          .doesNotContain("creating 1 resource(s)") // CRD creation
+          .contains("creating 3 resource(s)"); // Rest of the resources
       }
     }
 
