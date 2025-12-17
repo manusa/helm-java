@@ -47,6 +47,7 @@ struct InstallOptions {
 	char* version;
 	char* chart;
 	char* namespace;
+	char* kubeVersion;
 	int   atomic;
 	int   createNamespace;
 	char* description;
@@ -169,6 +170,7 @@ struct TemplateOptions {
 	char* version;
 	char* chart;
 	char* namespace;
+	char* kubeVersion;
 	int   dependencyUpdate;
 	int   skipCRDs;
 	char* values;
@@ -348,6 +350,7 @@ func Install(options *C.struct_InstallOptions) C.Result {
 			Version:                  C.GoString(options.version),
 			Chart:                    C.GoString(options.chart),
 			Namespace:                C.GoString(options.namespace),
+			KubeVersion:              C.GoString(options.kubeVersion),
 			Atomic:                   options.atomic == 1,
 			CreateNamespace:          options.createNamespace == 1,
 			Description:              C.GoString(options.description),
@@ -610,6 +613,7 @@ func Template(options *C.struct_TemplateOptions) C.Result {
 			Version:          C.GoString(options.version),
 			Chart:            C.GoString(options.chart),
 			Namespace:        C.GoString(options.namespace),
+			KubeVersion:      C.GoString(options.kubeVersion),
 			DependencyUpdate: options.dependencyUpdate == 1,
 			SkipCRDs:         options.skipCRDs == 1,
 			Values:           C.GoString(options.values),

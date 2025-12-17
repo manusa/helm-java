@@ -124,6 +124,8 @@ Release result = installCommand
   .withNamespace("namespace")
   // Optionally create the namespace if not present
   .createNamespace()
+  // Optionally, specify the kubernetes version
+  .withKubeVersion("1.21.0")
   // Optionally, if set, the installation process deletes the installation on failure
   .atomic()
   // Optionally specify a custom description for the release
@@ -594,6 +596,8 @@ String result = templateCommand
   .withVersion("^1.0.0")
   // Optionally specify the Kubernetes namespace for the release
   .withNamespace("namespace")
+  // Optionally, specify the kubernetes version
+  .withKubeVersion("1.21.0")
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
   // Optionally set values for the chart

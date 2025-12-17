@@ -24,6 +24,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
@@ -45,6 +46,7 @@ type InstallOptions struct {
 	Version                  string
 	Chart                    string
 	Namespace                string
+	KubeVersion              string
 	Atomic                   bool
 	CreateNamespace          bool
 	Description              string
@@ -125,6 +127,9 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	}
 	client.ReleaseName = name
 	client.Namespace = options.Namespace
+	if options.KubeVersion != "" {
+	    client.KubeVersion, err = chartutil.ParseKubeVersion(options.KubeVersion)
+	}
 	client.Atomic = options.Atomic
 	client.CreateNamespace = options.CreateNamespace
 	client.Description = options.Description

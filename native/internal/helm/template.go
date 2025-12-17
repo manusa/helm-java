@@ -28,6 +28,7 @@ type TemplateOptions struct {
 	Version          string
 	Chart            string
 	Namespace        string
+	KubeVersion      string
 	DependencyUpdate bool
 	SkipCRDs         bool
 	Values           string
@@ -51,6 +52,7 @@ func Template(options *TemplateOptions) (string, error) {
 		Version:          options.Version,
 		Chart:            options.Chart,
 		Namespace:        options.Namespace,
+		KubeVersion:      options.KubeVersion,
 		DependencyUpdate: options.DependencyUpdate,
 		SkipCRDs:         options.SkipCRDs,
 		Values:           options.Values,

@@ -28,6 +28,7 @@
   "version",
   "chart",
   "namespace",
+  "kubeVersion",
   "dependencyUpdate",
   "skipCRDs",
   "values",
@@ -46,6 +47,7 @@ public class TemplateOptions extends Structure {
   public String version;
   public String chart;
   public String namespace;
+  public String kubeVersion;
   public int dependencyUpdate;
   public int skipCRDs;
   public String values;
@@ -64,6 +66,7 @@ public class TemplateOptions extends Structure {
     String version,
     String chart,
     String namespace,
+    String kubeVersion,
     int dependencyUpdate,
     int skipCRDs,
     String values,
@@ -81,6 +84,7 @@ public class TemplateOptions extends Structure {
     this.version = version;
     this.chart = chart;
     this.namespace = namespace;
+    this.kubeVersion = kubeVersion;
     this.dependencyUpdate = dependencyUpdate;
     this.skipCRDs = skipCRDs;
     this.values = values;
