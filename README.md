@@ -169,6 +169,8 @@ Release result = installCommand
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
   .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Optionally skip installation of CRDs
+  .skipCrds()
   .call();
 ```
 
@@ -615,6 +617,8 @@ String result = templateCommand
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
   .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Optionally skip rendering of CRDs
+  .skipCrds()
   .call();
 ```
 
@@ -748,6 +752,8 @@ Release result = upgradeCommand
   // Optionally set the path to the file containing repository names and URLs
   // Defaults to "~/.config/helm/repositories.yaml"
   .withRepositoryConfig(Paths.get("path", "to", "config"))
+  // Optionally skip installation of CRDs
+  .skipCrds()
   .call();
 ```
 
