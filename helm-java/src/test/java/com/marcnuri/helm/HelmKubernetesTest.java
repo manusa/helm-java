@@ -571,6 +571,19 @@ class HelmKubernetesTest {
       }
 
       @Test
+      void withInstallAndKubeVersion() {
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .install()
+          .withName("upgrade-with-kube-version")
+          .withKubeVersion("v1.21.0")
+          .call();
+        assertThat(result)
+          .returns("1", Release::getRevision)
+          .returns("deployed", Release::getStatus);
+      }
+
+      @Test
       void withPriorInstall() {
         helm.install().withName("upgrade-prior-install").withKubeConfig(kubeConfigFile).call();
         final Release result = helm.upgrade()
@@ -731,6 +744,21 @@ class HelmKubernetesTest {
         assertThatThrownBy(upgrade::call)
           .message()
           .contains("context deadline exceeded");
+      }
+
+      @Test
+      void withInstallAndInvalidKubeVersion() {
+        final UpgradeCommand upgrade = helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .install()
+          .withName("upgrade-invalid-kube-version")
+          .withKubeVersion("invalid");
+        assertThatThrownBy(upgrade::call)
+          .isInstanceOf(IllegalStateException.class)
+          .message().containsAnyOf(
+            "Invalid semantic version",
+            "could not parse \"invalid\" as version"
+          );
       }
     }
   }

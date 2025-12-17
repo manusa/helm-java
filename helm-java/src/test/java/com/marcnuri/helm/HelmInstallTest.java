@@ -230,18 +230,18 @@ class HelmInstallTest {
         .hasFieldOrPropertyWithValue("status", "deployed");
     }
 
-      @Test
-      void withKubeVersion() {
-          final Release result = helm.install()
-                  .clientOnly()
-                  .debug()
-                  .withName("test-kube-version")
-                  .withKubeVersion("1.21.0")
-                  .call();
-          assertThat(result)
-                  .returns("test-kube-version", Release::getName)
-                  .returns("deployed", Release::getStatus);
-      }
+    @Test
+    void withKubeVersion() {
+      final Release result = helm.install()
+        .clientOnly()
+        .debug()
+        .withName("test-kube-version")
+        .withKubeVersion("1.21.0")
+        .call();
+      assertThat(result)
+        .returns("test-kube-version", Release::getName)
+        .returns("deployed", Release::getStatus);
+    }
 
     @Test
     void skipCrdsWithoutCrdsInChart() {
@@ -322,7 +322,10 @@ class HelmInstallTest {
         .withKubeVersion("invalid");
       assertThatThrownBy(install::call)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Invalid semantic version");
+        .message().containsAnyOf(
+          "Invalid semantic version",
+          "could not parse \"invalid\" as version"
+        );
     }
 
 //    @Test
