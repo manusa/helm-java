@@ -123,7 +123,10 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	client.ReleaseName = name
 	client.Namespace = options.Namespace
 	if options.KubeVersion != "" {
-	    client.KubeVersion, err = chartutil.ParseKubeVersion(options.KubeVersion)
+		client.KubeVersion, err = chartutil.ParseKubeVersion(options.KubeVersion)
+		if err != nil {
+			return nil, outputs, err
+		}
 	}
 	client.Atomic = options.Atomic
 	client.CreateNamespace = options.CreateNamespace
