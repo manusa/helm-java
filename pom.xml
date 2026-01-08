@@ -52,7 +52,7 @@
     <com.marcnuri.jkube-helm.repository.snapshots>https://central.sonatype.com/repository/maven-snapshots/</com.marcnuri.jkube-helm.repository.snapshots>
     <com.marcnuri.jkube-helm.repository.stable>https://repo1.maven.org/maven2</com.marcnuri.jkube-helm.repository.stable>
     <version.assertj>3.27.6</version.assertj>
-    <version.central-publishing-maven-plugin>0.9.0</version.central-publishing-maven-plugin>
+    <version.central-publishing-maven-plugin>0.10.0</version.central-publishing-maven-plugin>
     <version.jna>5.18.1</version.jna>
     <version.junit>5.12.1</version.junit>
     <version.maven-core>3.9.5</version.maven-core>
