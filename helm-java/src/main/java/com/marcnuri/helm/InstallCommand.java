@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.marcnuri.helm.Release.parseSingle;
 
@@ -56,6 +57,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
+  private final Map<String, Path> setFiles;
   private final List<Path> valuesFiles;
   private Path kubeConfig;
   private String kubeConfigContents;
@@ -77,6 +79,7 @@ public class InstallCommand extends HelmCommand<Release> {
     super(helmLib);
     this.chart = toString(chart);
     this.values = new LinkedHashMap<>();
+    this.setFiles = new LinkedHashMap<>();
     this.valuesFiles = new ArrayList<>();
   }
 
@@ -101,7 +104,8 @@ public class InstallCommand extends HelmCommand<Release> {
       toInt(skipCrds),
       toInt(wait),
       timeout,
-      urlEncode(values),
+      urlEncode(values, Function.identity()),
+      urlEncode(setFiles, HelmCommand::toString),
       toString(valuesFiles),
       toString(kubeConfig),
       kubeConfigContents,
@@ -332,6 +336,20 @@ public class InstallCommand extends HelmCommand<Release> {
    */
   public InstallCommand set(String key, Object value) {
     this.values.put(key, value == null ? "" : value.toString());
+    return this;
+  }
+
+  /**
+   * Set a value for the chart by reading it from a file.
+   * <p>
+   * The file contents will be used as the value for the specified key.
+   *
+   * @param key  the key.
+   * @param file the path to the file containing the value.
+   * @return this {@link InstallCommand} instance.
+   */
+  public InstallCommand setFile(String key, Path file) {
+    this.setFiles.put(key, file);
     return this;
   }
 

@@ -59,6 +59,7 @@ type InstallOptions struct {
 	Wait                     bool
 	Timeout                  time.Duration
 	Values                   string
+	SetFiles                 string
 	ValuesFiles              string
 	KubeConfig               string
 	KubeConfigContents       string
@@ -171,7 +172,7 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		return nil, outputs, invalidDryRun
 	}
 	// Values
-	vals, err := mergeValues(options.Values, options.ValuesFiles)
+	vals, err := mergeValues(options.Values, options.SetFiles, options.ValuesFiles)
 	if err != nil {
 		return nil, outputs, err
 	}
@@ -304,8 +305,12 @@ func parseValuesSet(values string) ([]string, error) {
 }
 
 // mergeValues returns a map[string]interface{} with the provided processed values
-func mergeValues(encodedValuesMap, encodedValuesFiles string) (map[string]interface{}, error) {
+func mergeValues(encodedValuesMap, encodedSetFiles, encodedValuesFiles string) (map[string]interface{}, error) {
 	valuesSet, err := parseValuesSet(encodedValuesMap)
+	if err != nil {
+		return nil, err
+	}
+	setFiles, err := parseValuesSet(encodedSetFiles)
 	if err != nil {
 		return nil, err
 	}
@@ -317,6 +322,7 @@ func mergeValues(encodedValuesMap, encodedValuesFiles string) (map[string]interf
 	}
 	return (&values.Options{
 		Values:     valuesSet,
+		FileValues: setFiles,
 		ValueFiles: valueFiles,
 	}).MergeValues(make(getter.Providers, 0))
 }

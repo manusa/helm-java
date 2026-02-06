@@ -110,6 +110,17 @@ class HelmTemplateTest {
     }
 
     @Test
+    void withSetFile() throws IOException {
+      final Path replicaFile = Files.write(tempDir.resolve("replica-count.txt"),
+        "42".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final String result = helm.template()
+        .setFile("replicaCount", replicaFile)
+        .call();
+      assertThat(result)
+        .contains("replicas: 42");
+    }
+
+    @Test
     void withKubeVersion() {
       final String result = helm.template()
         .withKubeVersion("1.21.0")

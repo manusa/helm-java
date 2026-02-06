@@ -218,6 +218,24 @@ class HelmInstallTest {
     }
 
     @Test
+    void withSetFile() throws IOException {
+      final Path configFile = Files.write(tempDir.resolve("config.txt"),
+        "foobar".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+      final Release result = helm.install()
+        .clientOnly()
+        .debug()
+        .withName("test")
+        .setFile("configData", configFile)
+        .call();
+      assertThat(result)
+        .extracting(Release::getOutput).asString()
+        .contains(
+          "NAME: test\n",
+          "configData: foobar"
+        );
+    }
+
+    @Test
     void withDisableOpenApiValidation() {
       final Release result = helm.install()
         .clientOnly()

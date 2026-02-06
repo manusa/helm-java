@@ -55,16 +55,16 @@ public abstract class HelmCommand<T> implements Callable<T> {
     return result;
   }
 
-  static String urlEncode(Map<String, String> values) {
+  static <T> String urlEncode(Map<String, T> entries, Function<T, String> valueMapper) {
     final StringBuilder sb = new StringBuilder();
-    for (Map.Entry<String, String> entry : values.entrySet()) {
+    for (Map.Entry<String, T> entry : entries.entrySet()) {
       if (sb.length() > 0) {
         sb.append("&");
       }
       try {
         sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()))
           .append("=")
-          .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+          .append(URLEncoder.encode(valueMapper.apply(entry.getValue()), StandardCharsets.UTF_8.name()));
       } catch (UnsupportedEncodingException e) {
         throw new IllegalArgumentException("Invalid entry: " + entry.getKey() + "=" + entry.getValue(), e);
       }
