@@ -21,6 +21,7 @@ import com.sun.jna.Library;
 /**
  * @author Marc Nuri
  * @author Andres F. Vallecilla
+ * @author Antonio Fernandez Alhambra
  */
 public interface HelmLib extends Library {
 
@@ -37,6 +38,8 @@ public interface HelmLib extends Library {
   Result Lint(LintOptions options);
 
   Result List(ListOptions options);
+
+  Result GetValues(GetValuesOptions options);
 
   Result Package(PackageOptions options);
 

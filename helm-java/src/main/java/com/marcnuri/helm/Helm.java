@@ -24,6 +24,7 @@ import java.nio.file.Path;
 /**
  * @author Marc Nuri
  * @author Andres F. Vallecilla
+ * @author Antonio Fernandez Alhambra
  */
 public class Helm {
 
@@ -94,6 +95,16 @@ public class Helm {
    */
   public static ListCommand list() {
     return new ListCommand(HelmLibHolder.INSTANCE);
+  }
+
+  /**
+   * This command consists of multiple subcommands which can be used to get extended information about the release.
+   *
+   * @param releaseName the name of the release.
+   * @return the {@link GetCommand} command.
+   */
+  public static GetCommand get(String releaseName) {
+    return new GetCommand(HelmLibHolder.INSTANCE, releaseName);
   }
 
   /**

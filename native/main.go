@@ -194,6 +194,15 @@ struct TestOptions {
 	int   debug;
 };
 
+struct GetValuesOptions {
+	char* releaseName;
+	int   allValues;
+	int   revision;
+	char* namespace;
+	char* kubeConfig;
+	char* kubeConfigContents;
+};
+
 struct UninstallOptions {
 	char* releaseName;
 	int   dryRun;
@@ -408,6 +417,20 @@ func List(options *C.struct_ListOptions) C.Result {
 			Superseded:         options.superseded == 1,
 			Uninstalled:        options.uninstalled == 1,
 			Uninstalling:       options.uninstalling == 1,
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
+		})
+	})
+}
+
+//export GetValues
+func GetValues(options *C.struct_GetValuesOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.GetValues(&helm.GetValuesOptions{
+			ReleaseName:        C.GoString(options.releaseName),
+			AllValues:          options.allValues == 1,
+			Revision:           int(options.revision),
 			Namespace:          C.GoString(options.namespace),
 			KubeConfig:         C.GoString(options.kubeConfig),
 			KubeConfigContents: C.GoString(options.kubeConfigContents),

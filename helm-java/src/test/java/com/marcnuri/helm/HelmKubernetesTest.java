@@ -762,4 +762,89 @@ class HelmKubernetesTest {
       }
     }
   }
+
+  @Nested
+  class Get {
+
+    @Nested
+    class Values {
+
+      @Test
+      void returnsUserSuppliedValues() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("get-values-user-supplied")
+          .set("replicaCount", "3")
+          .call();
+        final String result = Helm.get("get-values-user-supplied").values()
+          .withKubeConfig(kubeConfigFile)
+          .call();
+        assertThat(result)
+          .contains("replicaCount: 3");
+      }
+
+      @Test
+      void allValuesIncludesDefaultValues() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("get-values-all")
+          .set("replicaCount", "2")
+          .call();
+        final String result = Helm.get("get-values-all").values()
+          .withKubeConfig(kubeConfigFile)
+          .allValues()
+          .call();
+        assertThat(result)
+          .contains("replicaCount: 2")
+          .contains("serviceAccount:");
+      }
+
+      @Test
+      void withRevision() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("get-values-revision")
+          .set("replicaCount", "1")
+          .call();
+        helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("get-values-revision")
+          .set("replicaCount", "5")
+          .call();
+        final String result = Helm.get("get-values-revision").values()
+          .withKubeConfig(kubeConfigFile)
+          .withRevision(1)
+          .call();
+        assertThat(result)
+          .contains("replicaCount: 1");
+      }
+
+      @Test
+      void withNamespace() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("get-values-namespace")
+          .withNamespace("default")
+          .call();
+        final String result = Helm.get("get-values-namespace").values()
+          .withKubeConfig(kubeConfigFile)
+          .withNamespace("default")
+          .call();
+        assertThat(result).isNotNull();
+      }
+    }
+
+    @Nested
+    class Invalid {
+
+      @Test
+      void missingRelease() {
+        final GetCommand.GetValuesSubcommand getValues = Helm.get("non-existent-release").values()
+          .withKubeConfig(kubeConfigFile);
+        assertThatThrownBy(getValues::call)
+          .message()
+          .contains("not found");
+      }
+    }
+  }
 }
