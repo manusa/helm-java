@@ -113,7 +113,7 @@ public class GetCommand {
     }
 
     /**
-     * Set the path ./kube/config file to use.
+     * Set the path to the ~/.kube/config file to use.
      *
      * @param kubeConfig the path to kube config file.
      * @return this {@link GetValuesSubcommand} instance.

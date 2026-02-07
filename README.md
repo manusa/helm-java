@@ -100,6 +100,33 @@ new Helm(Paths.get("path", "to", "chart")).dependency().update()
   .call();
 ```
 
+### Get
+
+Equivalent of [`helm get`](https://helm.sh/docs/helm/helm_get/).
+
+This command consists of multiple subcommands which can be used to get extended information about the release, including:
+
+#### Get values
+
+Equivalent of [`helm get values`](https://helm.sh/docs/helm/helm_get_values/).
+
+Downloads a values file for a given release.
+
+``` java
+String values = Helm.get("release-name").values()
+  // Optionally dump all (computed) values, including those from the chart's default values
+  .allValues()
+  // Optionally get the named release with a specific revision
+  .withRevision(1)
+  // Optionally specify the Kubernetes namespace
+  .withNamespace("namespace")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
+  .call();
+```
+
 ### Install
 
 Equivalent of [`helm install`](https://helm.sh/docs/helm/helm_install/).

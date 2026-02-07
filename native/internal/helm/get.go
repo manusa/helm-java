@@ -17,8 +17,6 @@
 package helm
 
 import (
-	"encoding/json"
-
 	"helm.sh/helm/v3/pkg/action"
 	"sigs.k8s.io/yaml"
 )
@@ -53,11 +51,7 @@ func GetValues(options *GetValuesOptions) (string, error) {
 	}
 
 	// Convert values to YAML format (default Helm output format)
-	jsonBytes, err := json.Marshal(values)
-	if err != nil {
-		return "", err
-	}
-	yamlBytes, err := yaml.JSONToYAML(jsonBytes)
+	yamlBytes, err := yaml.Marshal(values)
 	if err != nil {
 		return "", err
 	}
