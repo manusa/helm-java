@@ -23,6 +23,9 @@ cd native
 go build -buildmode=c-shared -o out/helm-darwin-10.12-amd64.dylib .
 # (or the appropriate target for your platform)
 cd ..
+
+# Alternatively, use the Makefile for simplified builds
+make build-current-platform  # Builds native + Java for current platform only
 ```
 
 ### Build Commands
@@ -39,6 +42,13 @@ cd ..
 
 # Build with javadoc and sources
 ./mvnw clean package
+
+# Using Makefile targets
+make build-java              # Maven build only
+make build-native            # Build native library for current platform
+make build-native-cross-platform  # Build for all platforms (requires xgo)
+make build-all               # Cross-platform natives + Java build
+make clean                   # Clean all build artifacts
 ```
 
 ### Testing
@@ -57,6 +67,11 @@ cd ..
 
 # Run a specific test method
 ./mvnw test -pl helm-java -Dtest=HelmInstallTest#withName
+
+# Run Go tests only
+make test-go
+# Or directly:
+cd native && go clean -testcache && go test ./...
 ```
 
 **NEVER CANCEL** tests that involve Kubernetes operations - they may leave resources in an inconsistent state.
@@ -228,6 +243,9 @@ go test ./...  # Run Go tests first
 go build -buildmode=c-shared -o out/helm-darwin-10.12-arm64.dylib .
 cd ..
 ./mvnw test -pl helm-java
+
+# Or use Makefile (auto-detects platform):
+make build-native
 ```
 
 ### Debugging Native Calls
@@ -247,6 +265,12 @@ Ensure the native binaries exist in `native/out/` before running Maven. The enfo
 - `helm-linux-amd64.so`
 - `helm-linux-arm64.so`
 - `helm-windows-4.0-amd64.dll`
+
+To build only for your current platform (bypassing the enforcer check):
+```bash
+make build-current-platform
+# This sets -Denforcer.skipRules=requireFilesExist automatically
+```
 
 ### Tests fail with "KUBECONFIG" errors
 
