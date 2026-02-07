@@ -850,6 +850,20 @@ class HelmKubernetesTest {
           .call();
         assertThat(result).isNotNull();
       }
+
+      @Test
+      void withKubeConfigContents() {
+        helm.install()
+          .withKubeConfigContents(kubeConfigContents)
+          .withName("get-values-kube-config-contents")
+          .set("replicaCount", "4")
+          .call();
+        final String result = Helm.get("get-values-kube-config-contents").values()
+          .withKubeConfigContents(kubeConfigContents)
+          .call();
+        assertThat(result)
+          .contains("replicaCount: 4");
+      }
     }
 
     @Nested

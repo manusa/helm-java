@@ -426,3 +426,142 @@ func TestUpgradeInstall(t *testing.T) {
 		return
 	}
 }
+
+func TestGetValues(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-get-values",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-get-values",
+		Values:     "replicaCount=3",
+	})
+	out, err := GetValues(&GetValuesOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-get-values",
+	})
+	if err != nil {
+		t.Errorf("Expected get values to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "replicaCount: 3") {
+		t.Errorf("Expected get values to include replicaCount, got %s", out)
+		return
+	}
+}
+
+func TestGetValuesAllValues(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-get-all-values",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-get-all-values",
+		Values:     "replicaCount=2",
+	})
+	out, err := GetValues(&GetValuesOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-get-all-values",
+		AllValues:   true,
+	})
+	if err != nil {
+		t.Errorf("Expected get values to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "replicaCount: 2") {
+		t.Errorf("Expected get values to include replicaCount, got %s", out)
+		return
+	}
+	// AllValues should include chart defaults like serviceAccount
+	if !strings.Contains(out, "serviceAccount:") {
+		t.Errorf("Expected get all values to include serviceAccount, got %s", out)
+		return
+	}
+}
+
+func TestGetValuesWithRevision(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	chart, _ := Create(&CreateOptions{
+		Name: "test-get-revision",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-get-revision",
+		Values:     "replicaCount=1",
+	})
+	_, _ = Upgrade(&UpgradeOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-get-revision",
+		Values:     "replicaCount=5",
+	})
+	out, err := GetValues(&GetValuesOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-get-revision",
+		Revision:    1,
+	})
+	if err != nil {
+		t.Errorf("Expected get values to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "replicaCount: 1") {
+		t.Errorf("Expected get values for revision 1 to include replicaCount: 1, got %s", out)
+		return
+	}
+}
+
+func TestGetValuesUsingKubeConfigContents(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	kubeConfigContents, _ := os.ReadFile(kubeConfigFile.Name())
+	create, _ := Create(&CreateOptions{
+		Name: "test-get-values-contents",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfigContents: string(kubeConfigContents),
+		Chart:              create,
+		Name:               "test-get-values-contents",
+		Values:             "replicaCount=4",
+	})
+	out, err := GetValues(&GetValuesOptions{
+		KubeConfigContents: string(kubeConfigContents),
+		ReleaseName:        "test-get-values-contents",
+	})
+	if err != nil {
+		t.Errorf("Expected get values to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "replicaCount: 4") {
+		t.Errorf("Expected get values to include replicaCount, got %s", out)
+		return
+	}
+}
+
+func TestGetValuesNonExistentRelease(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	_, err := GetValues(&GetValuesOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "non-existent-release",
+	})
+	if err == nil {
+		t.Error("Expected get values to fail for non-existent release")
+		return
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("Expected error to contain 'not found', got %s", err.Error())
+		return
+	}
+}
