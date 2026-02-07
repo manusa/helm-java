@@ -142,12 +142,14 @@ Release result = installCommand
   .withDryRunOption(DryRun.CLIENT)
   // Optionally wait until all Pods are in a ready state, PVCs are bound, Deployments have
   // minimum (Desired minus maxUnavailable) Pods in ready state and Services have an IP
-  // address (and Ingress if a LoadBalancer) before marking the release as successful. 
+  // address (and Ingress if a LoadBalancer) before marking the release as successful.
   .waitReady()
   // Optionally specify the time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300)
   .withTimeout(int timeout)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
+  // Optionally set a chart value from a file's contents (equivalent to --set-file)
+  .setFile("key", Paths.get("path", "to", "file"))
   // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests
@@ -602,6 +604,8 @@ String result = templateCommand
   .dependencyUpdate()
   // Optionally set values for the chart
   .set("key", "value")
+  // Optionally set a chart value from a file's contents (equivalent to --set-file)
+  .setFile("key", Paths.get("path", "to", "file"))
   // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify an SSL certificate file to identify the registry client
@@ -729,12 +733,14 @@ Release result = upgradeCommand
   .withDryRunOption(DryRun.CLIENT)
   // Optionally wait until all Pods are in a ready state, PVCs are bound, Deployments have
   // minimum (Desired minus maxUnavailable) Pods in ready state and Services have an IP
-  // address (and Ingress if a LoadBalancer) before marking the release as successful. 
+  // address (and Ingress if a LoadBalancer) before marking the release as successful.
   .waitReady()
   // Optionally specify the time (in seconds) to wait for any individual Kubernetes operation (like Jobs for hooks) (default 300)
   .withTimeout(int timeout)
   // Optionally set typed values for the chart (can be repeated)
   .set("key", "value")
+  // Optionally set a chart value from a file's contents (equivalent to --set-file)
+  .setFile("key", Paths.get("path", "to", "file"))
   // Optionally add a values (YAML) file to source values for the chart (can specify multiple)
   .withValuesFile(Paths.get("path", "to", "valuesFile"))
   // Optionally specify the path to the kubeconfig file to use for CLI requests

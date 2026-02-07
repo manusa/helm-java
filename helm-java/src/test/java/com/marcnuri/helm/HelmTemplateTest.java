@@ -121,6 +121,16 @@ class HelmTemplateTest {
     }
 
     @Test
+    void withSetFileNonExistent() {
+      final Path nonExistentFile = tempDir.resolve("non-existent-file.txt");
+      final TemplateCommand templateCommand = helm.template()
+        .setFile("config", nonExistentFile);
+      assertThatThrownBy(templateCommand::call)
+        .isInstanceOf(IllegalStateException.class)
+        .message().contains("non-existent-file.txt");
+    }
+
+    @Test
     void withKubeVersion() {
       final String result = helm.template()
         .withKubeVersion("1.21.0")

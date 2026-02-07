@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -55,16 +56,16 @@ public abstract class HelmCommand<T> implements Callable<T> {
     return result;
   }
 
-  static <T> String urlEncode(Map<String, T> entries, Function<T, String> valueMapper) {
+  static String urlEncode(Map<String, String> values) {
     final StringBuilder sb = new StringBuilder();
-    for (Map.Entry<String, T> entry : entries.entrySet()) {
+    for (Map.Entry<String, String> entry : values.entrySet()) {
       if (sb.length() > 0) {
         sb.append("&");
       }
       try {
         sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name()))
           .append("=")
-          .append(URLEncoder.encode(valueMapper.apply(entry.getValue()), StandardCharsets.UTF_8.name()));
+          .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
       } catch (UnsupportedEncodingException e) {
         throw new IllegalArgumentException("Invalid entry: " + entry.getKey() + "=" + entry.getValue(), e);
       }
@@ -112,5 +113,13 @@ public abstract class HelmCommand<T> implements Callable<T> {
 
   static int toInt(boolean value) {
     return value ? 1 : 0;
+  }
+
+  static Map<String, String> toStringValues(Map<String, Path> paths) {
+    final Map<String, String> result = new LinkedHashMap<>();
+    for (Map.Entry<String, Path> entry : paths.entrySet()) {
+      result.put(entry.getKey(), toString(entry.getValue()));
+    }
+    return result;
   }
 }

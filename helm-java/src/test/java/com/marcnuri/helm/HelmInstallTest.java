@@ -346,6 +346,18 @@ class HelmInstallTest {
         );
     }
 
+    @Test
+    void withSetFileNonExistent() {
+      final Path nonExistentFile = tempDir.resolve("non-existent-file.txt");
+      final InstallCommand install = helm.install()
+        .clientOnly()
+        .withName("test-set-file-non-existent")
+        .setFile("config", nonExistentFile);
+      assertThatThrownBy(install::call)
+        .isInstanceOf(IllegalStateException.class)
+        .message().contains("non-existent-file.txt");
+    }
+
 //    @Test
 //    void withDevelopmentVersionInChart() throws IOException {
 //      final Path chartYaml = tempDir.resolve("test").resolve("Chart.yaml");
