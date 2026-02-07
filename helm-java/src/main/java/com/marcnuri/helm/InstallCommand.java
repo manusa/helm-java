@@ -25,7 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 import static com.marcnuri.helm.Release.parseSingle;
 
@@ -57,7 +56,7 @@ public class InstallCommand extends HelmCommand<Release> {
   private boolean wait;
   private int timeout;
   private final Map<String, String> values;
-  private final Map<String, Path> setFiles;
+  private final Map<String, Path> fileValues;
   private final List<Path> valuesFiles;
   private Path kubeConfig;
   private String kubeConfigContents;
@@ -79,7 +78,7 @@ public class InstallCommand extends HelmCommand<Release> {
     super(helmLib);
     this.chart = toString(chart);
     this.values = new LinkedHashMap<>();
-    this.setFiles = new LinkedHashMap<>();
+    this.fileValues = new LinkedHashMap<>();
     this.valuesFiles = new ArrayList<>();
   }
 
@@ -104,8 +103,8 @@ public class InstallCommand extends HelmCommand<Release> {
       toInt(skipCrds),
       toInt(wait),
       timeout,
-      urlEncode(values, Function.identity()),
-      urlEncode(setFiles, HelmCommand::toString),
+      urlEncode(values),
+      urlEncode(toStringValues(fileValues)),
       toString(valuesFiles),
       toString(kubeConfig),
       kubeConfigContents,
@@ -340,16 +339,17 @@ public class InstallCommand extends HelmCommand<Release> {
   }
 
   /**
-   * Set a value for the chart by reading it from a file.
+   * Set a chart value by reading it from a file (equivalent to {@code --set-file}).
    * <p>
-   * The file contents will be used as the value for the specified key.
+   * The contents of the specified file will be used as the value for the given key,
+   * overriding any default in the chart's values.yaml.
    *
-   * @param key  the key.
-   * @param file the path to the file containing the value.
+   * @param key  the value key.
+   * @param file the path to the file to read.
    * @return this {@link InstallCommand} instance.
    */
   public InstallCommand setFile(String key, Path file) {
-    this.setFiles.put(key, file);
+    this.fileValues.put(key, file);
     return this;
   }
 
