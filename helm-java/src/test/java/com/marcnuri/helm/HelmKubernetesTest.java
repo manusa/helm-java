@@ -646,6 +646,24 @@ class HelmKubernetesTest {
           .returns("2", Release::getRevision)
           .returns("deployed", Release::getStatus);
       }
+
+      @Test
+      void withSetFile(@TempDir Path tempDir) throws IOException {
+        final Path configFile = Files.write(tempDir.resolve("upgrade-config.txt"),
+          "foobar".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+        helm.install().withName("upgrade-with-set-file").withKubeConfig(kubeConfigFile).call();
+        final Release result = helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("upgrade-with-set-file")
+          .setFile("configData", configFile)
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("2", Release::getRevision)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .contains("configData: foobar");
+      }
     }
 
     @Nested

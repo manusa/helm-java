@@ -32,6 +32,7 @@
   "dependencyUpdate",
   "skipCRDs",
   "values",
+  "setFiles",
   "valuesFiles",
   "certFile",
   "keyFile",
@@ -51,6 +52,7 @@ public class TemplateOptions extends Structure {
   public int dependencyUpdate;
   public int skipCRDs;
   public String values;
+  public String setFiles;
   public String valuesFiles;
   public String certFile;
   public String keyFile;
@@ -70,6 +72,7 @@ public class TemplateOptions extends Structure {
     int dependencyUpdate,
     int skipCRDs,
     String values,
+    String setFiles,
     String valuesFiles,
     String certFile,
     String keyFile,
@@ -88,6 +91,7 @@ public class TemplateOptions extends Structure {
     this.dependencyUpdate = dependencyUpdate;
     this.skipCRDs = skipCRDs;
     this.values = values;
+    this.setFiles = setFiles;
     this.valuesFiles = valuesFiles;
     this.certFile = certFile;
     this.keyFile = keyFile;

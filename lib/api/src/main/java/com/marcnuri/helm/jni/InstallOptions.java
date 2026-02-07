@@ -45,6 +45,7 @@ import com.sun.jna.Structure;
   "wait",
   "timeout",
   "values",
+  "setFiles",
   "valuesFiles",
   "kubeConfig",
   "kubeConfigContents",
@@ -79,6 +80,7 @@ public class InstallOptions extends Structure {
   public int wait;
   public int timeout;
   public String values;
+  public String setFiles;
   public String valuesFiles;
   public String kubeConfig;
   public String kubeConfigContents;
@@ -112,6 +114,7 @@ public class InstallOptions extends Structure {
     int wait,
     int timeout,
     String values,
+    String setFiles,
     String valuesFiles,
     String kubeConfig,
     String kubeConfigContents,
@@ -144,6 +147,7 @@ public class InstallOptions extends Structure {
     this.wait = wait;
     this.timeout = timeout;
     this.values = values;
+    this.setFiles = setFiles;
     this.valuesFiles = valuesFiles;
     this.kubeConfig = kubeConfig;
     this.kubeConfigContents = kubeConfigContents;

@@ -32,6 +32,7 @@ type TemplateOptions struct {
 	DependencyUpdate bool
 	SkipCRDs         bool
 	Values           string
+	SetFiles         string
 	ValuesFiles      string
 	Debug            bool
 	RepositoryConfig string
@@ -56,6 +57,7 @@ func Template(options *TemplateOptions) (string, error) {
 		DependencyUpdate: options.DependencyUpdate,
 		SkipCRDs:         options.SkipCRDs,
 		Values:           options.Values,
+		SetFiles:         options.SetFiles,
 		ValuesFiles:      options.ValuesFiles,
 		Debug:            options.Debug,
 		RepositoryConfig: options.RepositoryConfig,

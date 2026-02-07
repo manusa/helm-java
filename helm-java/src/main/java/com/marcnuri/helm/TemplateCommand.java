@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marc Nuri
@@ -40,6 +41,7 @@ public class TemplateCommand extends HelmCommand<String> {
   private boolean dependencyUpdate;
   private boolean skipCrds;
   private final Map<String, String> values;
+  private final Map<String, Path> setFiles;
   private final List<Path> valuesFiles;
   private Path certFile;
   private Path keyFile;
@@ -58,6 +60,7 @@ public class TemplateCommand extends HelmCommand<String> {
     super(helmLib);
     this.chart = toString(chart);
     this.values = new LinkedHashMap<>();
+    this.setFiles = new LinkedHashMap<>();
     this.valuesFiles = new ArrayList<>();
   }
 
@@ -71,7 +74,8 @@ public class TemplateCommand extends HelmCommand<String> {
       kubeVersion,
       toInt(dependencyUpdate),
       toInt(skipCrds),
-      urlEncode(values),
+      urlEncode(values, Function.identity()),
+      urlEncode(setFiles, HelmCommand::toString),
       toString(valuesFiles),
       toString(certFile),
       toString(keyFile),
@@ -179,6 +183,20 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand set(String key, Object value) {
     this.values.put(key, value == null ? "" : value.toString());
+    return this;
+  }
+
+  /**
+   * Set a value for the chart by reading it from a file.
+   * <p>
+   * The file contents will be used as the value for the specified key.
+   *
+   * @param key  the key.
+   * @param file the path to the file containing the value.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand setFile(String key, Path file) {
+    this.setFiles.put(key, file);
     return this;
   }
 
