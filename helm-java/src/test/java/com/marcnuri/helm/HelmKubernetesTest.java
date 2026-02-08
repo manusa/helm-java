@@ -1036,4 +1036,114 @@ class HelmKubernetesTest {
       }
     }
   }
+
+  @Nested
+  class Status {
+
+    @Nested
+    class Valid {
+
+      @Test
+      void withName() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-name")
+          .call();
+        final Release result = Helm.status("status-with-name")
+          .withKubeConfig(kubeConfigFile)
+          .call();
+        assertThat(result)
+          .returns("status-with-name", Release::getName)
+          .returns("deployed", Release::getStatus)
+          .returns("1", Release::getRevision);
+      }
+
+      @Test
+      void withNamespace() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-namespace")
+          .withNamespace("status-ns")
+          .createNamespace()
+          .call();
+        final Release result = Helm.status("status-with-namespace")
+          .withNamespace("status-ns")
+          .withKubeConfig(kubeConfigFile)
+          .call();
+        assertThat(result)
+          .returns("status-with-namespace", Release::getName)
+          .returns("status-ns", Release::getNamespace)
+          .returns("deployed", Release::getStatus);
+      }
+
+      @Test
+      void withRevision() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-revision")
+          .call();
+        helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-revision")
+          .set("image.tag", "v2")
+          .call();
+        final Release result = Helm.status("status-with-revision")
+          .withRevision(1)
+          .withKubeConfig(kubeConfigFile)
+          .call();
+        assertThat(result)
+          .returns("status-with-revision", Release::getName)
+          .returns("1", Release::getRevision);
+      }
+
+      @Test
+      void withKubeConfigContents() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-kubeconfig-contents")
+          .call();
+        final Release result = Helm.status("status-with-kubeconfig-contents")
+          .withKubeConfigContents(kubeConfigContents)
+          .call();
+        assertThat(result)
+          .returns("status-with-kubeconfig-contents", Release::getName)
+          .returns("deployed", Release::getStatus);
+      }
+
+      @Test
+      void withDebug() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("status-with-debug")
+          .set("replicaCount", "2")
+          .call();
+        final Release result = Helm.status("status-with-debug")
+          .withKubeConfig(kubeConfigFile)
+          .debug()
+          .call();
+        assertThat(result)
+          .returns("status-with-debug", Release::getName)
+          .returns("deployed", Release::getStatus)
+          .extracting(Release::getOutput).asString()
+          .contains(
+            "USER-SUPPLIED VALUES:",
+            "replicaCount: 2",
+            "COMPUTED VALUES:"
+          );
+      }
+    }
+
+    @Nested
+    class Invalid {
+
+      @Test
+      void nonExistentRelease() {
+        final StatusCommand statusCommand = Helm.status("non-existent-release")
+          .withKubeConfig(kubeConfigFile);
+        assertThatThrownBy(statusCommand::call)
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("release: not found");
+      }
+    }
+  }
 }

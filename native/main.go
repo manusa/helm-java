@@ -213,6 +213,15 @@ struct GetValuesOptions {
 	char* kubeConfigContents;
 };
 
+struct StatusOptions {
+	char* releaseName;
+	int   revision;
+	char* namespace;
+	char* kubeConfig;
+	char* kubeConfigContents;
+	int   debug;
+};
+
 struct UninstallOptions {
 	char* releaseName;
 	int   dryRun;
@@ -460,6 +469,20 @@ func GetValues(options *C.struct_GetValuesOptions) C.Result {
 			Namespace:          C.GoString(options.namespace),
 			KubeConfig:         C.GoString(options.kubeConfig),
 			KubeConfigContents: C.GoString(options.kubeConfigContents),
+		})
+	})
+}
+
+//export Status
+func Status(options *C.struct_StatusOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.Status(&helm.StatusOptions{
+			ReleaseName:        C.GoString(options.releaseName),
+			Revision:           int(options.revision),
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
+			Debug:              options.debug == 1,
 		})
 	})
 }
