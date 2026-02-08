@@ -108,6 +108,25 @@ public class Helm {
   }
 
   /**
+   * This command displays the status of the named release.
+   *
+   * <p>The status shows information such as:
+   * <ul>
+   *   <li>Last deployment time</li>
+   *   <li>Kubernetes namespace</li>
+   *   <li>Current state (deployed, failed, etc.)</li>
+   *   <li>Revision number</li>
+   *   <li>Chart name and version</li>
+   * </ul>
+   *
+   * @param releaseName the name of the release.
+   * @return the {@link StatusCommand} callable command.
+   */
+  public static StatusCommand status(String releaseName) {
+    return new StatusCommand(HelmLibHolder.INSTANCE, releaseName);
+  }
+
+  /**
    * This command packages a chart into a versioned chart archive file.
    * If a path is given, this will look at that path for a chart (which must contain a Chart.yaml file) and then package that directory.
    *

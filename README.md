@@ -607,6 +607,32 @@ String result = new Helm(Paths.get("path", "to", "chart")).show()
   .call();
 ```
 
+### Status
+
+Equivalent of [`helm status`](https://helm.sh/docs/helm/helm_status/).
+
+Displays the status of the named release.
+
+``` java
+Release result = Helm.status("release-name")
+  // Optionally get the status of a specific revision
+  .withRevision(1)
+  // Optionally specify the Kubernetes namespace
+  .withNamespace("namespace")
+  // Optionally specify the path to the kubeconfig file to use for CLI requests
+  .withKubeConfig(Paths.get("path", "to", "kubeconfig"))
+  // Optionally set the contents of the kubeconfig file as a string (takes precedence over the path)
+  .withKubeConfigContents("apiVersion: v1\nkind: Config\nclusters:\n...")
+  .call();
+result.getName(); // release name
+result.getNamespace(); // Kubernetes namespace
+result.getStatus(); // status (deployed, failed, etc.)
+result.getRevision(); // revision number
+result.getLastDeployed(); // last deployment time
+result.getChart(); // chart name and version
+result.getAppVersion(); // app version
+```
+
 ### Template
 
 Equivalent of [`helm template`](https://helm.sh/docs/helm/helm_template/).

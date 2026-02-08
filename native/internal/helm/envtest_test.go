@@ -565,3 +565,177 @@ func TestGetValuesNonExistentRelease(t *testing.T) {
 		return
 	}
 }
+
+func TestStatus(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-status",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-status",
+	})
+	out, err := Status(&StatusOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-status",
+	})
+	if err != nil {
+		t.Errorf("Expected status to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test-status") {
+		t.Errorf("Expected status to include name, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "STATUS: deployed") {
+		t.Errorf("Expected status to include deployed status, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "REVISION: 1") {
+		t.Errorf("Expected status to include revision, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "DESCRIPTION: Install complete") {
+		t.Errorf("Expected status to include description, got %s", out)
+		return
+	}
+}
+
+func TestStatusWithRevision(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	chart, _ := Create(&CreateOptions{
+		Name: "test-status-revision",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-status-revision",
+	})
+	_, _ = Upgrade(&UpgradeOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      chart,
+		Name:       "test-status-revision",
+	})
+	out, err := Status(&StatusOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-status-revision",
+		Revision:    1,
+	})
+	if err != nil {
+		t.Errorf("Expected status to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "REVISION: 1") {
+		t.Errorf("Expected status for revision 1, got %s", out)
+		return
+	}
+	if !strings.Contains(out, "STATUS: superseded") {
+		t.Errorf("Expected superseded status for revision 1, got %s", out)
+		return
+	}
+}
+
+func TestStatusWithNamespace(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-status-ns",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig:      kubeConfigFile.Name(),
+		Chart:           create,
+		Name:            "test-status-ns",
+		Namespace:       "status-namespace",
+		CreateNamespace: true,
+	})
+	out, err := Status(&StatusOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-status-ns",
+		Namespace:   "status-namespace",
+	})
+	if err != nil {
+		t.Errorf("Expected status to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAMESPACE: status-namespace") {
+		t.Errorf("Expected status to include namespace, got %s", out)
+		return
+	}
+}
+
+func TestStatusUsingKubeConfigContents(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	kubeConfigContents, _ := os.ReadFile(kubeConfigFile.Name())
+	create, _ := Create(&CreateOptions{
+		Name: "test-status-contents",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfigContents: string(kubeConfigContents),
+		Chart:              create,
+		Name:               "test-status-contents",
+	})
+	out, err := Status(&StatusOptions{
+		KubeConfigContents: string(kubeConfigContents),
+		ReleaseName:        "test-status-contents",
+	})
+	if err != nil {
+		t.Errorf("Expected status to succeed, got %s", err)
+		return
+	}
+	if !strings.Contains(out, "NAME: test-status-contents") {
+		t.Errorf("Expected status to include name, got %s", out)
+		return
+	}
+}
+
+func TestStatusNonExistentRelease(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	_, err := Status(&StatusOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "non-existent-release",
+	})
+	if err == nil {
+		t.Error("Expected status to fail for non-existent release")
+		return
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("Expected error to contain 'not found', got %s", err.Error())
+		return
+	}
+}
+
+func TestStatusInvalidRevision(t *testing.T) {
+	cleanUp, kubeConfigFile := setupEnvTest()
+	defer cleanUp()
+	create, _ := Create(&CreateOptions{
+		Name: "test-status-invalid-rev",
+		Dir:  t.TempDir(),
+	})
+	_, _ = Install(&InstallOptions{
+		KubeConfig: kubeConfigFile.Name(),
+		Chart:      create,
+		Name:       "test-status-invalid-rev",
+	})
+	_, err := Status(&StatusOptions{
+		KubeConfig:  kubeConfigFile.Name(),
+		ReleaseName: "test-status-invalid-rev",
+		Revision:    999,
+	})
+	if err == nil {
+		t.Error("Expected status to fail for invalid revision")
+		return
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("Expected error to contain 'not found', got %s", err.Error())
+		return
+	}
+}
