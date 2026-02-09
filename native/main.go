@@ -40,6 +40,14 @@ struct DependencyOptions  {
 	int   debug;
 };
 
+struct HistoryOptions {
+    char* releaseName;
+    int max;
+    char* namespace;
+    char* kubeConfig;
+    char* kubeConfigContents;
+};
+
 struct InstallOptions {
 	char* name;
 	int   generateName;
@@ -260,12 +268,13 @@ struct UpgradeOptions {
 import "C"
 import (
 	"fmt"
-	"github.com/manusa/helm-java/native/internal/helm"
 	"io"
 	"os"
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/manusa/helm-java/native/internal/helm"
 )
 
 // Run the given function and return the result as a C struct.
@@ -343,6 +352,19 @@ func DependencyUpdate(options *C.struct_DependencyOptions) C.Result {
 			SkipRefresh: options.skipRefresh == 1,
 			Verify:      options.verify == 1,
 			Debug:       options.debug == 1,
+		})
+	})
+}
+
+//export History
+func History(options *C.struct_HistoryOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.History(&helm.HistoryOptions{
+			ReleaseName:        C.GoString(options.releaseName),
+			Max:                int(options.max),
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
 		})
 	})
 }
