@@ -34,25 +34,34 @@ type HistoryOptions struct {
 }
 
 func History(options *HistoryOptions) (string, error) {
+
 	cfg, err := NewCfg(&CfgOptions{
 		KubeConfig:         options.KubeConfig,
 		KubeConfigContents: options.KubeConfigContents,
 		Namespace:          options.Namespace,
 	})
+
 	if err != nil {
 		return "", err
 	}
 
 	client := action.NewHistory(cfg)
-	if options.Max > 0 {
-		client.Max = options.Max
-	} else {
-		client.Max = 256 // Default from Helm CLI
-	}
-
 	releases, err := client.Run(options.ReleaseName)
+
 	if err != nil {
 		return "", err
+	}
+
+	// Apply Max filter manually since action.History.Run() does not honor the Max field.
+	// The Run() method returns all revisions for a release, and the Max limit is expected
+	// to be applied by the caller (as done in the Helm CLI). We keep only the most recent
+	// 'maxReleases' revisions by slicing from the end of the list.
+	maxReleases := options.Max
+	if maxReleases <= 0 {
+		maxReleases = 256 // Default from Helm CLI
+	}
+	if len(releases) > maxReleases {
+		releases = releases[len(releases)-maxReleases:]
 	}
 
 	// Format output similar to List command (URL-encoded lines)
