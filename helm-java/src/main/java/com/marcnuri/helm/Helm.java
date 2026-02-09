@@ -60,6 +60,10 @@ public class Helm {
     return new DependencyCommand(HelmLibHolder.INSTANCE, path);
   }
 
+  public static HistoryCommand history(String releaseName) {
+    return new HistoryCommand(HelmLibHolder.INSTANCE, releaseName);
+  }
+
   /**
    * This commands installs the referenced chart archive.
    *
