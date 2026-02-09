@@ -86,10 +86,4 @@ public class ReleaseHistory {
     }
     return Integer.parseInt(number);
   }
-
-  @Override
-  public String toString() {
-    return "ReleaseHistory{" + "revision=" + revision + ", updated=" + updated + ", status='" + status + '\'' + ", chart='" +
-             chart + '\'' + ", appVersion='" + appVersion + '\'' + ", description='" + description + '\'' + '}';
-  }
 }
