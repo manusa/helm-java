@@ -60,6 +60,12 @@ public class Helm {
     return new DependencyCommand(HelmLibHolder.INSTANCE, path);
   }
 
+  /**
+   * Fetch release history.
+   *
+   * @param releaseName name of the release.
+   * @return a new {@link HistoryCommand} instance.
+   */
   public static HistoryCommand history(String releaseName) {
     return new HistoryCommand(HelmLibHolder.INSTANCE, releaseName);
   }
