@@ -6,7 +6,7 @@ on:
     - cron: '0 2 * * *' # Every day at 2am
 
 env:
-  GO_VERSION: 1.26
+  GO_VERSION: 1.25.7
 
 jobs:
   snapshots:
