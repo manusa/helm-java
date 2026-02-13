@@ -61,6 +61,16 @@ public class Helm {
   }
 
   /**
+   * Fetch release history.
+   *
+   * @param releaseName name of the release.
+   * @return a new {@link HistoryCommand} instance.
+   */
+  public static HistoryCommand history(String releaseName) {
+    return new HistoryCommand(HelmLibHolder.INSTANCE, releaseName);
+  }
+
+  /**
    * This commands installs the referenced chart archive.
    *
    * @param chart the chart to install.

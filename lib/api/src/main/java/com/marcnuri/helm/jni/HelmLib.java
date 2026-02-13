@@ -33,6 +33,8 @@ public interface HelmLib extends Library {
 
   Result DependencyUpdate(DependencyOptions options);
 
+  Result History(HistoryOptions options);
+
   Result Install(InstallOptions options);
 
   Result Lint(LintOptions options);
