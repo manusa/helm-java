@@ -18,6 +18,7 @@ package com.marcnuri.helm;
 
 import com.dajudge.kindcontainer.KindContainer;
 import com.dajudge.kindcontainer.KindContainerVersion;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -876,6 +877,143 @@ class HelmKubernetesTest {
         assertThatThrownBy(getValues::call)
           .message()
           .contains("not found");
+      }
+    }
+  }
+
+  @Nested
+  class History {
+
+    @Nested
+    class Valid {
+
+      @Test
+      void afterInstall() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-after-install")
+          .call();
+
+        List<ReleaseHistory> releaseHistories = Helm.history("test-history-after-install")
+                                                  .withKubeConfig(kubeConfigFile)
+                                                  .call();
+
+        assertThat(releaseHistories)
+          .hasSize(1)
+          .first()
+          .returns(1, ReleaseHistory::getRevision)
+          .extracting(ReleaseHistory::getDescription).asString()
+          .containsIgnoringCase("Install complete");
+      }
+
+      @Test
+      void afterUpgrade() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-after-install-and-upgrade")
+          .call();
+
+        helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-after-install-and-upgrade")
+          .set("image.tag", "latest")
+          .call();
+
+        List<ReleaseHistory> releaseHistories = Helm.history("test-history-after-install-and-upgrade")
+                                                  .withKubeConfig(kubeConfigFile)
+                                                  .call();
+
+        assertThat(releaseHistories)
+          .hasSize(2)
+          .satisfiesExactly(
+            first -> assertThat(first.getDescription()).containsIgnoringCase("Install complete"),
+            second -> assertThat(second.getDescription()).containsIgnoringCase("Upgrade complete")
+          );
+      }
+
+      @Test
+      void withMax() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-with-max")
+          .call();
+
+        helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-with-max")
+          .set("image.tag", "v1")
+          .call();
+
+        helm.upgrade()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-with-max")
+          .set("image.tag", "v2")
+          .call();
+
+        List<ReleaseHistory> releaseHistories = Helm.history("test-history-with-max")
+                                                  .withKubeConfig(kubeConfigFile)
+                                                  .withMax(2)
+                                                  .call();
+
+        assertThat(releaseHistories)
+          .hasSize(2)
+          .satisfiesExactly(
+            first -> assertThat(first.getRevision()).isEqualTo(2),
+            second -> assertThat(second.getRevision()).isEqualTo(3)
+          );
+      }
+
+      @Test
+      void withNamespace() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-with-namespace")
+          .withNamespace("history-namespace")
+          .createNamespace()
+          .call();
+
+        List<ReleaseHistory> releaseHistories = Helm.history("test-history-with-namespace")
+                                                  .withKubeConfig(kubeConfigFile)
+                                                  .withNamespace("history-namespace")
+                                                  .call();
+
+        assertThat(releaseHistories)
+          .hasSize(1)
+          .first()
+          .returns(1, ReleaseHistory::getRevision);
+      }
+
+      @Test
+      void withKubeConfigContents() {
+        helm.install()
+          .withKubeConfig(kubeConfigFile)
+          .withName("test-history-with-kube-config-contents")
+          .call();
+
+        List<ReleaseHistory> releaseHistories = Helm.history("test-history-with-kube-config-contents")
+                                                  .withKubeConfigContents(kubeConfigContents)
+                                                  .call();
+
+        assertThat(releaseHistories)
+          .hasSize(1)
+          .first()
+          .returns(1, ReleaseHistory::getRevision);
+      }
+
+    }
+
+    @Nested
+    class Invalid {
+
+      @Test
+      void nonExistentRelease() {
+        AssertionsForClassTypes.assertThatThrownBy(() ->
+                                                     Helm.history("non-existent-release")
+                                                       .withKubeConfig(kubeConfigFile)
+                                                       .call()
+          )
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("release: not found");
       }
     }
   }
