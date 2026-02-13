@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -64,17 +65,18 @@ func History(options *HistoryOptions) (string, error) {
 		releases = releases[len(releases)-maxReleases:]
 	}
 
-	// Format output similar to List command (URL-encoded lines)
-	var out bytes.Buffer
+	out := bytes.NewBuffer(make([]byte, 0))
 	for _, rel := range releases {
-		out.WriteString(fmt.Sprintf("revision=%d&updated=%s&status=%s&chart=%s&appVersion=%s&description=%s\n",
-			rel.Version,
-			url.QueryEscape(rel.Info.LastDeployed.Format(time.RFC1123Z)),
-			url.QueryEscape(rel.Info.Status.String()),
-			url.QueryEscape(formatChartname(rel.Chart)),
-			url.QueryEscape(rel.Chart.AppVersion()),
-			url.QueryEscape(rel.Info.Description),
-		))
+		values := make(url.Values)
+		values.Set("revision", strconv.Itoa(rel.Version))
+		if tspb := rel.Info.LastDeployed; !tspb.IsZero() {
+			values.Set("updated", tspb.Format(time.RFC1123Z))
+		}
+		values.Set("status", rel.Info.Status.String())
+		values.Set("chart", formatChartname(rel.Chart))
+		values.Set("appVersion", formatAppVersion(rel.Chart))
+		values.Set("description", rel.Info.Description)
+		_, _ = fmt.Fprintln(out, values.Encode())
 	}
 	return out.String(), nil
 }
