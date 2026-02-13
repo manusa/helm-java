@@ -40,7 +40,7 @@ build-native:
 .PHONY: build-native-cross-platform
 build-native-cross-platform:
 	go install src.techknowlogick.com/xgo@latest
-	xgo $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
+	xgo -image ghcr.io/techknowlogick/xgo:go-1.25.7 $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
 .PHONY: build-native-wasi
 build-native-wasi:
