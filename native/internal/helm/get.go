@@ -57,3 +57,31 @@ func GetValues(options *GetValuesOptions) (string, error) {
 	}
 	return string(yamlBytes), nil
 }
+
+type GetManifestOptions struct {
+	ReleaseName        string
+	Revision           int
+	Namespace          string
+	KubeConfig         string
+	KubeConfigContents string
+}
+
+func GetManifest(options *GetManifestOptions) (string, error) {
+	cfg, err := NewCfg(&CfgOptions{
+		KubeConfig:         options.KubeConfig,
+		KubeConfigContents: options.KubeConfigContents,
+		Namespace:          options.Namespace,
+	})
+	if err != nil {
+		return "", err
+	}
+	client := action.NewGet(cfg)
+	if options.Revision > 0 {
+		client.Version = options.Revision
+	}
+	rel, err := client.Run(options.ReleaseName)
+	if err != nil {
+		return "", err
+	}
+	return rel.Manifest, nil
+}
