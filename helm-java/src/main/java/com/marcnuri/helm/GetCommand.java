@@ -16,6 +16,7 @@
 
 package com.marcnuri.helm;
 
+import com.marcnuri.helm.jni.GetManifestOptions;
 import com.marcnuri.helm.jni.GetValuesOptions;
 import com.marcnuri.helm.jni.HelmLib;
 
@@ -134,4 +135,71 @@ public class GetCommand {
       return this;
     }
   }
+
+    /**
+     * This subcommand returns the manifest for a given release.
+     *
+     * @return the GetManifestSubcommand subcommand.
+     */
+    public GetManifestSubcommand manifest() {
+        return new GetManifestSubcommand(helmLib, releaseName);
+    }
+
+    public static final class GetManifestSubcommand extends HelmCommand<String> {
+
+        private final String releaseName;
+        private int revision;
+        private String namespace;
+        private Path kubeConfig;
+        private String kubeConfigContents;
+
+        private GetManifestSubcommand(HelmLib helmLib, String releaseName) {
+            super(helmLib);
+            this.releaseName = releaseName;
+        }
+
+        @Override
+        public String call() {
+            return run(hl -> hl.GetManifest(new GetManifestOptions(
+                    releaseName,
+                    revision,
+                    namespace,
+                    toString(kubeConfig),
+                    kubeConfigContents
+            ))).out;
+        }
+
+        /**
+         * Get the named release with revision.
+         * If not specified, the latest release is returned.
+         */
+        public GetManifestSubcommand withRevision(int revision) {
+            this.revision = revision;
+            return this;
+        }
+
+        /**
+         * Kubernetes namespace scope for this request.
+         */
+        public GetManifestSubcommand withNamespace(String namespace) {
+            this.namespace = namespace;
+            return this;
+        }
+
+        /**
+         * Set the path to the ~/.kube/config file to use.
+         */
+        public GetManifestSubcommand withKubeConfig(Path kubeConfig) {
+            this.kubeConfig = kubeConfig;
+            return this;
+        }
+
+        /**
+         * Set the kube config to use (contents).
+         */
+        public GetManifestSubcommand withKubeConfigContents(String kubeConfigContents) {
+            this.kubeConfigContents = kubeConfigContents;
+            return this;
+        }
+    }
 }
