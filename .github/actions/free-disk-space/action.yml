@@ -3,7 +3,7 @@ description: Remove preinstalled software (dotnet, mono, browsers, Android SDK, 
 runs:
   using: composite
   steps:
-    - name: Free up disk space
+    - name: Purge preinstalled software
       shell: bash
       run: |
         sudo apt-get purge -y \

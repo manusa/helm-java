@@ -66,8 +66,8 @@ build-java: ## Build and verify the Java artifacts (mvn clean verify)
 	mvn $(MAVEN_OPTIONS) clean verify
 
 .PHONY: build-current-platform
-build-current-platform: MAVEN_OPTIONS = -Denforcer.skipRules=requireFilesExist
 build-current-platform: build-native build-java ## Build native + Java for the current platform (skips cross-platform enforcer)
+build-current-platform: MAVEN_OPTIONS = -Denforcer.skipRules=requireFilesExist
 
 .PHONY: build-all
 build-all: build-native-cross-platform build-java ## Build all 5 native platforms and the Java artifacts
