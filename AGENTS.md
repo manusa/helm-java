@@ -68,6 +68,16 @@ CI:
 - `.github/workflows/release.yml` and `snapshots.yml`: Linux Java 8; run `make build-all` then `make maven-deploy`.
 - Shared CI infra: `.github/actions/free-disk-space` (composite action) reclaims runner disk space before Ubuntu builds.
 
+## Releasing (maintainer only)
+
+Versioning is `0.0.X` patch-only; `main` always sits on `0.0-SNAPSHOT` (so `VS=0.0` every time). Full flow for cutting `v0.0.X`:
+
+1. **Pre-flight**: be on `main`, clean tree, in sync with `origin`. Skim `git log v0.0.<X-1>..HEAD --oneline` to confirm the scope is patch-worthy.
+2. **Cut the release**: `make release V=0.0.X VS=0.0`. This sets the pom to `0.0.X`, commits, tags `v0.0.X`, **pushes the tag** (which triggers `release.yml`), then sets the pom back to `0.0-SNAPSHOT`, commits, and pushes `main`. Two commits land on `main` plus one tag.
+3. **Wait for `release.yml`**: ~20 min. `gh run watch <run-id> --exit-status` until it's green. It builds all 5 native binaries and runs `make maven-deploy` to Maven Central. If it fails partway, artifacts may be partially staged — don't re-run blindly, inspect first.
+4. **Create the GitHub Release manually**: `release.yml` only publishes to Maven Central; it does NOT cut a GitHub Release. On https://github.com/manusa/helm-java/releases/new pick the `v0.0.X` tag and click **Generate release notes** (this is what every prior release used — a PR list plus the `compare/v0.0.<X-1>...v0.0.X` link). Publish.
+5. **Verify on Maven Central**: artifacts appear under https://central.sonatype.com/artifact/com.marcnuri.helm-java/helm-java within ~30 min of step 3 finishing.
+
 **Don't cancel running tests** that hit Kubernetes — they leak cluster resources.
 
 ## How a call flows (the model to keep in your head)
