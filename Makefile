@@ -65,8 +65,8 @@ build-native-cross-platform: ## Build native shared libraries for all 5 supporte
 build-java: ## Build and verify the Java artifacts (mvn clean verify)
 	mvn $(MAVEN_OPTIONS) clean verify
 
-build-current-platform: MAVEN_OPTIONS = -Denforcer.skipRules=requireFilesExist
 .PHONY: build-current-platform
+build-current-platform: MAVEN_OPTIONS = -Denforcer.skipRules=requireFilesExist
 build-current-platform: build-native build-java ## Build native + Java for the current platform (skips cross-platform enforcer)
 
 .PHONY: build-all
