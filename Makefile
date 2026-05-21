@@ -59,7 +59,7 @@ build-native: ## Build the native shared library for the current platform
 .PHONY: build-native-cross-platform
 build-native-cross-platform: ## Build native shared libraries for all 5 supported platforms (requires Docker)
 	go install src.techknowlogick.com/xgo@latest
-	xgo -image ghcr.io/techknowlogick/xgo:go-1.25.7 $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
+	xgo -image ghcr.io/techknowlogick/xgo:go-1.25.10 $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
 .PHONY: build-java
 build-java: ## Build and verify the Java artifacts (mvn clean verify)
