@@ -8,7 +8,7 @@ A Java client library for Helm with no external CLI dependency. The Helm Go SDK 
 
 - Helm SDK version: tracked by `native/go.mod` (currently `helm.sh/helm/v3 v3.21.0`).
 - Java baseline: source/target 1.8. Tests run on 8 (Linux CI) or 11 (macOS/Windows CI, because macos-latest dropped 8).
-- Go baseline: pinned in `native/go.mod` and `.github/workflows/build.yml` (`GO_VERSION`); currently `1.25.7`.
+- Go baseline: pinned in `native/go.mod` and `.github/workflows/build.yml` (`GO_VERSION`); currently `1.25.10`.
 
 ## Repository layout
 
