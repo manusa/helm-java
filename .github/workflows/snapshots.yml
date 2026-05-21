@@ -16,27 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Free up disk space
-        run: |
-          sudo apt-get purge -y \
-            'aspnetcore.*' \
-            'dotnet.*' \
-            'firefox.*' \
-            'google-chrome.*' \
-            'mysql.*' \
-            'php.*' \
-            'mono-.*' \
-            'libmono.*' \
-            'azure-cli' \
-            'powershell' \
-            '^llvm-.*' \
-            '^clang-.*'
-          sudo apt-get autoremove -y
-          sudo apt-get clean
-          # Remove Android SDK
-          sudo rm -rf /usr/local/lib/android 2>/dev/null || true
-          # Remove .NET
-          sudo rm -rf /usr/share/dotnet 2>/dev/null || true
-          df -h
+        uses: ./.github/actions/free-disk-space
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -54,7 +34,7 @@ jobs:
       - name: Build
         run: make build-all
       - name: Maven SNAPSHOT Release
-        run: mvn -Prelease clean deploy
+        run: make maven-deploy
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

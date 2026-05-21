@@ -25,14 +25,17 @@ Multi-module Maven build (parent `pom.xml`) + a sibling Go module under `native/
 | `native/internal/test/` | Go test helpers (envtest). |
 | `native/wasm/`, `native/out/` | TinyGo/WASI experiment entrypoint (see `lib/wasi/` note); build output for shared libraries. |
 | `docs/research/` | Audits and decision records (e.g. native-codebase audit). Snapshots — may be stale; check the date. |
-| `scripts/check-authors.sh` | Validates `@author` Javadoc tags. |
-| `Makefile` | Build/test/release entrypoints (see [Build & test](#build--test)). |
+| `scripts/check-authors.sh` | Validates `@author` Javadoc tags (invoked via `make check-authors`). |
+| `Makefile`, `build/*.mk` | Build/test/release entrypoints. Top-level Makefile auto-includes `build/*.mk` (e.g. `build/release.mk`). Run `make help` for the categorized target list. See [Build & test](#build--test). |
 
 ## Build & test
 
 The Maven parent has `requireFilesExist` enforcer that needs all 5 native binaries in `native/out/`. Submodule `helm-java` and `lib/api` skip the rule, but a top-level `./mvnw install` will fail without them.
 
 ```bash
+# Discover all targets (categorized: Build / Test / Code Quality / Development / Release)
+make help
+
 # Local dev (current platform only — skips the cross-platform enforcer check)
 make build-current-platform        # = build-native + mvn clean verify with -Denforcer.skipRules=requireFilesExist
 
@@ -55,10 +58,15 @@ make test-go                       # = cd native && go clean -testcache && go te
 make build-all                     # cross-platform natives + Java build
 make update-go-deps                # bulk-bump non-indirect Go deps
 make license                       # apply license-header.txt to .go/.java files
+make check-authors                 # verify @author tags (ARGS='--fix' suggests additions)
 make release V=1.2.3 VS=1.3.0      # tag release and bump to next snapshot (maintainer only)
+make maven-deploy                  # mvn -Prelease clean deploy (CI only; needs Central credentials)
 ```
 
-CI (`.github/workflows/build.yml`): Linux job runs `make test-go` + `make build-all` on Java 8. Matrix jobs run `make build-current-platform` on Windows/macOS with Java 11.
+CI:
+- `.github/workflows/build.yml`: Linux job runs `make test-go` + `make build-all` on Java 8. Matrix jobs run `make build-current-platform` on Windows/macOS with Java 11.
+- `.github/workflows/release.yml` and `snapshots.yml`: Linux Java 8; run `make build-all` then `make maven-deploy`.
+- Shared CI infra: `.github/actions/free-disk-space` (composite action) reclaims runner disk space before Ubuntu builds.
 
 **Don't cancel running tests** that hit Kubernetes — they leak cluster resources.
 
@@ -91,7 +99,7 @@ Verbs with both forms: `install`, `template`, `show`, `upgrade`. Most others are
 **Java**
 - Source/target 1.8 — no `var`, no `Map.of(...)`, no Optional in APIs, no records.
 - Apache 2.0 header on every `.go` and `.java` file (`make license` enforces).
-- `@author` Javadoc tags maintained (`scripts/check-authors.sh`).
+- `@author` Javadoc tags maintained (`make check-authors`).
 - Tests: JUnit 5 + AssertJ. **No mocking libraries** — use real impls (Testcontainers/KinD for k8s).
 
 **Go**
