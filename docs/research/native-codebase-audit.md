@@ -1,525 +1,77 @@
-# Helm-Java Go Codebase Analysis
+# Native Go Codebase — Audit
 
-**Date:** 2025-11-14
-**Analyzer:** Claude Code
-**Scope:** /home/user/00-MN/projects/manusa/helm-java/native
+_Date: 2026-05-21_
+_Scope: `native/` (CGO bridge + `internal/helm` implementations)_
+_Related: [#101](https://github.com/manusa/helm-java/issues/101) (pull), [#351](https://github.com/manusa/helm-java/issues/351) (rollback), [#239](https://github.com/manusa/helm-java/issues/239) (wasi, abandoned). Supersedes the original 2025-11-14 revision (see git history of this file)._
 
----
+Point-in-time snapshot of what's implemented, what's missing vs upstream Helm, and known issues. Re-run when something here looks suspect — file counts and TODO line numbers go stale fast.
 
-## Executive Summary
+## TL;DR
 
-The helm-java Go codebase provides a comprehensive native interface to Helm functionality with 27 exported commands. The code is well-structured with good separation of concerns, but has critical gaps in test coverage (35%) and contains 1 remaining critical bug that should be addressed. Key missing features include `helm rollback`, `helm pull`, and `helm status` (though status reporting exists internally).
+The Go bridge exposes **30 functions** across **23 implementation files**, covering every common Helm verb except **rollback** and **pull**. Since the previous audit (2025-11-14), `status`, `history`, and `get values` have been added (PRs [#352](https://github.com/manusa/helm-java/pull/352), [#353](https://github.com/manusa/helm-java/pull/353), [#345](https://github.com/manusa/helm-java/pull/345)); the `NewCfg` panic was fixed; the `newRegistryClient` extraction landed. Test coverage remains thin (7 of 23 files, ~30%) — three new commands shipped untested. Two known correctness bugs from the prior audit are still open: install-only `defer cancel()` leak, and the search.go warning swallow.
 
-**UPDATE (2025-11-14):** The panic issue in `NewCfg()` has been fixed. All panics have been replaced with proper error handling.
+## What changed since 2025-11-14
 
-### Key Metrics
-- **Total Lines of Code:** ~3,311 (excluding tests)
-- **Exported Functions:** 27
-- **Implementation Files:** 20
-- **Test Files:** 7
-- **Test Coverage:** 35% of implementation files
-- **Error Handling Sites:** 70+
-- **Critical Bugs:** ~~2~~ 1 (panic issue fixed ✅)
-- **TODOs:** 3
-- **Go Vet Issues:** 0 ✓
+Verified against current source and merged PRs.
 
----
+| Previous finding | Status |
+|---|---|
+| `NewCfg()` panics in `helm.go:81,89` | **Fixed** — now returns `(*action.Configuration, error)`; all call sites handle it. |
+| Missing `helm status` | **Shipped** in PR [#352](https://github.com/manusa/helm-java/pull/352) (issue [#349](https://github.com/manusa/helm-java/issues/349)). `native/internal/helm/status.go` + Java `StatusCommand`. |
+| Missing `helm history` | **Shipped** in PR [#353](https://github.com/manusa/helm-java/pull/353) (issue [#350](https://github.com/manusa/helm-java/issues/350)). `native/internal/helm/history.go` + Java `HistoryCommand`. |
+| Missing `helm get` | **Partially shipped**: `get values` only, in PR [#345](https://github.com/manusa/helm-java/pull/345) (issue [#322](https://github.com/manusa/helm-java/issues/322)). Other subcommands (manifest, hooks, notes, metadata, all) still unimplemented. |
+| `ValuesFiles` missing in upgrade→install fallback | **Fixed** — `upgrade.go:114` now forwards `ValuesFiles`. |
+| `newRegistryClient` extraction recommended | **Done** — defined in `registry.go:94`, reused across install/upgrade/push/show/dependency/registry (8 call sites). |
+| Install context leak (`install.go:167`, no `defer cancel()`) | **Still open.** Now at `install.go:182`; the `cancel()` only fires from the signal goroutine — if no signal arrives, the context isn't cancelled until process exit. Upgrade does *not* have the same shape: `upgrade.go:171` uses `context.Background()` with no cancellation path at all (no leak, but also no signal handling). |
+| TODO `helm.go:78` — merge kubeconfigs instead of override | **Still open.** |
+| TODO `search.go:69` — propagate warnings | **Still open** — broken repos are silently `continue`d. |
+| TODO `repotest.go:138` — OCI server can't be stopped | **Still open** — resource leak in test infra. |
 
-## 1. Implemented Features
+## Current command coverage
 
-### Release Management
-- **Install** - Full implementation with dependency update, dry-run, values, atomic installs
-- **Upgrade** - Supports install-if-missing, force, reset/reuse values, atomic upgrades
-- **Uninstall** - Includes dry-run, hooks control, cascade deletion, keep history
-- **List** - Filter by status (deployed, failed, pending, etc.), all namespaces support
-- **Test** - Execute chart tests with timeout configuration
+Exported functions: 30. Source of truth: `lib/api/src/main/java/com/marcnuri/helm/jni/HelmLib.java`.
 
-### Chart Development
-- **Create** - Generate new chart scaffolding
-- **Template** - Render templates locally (client-only mode)
-- **Lint** - Validate chart syntax with strict/quiet modes
-- **Package** - Create chart archives with optional signing
-- **Show** - Display chart information (all, chart, values, readme, CRDs)
+**Implemented:** create, install, upgrade, uninstall, list, test, template, lint, package, show, dependency (build/list/update), repo (add/list/remove/update), search (repo), registry (login/logout), push, history, status, getValues, repoServerStart/repoOciServerStart/repoServerStop/repoServerStopAll, version.
 
-### Dependency Management
-- **DependencyBuild** - Build dependencies with keyring/verify support
-- **DependencyList** - List chart dependencies
-- **DependencyUpdate** - Update dependencies with verification
+**Missing vs upstream Helm CLI:**
 
-### Repository Management
-- **RepoAdd** - Add chart repositories with authentication
-- **RepoList** - List configured repositories
-- **RepoRemove** - Remove repositories
-- **RepoUpdate** - Refresh repository indexes
-- **SearchRepo** - Search repositories with regex support
+| Command | Tracking issue | Notes |
+|---|---|---|
+| `helm rollback` | [#351](https://github.com/manusa/helm-java/issues/351) (open) | Production-critical gap. |
+| `helm pull` | [#101](https://github.com/manusa/helm-java/issues/101) (open) | Chart download from repos/OCI. |
+| `helm get {manifest,hooks,notes,metadata,all}` | — | Only `get values` is implemented (PR [#345](https://github.com/manusa/helm-java/pull/345)). |
+| `helm verify` | — | Chart signature verification. |
+| `helm search hub` | — | Only `search repo` is implemented. |
+| `helm repo index` | — | Generate index file. |
+| `helm env`, `helm completion`, `helm plugin` | — | Lower priority; CLI-flavoured. |
 
-### Registry Operations (OCI)
-- **RegistryLogin** - Authenticate to OCI registries
-- **RegistryLogout** - Logout from registries
-- **Push** - Push charts to OCI registries
+## Test coverage
 
-### Testing Infrastructure
-- **RepoServerStart** - Start HTTP chart repository server
-- **RepoOciServerStart** - Start OCI registry server
-- **RepoServerStop/StopAll** - Manage test servers
+7 test files for 23 implementation files (~30%). Worse than the previous audit (35%) because `get.go`, `history.go`, `status.go` shipped without `_test.go` siblings. (Java-side tests in `helm-java/src/test/` do exercise these end-to-end, but the Go layer has no isolated tests.)
 
-### Utilities
-- **Version** - Get Helm library version
-- **Debug capture system** - Capture stdout/stderr for operations
+**With Go tests:** `debug.go`, `helm.go`, `install.go`, `plugins.go`, `template.go`, `upgrade.go`, plus integration coverage in `envtest_test.go`.
 
----
+**Without Go tests:** `create.go`, `dependency.go`, `get.go`, `history.go`, `lint.go`, `list.go`, `package.go`, `push.go`, `registry.go`, `repo.go`, `repotest.go`, `search.go`, `show.go`, `status.go`, `test.go`, `uninstall.go`, `version.go`.
 
-## 2. Missing Helm Features
+Highest-value gaps to close at the Go layer: `repo.go` and `dependency.go` (network + filesystem; easy to regress); `repotest.go` (test infra is itself untested).
 
-Compared to the official Helm CLI, the following commands are **NOT** implemented:
+## Open code-quality items
 
-### Critical Missing Commands
-- ❌ `helm pull` - Download charts from repositories
-- ❌ `helm rollback` - Rollback to previous release revision (**CRITICAL FOR PRODUCTION**)
-- ❌ `helm status` - Display release status (internal `StatusReport()` exists but not exposed)
-- ❌ `helm history` - View release history
-- ❌ `helm get` - Retrieve release information (all, hooks, manifest, metadata, notes, values)
-- ❌ `helm verify` - Verify chart signature
+Verified against current `HEAD`.
 
-### Additional Missing Features
-- `helm env` - Display Helm environment information
-- `helm completion` - Shell completion generation
-- `helm plugin` - Plugin management commands (install, list, update, uninstall)
-- `helm search hub` - Search Artifact Hub (only search repo implemented)
-- `helm repo index` - Generate repository index file
+1. **Context leak in install.** `install.go:182` creates a cancellable context but only cancels on signal — add `defer cancel()` (trivial fix, prevents goroutine leak). Upgrade is a separate question: `upgrade.go:171` uses `context.Background()` with no signal handling at all, so the decision is whether to grow install's WithCancel + signal pattern there (and add `defer cancel()` from the start).
+2. **Silent error suppression in search.** `search.go:69` skips broken repositories without surfacing to Java callers. TODO is explicit.
+3. **OCI test server can't be stopped.** `repotest.go:138` (`server.ociServer.Stop()` commented out). Affects test-resource cleanup.
+4. **Kubeconfig override vs merge.** `helm.go:78` — `KubeConfigContents` clobbers `KubeConfig` instead of merging. TODO is explicit.
+5. **`CertOptions` boilerplate** appears in ~9 places. Lower-priority refactor; the `newRegistryClient` extraction already absorbed the worst of the duplication.
 
-### Configuration Options Not Exposed
-- Context management (no context switching support)
-- Advanced timeout configurations for some operations
-- Some debug/verbose output options
+## Recommended next work
 
----
+Ordered by impact-per-effort:
 
-## 3. Test Coverage Analysis
-
-### Files WITH Tests (7/20 = 35%)
-- ✅ `debug.go` - Has `debug_test.go` (comprehensive coverage)
-- ✅ `helm.go` - Has `helm_test.go`
-- ✅ `install.go` - Has `install_test.go` (7+ test cases)
-- ✅ `plugins.go` - Has `plugins_test.go` (auth provider tests)
-- ✅ `template.go` - Has `template_test.go` (2+ test cases)
-- ✅ `upgrade.go` - Has `upgrade_test.go`
-- ✅ Integration tests in `envtest_test.go` (12+ test cases)
-
-### Files WITHOUT Tests (13/20 = 65%)
-- ❌ `create.go` - **NO TESTS**
-- ❌ `dependency.go` - **NO TESTS**
-- ❌ `lint.go` - **NO TESTS**
-- ❌ `list.go` - **NO TESTS**
-- ❌ `package.go` - **NO TESTS**
-- ❌ `push.go` - **NO TESTS**
-- ❌ `registry.go` - **NO TESTS**
-- ❌ `repo.go` - **NO TESTS**
-- ❌ `repotest.go` - **NO TESTS** (testing infrastructure itself untested)
-- ❌ `search.go` - **NO TESTS**
-- ❌ `show.go` - **NO TESTS**
-- ❌ `test.go` - **NO TESTS**
-- ❌ `uninstall.go` - **NO TESTS**
-- ❌ `version.go` - **NO TESTS**
-
-### Test Quality
-- **Total test cases:** 26+ identified test functions
-- **All tests passed:** Yes (last run: 201.641s execution time)
-- **Integration tests:** Uses envtest for Kubernetes interaction
-- **Good coverage areas:** Install/Upgrade critical paths, Template rendering
-- **Critical gap:** Repository operations, dependency management, and chart packaging have **ZERO unit tests**
-
----
-
-## 4. Code Quality Observations
-
-### ✅ Strengths
-1. **Consistent error handling** - 70+ proper error checks across codebase
-2. **Good separation of concerns** - Each file handles specific Helm command
-3. **Proper licensing** - Apache 2.0 headers on all files
-4. **Manageable file sizes** - Largest file: install.go at 9.5KB
-5. **References to upstream** - Comments link to official Helm implementation
-6. **Clean go vet output** - No warnings
-
-### 🐛 Critical Issues
-
-#### 1. ~~Panic Usage in Production Code~~ ✅ FIXED
-**Location:** `helm.go:81, 89`
-
-```go
-if err != nil {
-    panic(err)  // ❌ Crashes entire process!
-}
-```
-
-**Status:** ✅ **FIXED** - `NewCfg()` now returns `(*action.Configuration, error)` and all callers have been updated to handle errors gracefully.
-
-**Changes Made:**
-- Changed `NewCfg` signature to return error
-- Updated all 14 callers (9 implementation files + 5 test files)
-- Replaced panics with proper error returns using `fmt.Errorf` with error wrapping
-
-#### 2. Context Cancellation Leak
-**Location:** `install.go:167`
-
-```go
-ctx, cancel := context.WithCancel(ctx)
-// ❌ Missing: defer cancel()
-```
-
-**Impact:** MEDIUM - Potential goroutine leak if context is not properly cancelled.
-
-**Recommendation:** Add deferred cancellation:
-```go
-ctx, cancel := context.WithCancel(ctx)
-defer cancel()
-```
-
-#### 3. Missing ValuesFiles in Upgrade Fallback
-**Location:** `upgrade.go:104`
-
-When upgrade falls back to install, the `ValuesFiles` parameter is not passed, only `Values`.
-
-**Impact:** MEDIUM - User-specified values files will be ignored during install fallback.
-
-**Recommendation:** Add missing parameter:
-```go
-ValuesFiles: options.ValuesFiles,
-```
-
-### 📝 TODOs/FIXMEs (3 Found)
-
-1. **helm.go:78** - "TODO: we could actually merge both kubeconfigs"
-   - Currently KubeConfigContents overrides instead of merging
-   - Impact: Users cannot combine multiple kubeconfig sources
-
-2. **search.go:69** - "TODO: see how to propagate warnings to the Java implementation"
-   - Warnings are silently suppressed
-   - Impact: Users miss important repository warnings
-
-3. **repotest.go:138** - "TODO can't be stopped for now"
-   - OCI server cannot be properly stopped
-   - Impact: Resource leaks in test environments
-
-### 🔄 Code Duplication & Inconsistencies
-
-#### Certificate Options Handling
-**Occurrences:** 63+ repetitions across codebase
-
-```go
-CertOptions: helm.CertOptions{
-    CertFile:              C.GoString(options.certFile),
-    KeyFile:               C.GoString(options.keyFile),
-    CaFile:                C.GoString(options.caFile),
-    InsecureSkipTLSverify: options.insecureSkipTlsVerify == 1,
-    PlainHttp:             options.plainHttp == 1,
-    Keyring:               C.GoString(options.keyring),
-}
-```
-
-**Recommendation:** Extract to helper function.
-
-#### Registry Client Creation
-**Duplicated in:** install.go, upgrade.go, push.go, registry.go, dependency.go
-
-**Recommendation:** Extract common pattern:
-```go
-func newRegistryClientWithDebug(opts CertOptions, debug bool) (*registry.Client, *DebugCapture, error)
-```
-
-#### Debug Output Handling
-**Inconsistency:** Some functions use `debugCapture` (registry, dependency) while others use `kubeOut` buffer.
-
-**Recommendation:** Standardize on single approach.
-
-### ⚠️ Potential Issues
-
-#### 1. Silent Error Suppression
-**Location:** `search.go:68-71`
-
-```go
-if err != nil {
-    // TODO: see how to propagate warnings to the Java implementation
-    continue  // ❌ Silently skips broken repositories
-}
-```
-
-**Impact:** Users unaware of repository configuration issues.
-
-#### 2. Race Condition Potential
-**Location:** `repotest.go:124`
-
-```go
-go server.ListenAndServe()  // ❌ No wait/ready check before returning
-```
-
-**Impact:** Server may not be ready when function returns, causing test flakiness.
-
-#### 3. No Retry on Lock Failure
-**Location:** `repo.go:71`
-
-```go
-lockCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-defer cancel()
-```
-
-Good timeout, but no retry mechanism if lock acquisition fails.
-
----
-
-## 5. Recommended Enhancements
-
-### Priority 1 - Critical Fixes (Do First!)
-
-1. ~~**Replace panics with error returns**~~ ✅ **FIXED**
-   - ~~Lines: 81, 89~~
-   - ~~Effort: Low (1-2 hours)~~
-   - ~~Impact: High (prevents process crashes)~~
-   - **Status:** Completed - `NewCfg` now properly returns errors
-
-2. **Add defer cancel()** in `install.go` context management
-   - Line: 167
-   - Effort: Trivial (5 minutes)
-   - Impact: Medium (prevents goroutine leaks)
-
-3. **Fix ValuesFiles** missing in upgrade fallback to install
-   - File: `upgrade.go:104`
-   - Effort: Trivial (5 minutes)
-   - Impact: Medium (fixes values file handling)
-
-4. **Add context cancellation** to `upgrade.go` as `install.go` has it
-   - Effort: Low (1 hour)
-   - Impact: Medium (consistency and leak prevention)
-
-### Priority 2 - Missing Core Features
-
-1. **Implement `helm pull`**
-   - Commonly used for downloading charts
-   - Effort: Medium (4-8 hours)
-   - Impact: High
-
-2. **Implement `helm rollback`**
-   - **CRITICAL for production use**
-   - Effort: Medium (4-8 hours)
-   - Impact: Critical
-
-3. **Implement `helm status`**
-   - Already has `StatusReport()`, just needs export
-   - Effort: Low (2-4 hours)
-   - Impact: High
-
-4. **Implement `helm history`**
-   - View release revisions
-   - Effort: Medium (4-6 hours)
-   - Impact: High
-
-5. **Implement `helm get` subcommands**
-   - Access release data (manifest, values, hooks, etc.)
-   - Effort: Medium (6-10 hours)
-   - Impact: High
-
-### Priority 3 - Test Coverage Improvements
-
-**Target: 80%+ coverage (currently 35%)**
-
-1. **Add unit tests for repository operations** (`repo.go`)
-   - Currently 0% coverage
-   - Effort: High (8-12 hours)
-   - Impact: Critical (repos are core functionality)
-
-2. **Add tests for dependency management** (`dependency.go`)
-   - Currently 0% coverage
-   - Effort: Medium (6-8 hours)
-   - Impact: High
-
-3. **Add tests for package/push operations**
-   - Files: `package.go`, `push.go`
-   - Effort: Medium (4-6 hours)
-   - Impact: Medium
-
-4. **Add tests for search functionality** (`search.go`)
-   - Effort: Low (2-4 hours)
-   - Impact: Medium
-
-5. **Add tests for create, lint, show, version**
-   - Simple operations, easy to test
-   - Effort: Low (4-6 hours total)
-   - Impact: Medium-High
-
-### Priority 4 - Refactoring
-
-1. **Extract certificate handling helper**
-
-```go
-func applyCertOptions(client interface{}, opts CertOptions) {
-    // Centralize cert file application logic
-}
-```
-
-Effort: Medium (4-6 hours)
-Impact: High (eliminates 63+ duplications)
-
-2. **Extract registry client creation**
-
-```go
-func newRegistryClientWithDebug(opts CertOptions, debug bool) (*registry.Client, *DebugCapture, error) {
-    // Reusable across install, upgrade, push, registry, dependency
-}
-```
-
-Effort: Medium (3-5 hours)
-Impact: Medium (reduces duplication)
-
-3. **Standardize debug output handling**
-   - Create consistent interface for debug capture
-   - Apply uniformly across all commands
-   - Effort: Medium (4-6 hours)
-   - Impact: Medium (better consistency)
-
-4. **Add error context with wrapping**
-
-```go
-return fmt.Errorf("failed to load chart %s: %w", chartPath, err)
-```
-
-Effort: Low (2-3 hours)
-Impact: Medium (better debugging)
-
-### Priority 5 - Code Quality & Documentation
-
-1. **Add godoc comments** to exported types and functions
-   - Effort: Medium (6-8 hours)
-   - Impact: High (improves maintainability)
-
-2. **Implement proper shutdown** for OCI test server
-   - Resolve `repotest.go` TODO
-   - Effort: Medium (3-5 hours)
-   - Impact: Low (test infrastructure only)
-
-3. **Add warning propagation mechanism**
-   - Resolve `search.go` TODO
-   - Effort: Medium (4-6 hours)
-   - Impact: Medium (better error visibility)
-
-4. **Consider kubeconfig merging** instead of override
-   - Resolve `helm.go` TODO
-   - Effort: High (8-12 hours)
-   - Impact: Medium (better flexibility)
-
-5. **Add validation** for option combinations
-   - Example: Validate DryRun modes are compatible
-   - Effort: Medium (4-6 hours)
-   - Impact: Medium (prevents user errors)
-
-6. **Add metrics/observability hooks**
-   - Effort: High (12-16 hours)
-   - Impact: Low-Medium (production monitoring)
-
-### Priority 6 - Performance Optimizations
-
-1. **Add connection pooling** for registry clients
-   - Effort: Medium (6-8 hours)
-   - Impact: Medium (faster repeated operations)
-
-2. **Cache repository indexes** when possible
-   - Effort: Medium (4-6 hours)
-   - Impact: Medium (reduces network calls)
-
-3. **Parallel dependency downloads**
-   - Already parallel in repo update
-   - Could extend to dependency operations
-   - Effort: Low (2-4 hours)
-   - Impact: Low (marginal speedup)
-
----
-
-## Quick Wins (High Value, Low Effort)
-
-1. ⚡ **Add tests for `create.go`, `version.go`**
-   - Simplest operations to test
-   - Effort: 2-3 hours
-   - Impact: Improves coverage by 10%
-
-2. ⚡ **Expose `helm status`**
-   - `StatusReport()` already implemented
-   - Effort: 2-4 hours
-   - Impact: Adds critical missing feature
-
-3. ⚡ **Fix the 3 TODOs**
-   - Clear requirements, straightforward implementations
-   - Effort: 6-10 hours total
-   - Impact: Resolves known issues
-
-4. ⚡ **Add defer cancel()**
-   - One-line fix
-   - Effort: 5 minutes
-   - Impact: Prevents resource leaks
-
----
-
-## Testing Recommendations
-
-### Immediate Actions
-1. Add tests for all untested files (13 files)
-2. Focus first on critical paths: repo.go, dependency.go
-3. Achieve minimum 80% code coverage
-4. Add integration tests for missing features
-
-### Test Structure (Follow Existing Pattern)
-```go
-func TestFeature(t *testing.T) {
-    t.Run("should handle expected case", func(t *testing.T) {
-        // Single assertion
-        if got != want {
-            t.Errorf("Expected %v, got %v", want, got)
-        }
-    })
-    t.Run("should handle error case", func(t *testing.T) {
-        // Single assertion
-        if err == nil {
-            t.Error("Expected error, got nil")
-        }
-    })
-}
-```
-
-### Coverage Goals
-- **Phase 1:** 50% coverage (add 15% - ~20 hours)
-- **Phase 2:** 70% coverage (add 20% - ~30 hours)
-- **Phase 3:** 85% coverage (add 15% - ~20 hours)
-
----
-
-## Conclusion
-
-The helm-java Go codebase is **well-architected** and implements the majority of Helm's core functionality. The code follows good practices with consistent error handling and clear separation of concerns.
-
-### Strengths
-✅ Comprehensive command coverage (27 commands)
-✅ Good code organization
-✅ Proper error handling patterns
-✅ Zero go vet warnings
-✅ Well-tested critical paths (install, upgrade, template)
-
-### Areas for Improvement
-⚠️ **Critical:** ~~2~~ 1 bug needs immediate fixing (~~panic~~ ✅ fixed, missing defer remains)
-⚠️ **High Priority:** Missing production-critical features (rollback, status, history)
-⚠️ **Medium Priority:** Test coverage at only 35% (target: 80%+)
-⚠️ **Low Priority:** Code duplication and TODO resolution
-
-### Production Readiness Assessment
-- **Current State:** Good for non-production use, comprehensive feature set
-- **Blocking Issues:** ~~Panic bugs~~ ✅ (fixed), missing rollback feature, context leak
-- **Time to Production Ready:** ~2 weeks of focused development
-  - Week 1: ~~Fix critical bugs~~ (panic fixed ✅), fix context leak, add rollback/status/history
-  - Week 2: Improve test coverage to 70%+
-  - Week 3: Address refactoring and remaining tests
-
-The codebase provides excellent foundation and with focused effort on the identified issues, can become production-ready quickly.
-
----
-
-**Generated by:** Claude Code
-**Analysis Date:** 2025-11-14
-**Total Analysis Time:** ~30 minutes
-**Files Analyzed:** 20 implementation files, 7 test files
+1. **`defer cancel()` in install.** 5-minute fix; closes a real leak. (Upgrade is a separate decision — see Open code-quality items.)
+2. **`helm rollback`** ([#351](https://github.com/manusa/helm-java/issues/351)). Highest-impact missing feature for production users.
+3. **Backfill Go tests for `status.go`, `history.go`, `get.go`.** They shipped untested; cheapest coverage wins.
+4. **`helm pull`** ([#101](https://github.com/manusa/helm-java/issues/101)).
+5. **Finish `helm get`** (manifest/hooks/notes/metadata) on top of the existing `get values` scaffolding.
+6. **Warning propagation** (`search.go` TODO) — needs a Java-side mechanism, so design first.
