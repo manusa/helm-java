@@ -4,6 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # JUnit 6+ requires Java 17; this project targets Java 1.8
+      - dependency-name: "org.junit.jupiter:*"
+        update-types: ["version-update:semver-major"]
+      # kindcontainer 2.x drops JUnit 4 and jumps to Testcontainers 2.x (breaking)
+      - dependency-name: "com.dajudge.kindcontainer:kindcontainer"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "gomod"
     directory: "/native"
     schedule:
