@@ -1,12 +1,18 @@
-CGO_ENABLED=1
-LD_FLAGS=-s -w
-COMMON_BUILD_ARGS=-ldflags "$(LD_FLAGS)" -buildmode=c-shared
-MAVEN_OPTIONS=
-LICENSE_FILE=license-header.txt
+# If you update this file, please follow
+# https://suva.sh/posts/well-documented-makefiles
+
+.DEFAULT_GOAL := help
+
+CGO_ENABLED = 1
+LD_FLAGS = -s -w
+COMMON_BUILD_ARGS = -ldflags "$(LD_FLAGS)" -buildmode=c-shared
+MAVEN_OPTIONS =
+LICENSE_FILE = license-header.txt
+
 # Detect OS to be able to run build-native target and provide a name
-OS_NAME=linux
-ARCH=amd64
-EXTENSION=so
+OS_NAME = linux
+ARCH = amd64
+EXTENSION = so
 ifeq ($(OS), Windows_NT)
 	OS_NAME := windows-4.0
 	EXTENSION := dll
@@ -23,64 +29,62 @@ else
 endif
 NATIVE_NAME := $(OS_NAME)-$(ARCH).$(EXTENSION)
 
+CLEAN_TARGETS :=
+CLEAN_TARGETS += native/out/*.h native/out/*.so native/out/*.dylib native/out/*.dll
+
+# The help will print out all targets with their descriptions organized below their categories. The categories are represented by `##@` and the target descriptions by `##`.
+# The awk command is responsible for reading the entire set of makefiles included in this invocation, looking for lines of the file as xyz: ## something, and then pretty-format the target and help. Then, if there's a line with ##@ something, that gets pretty-printed as a category.
+# More info over the usage of ANSI control characters for terminal formatting: https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
+# More info over awk command: http://linuxcommand.org/lc3_adv_awk.php
+#
+# Notice that we have a little modification on the awk command to support slash in the recipe name:
+# origin: /^[a-zA-Z_0-9-]+:.*?##/
+# modified /^[a-zA-Z_0-9\/\.-]+:.*?##/
+.PHONY: help
+help: ## Display this help
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9\/\.-]+:.*?##/ { printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
 .PHONY: clean
-clean:
+clean: ## Clean up all build artifacts (Go, Maven, native binaries)
 	cd native && go clean ./...
 	mvn clean
-	rm -f native/out/*.h native/out/*.so native/out/*.dylib native/out/*.dll
+	rm -f $(CLEAN_TARGETS)
 
-.PHONY: test-go
-test-go:
-	cd native && go clean -testcache && go test ./...
+##@ Build
 
 .PHONY: build-native
-build-native:
+build-native: ## Build the native shared library for the current platform
 	cd native && go build $(COMMON_BUILD_ARGS) -o ./out/helm-$(NATIVE_NAME)
 
 .PHONY: build-native-cross-platform
-build-native-cross-platform:
+build-native-cross-platform: ## Build native shared libraries for all 5 supported platforms (requires Docker)
 	go install src.techknowlogick.com/xgo@latest
 	xgo -image ghcr.io/techknowlogick/xgo:go-1.25.7 $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
-.PHONY: build-native-wasi
-build-native-wasi:
-	#cd native && GOOS=wasip1 GOARCH=wasm go build -o ./out/helm.wasm ./wasm/main.go
-	# Andrea recommends using TinyGo
-	# Doesn't work, need to find the right combination of ENV variables
-	#cd native && GOOS=wasip1 GOARCH=wasm tinygo build -o ./out/helm.wasm
-	# Working Version:
-	cd native && tinygo build -target=wasi -o ./out/helm.wasm ./wasm/main.go
-
 .PHONY: build-java
-build-java:
+build-java: ## Build and verify the Java artifacts (mvn clean verify)
 	mvn $(MAVEN_OPTIONS) clean verify
 
+build-current-platform: MAVEN_OPTIONS = -Denforcer.skipRules=requireFilesExist
 .PHONY: build-current-platform
-build-current-platform: MAVEN_OPTIONS=-Denforcer.skipRules=requireFilesExist
-build-current-platform: build-native build-java
+build-current-platform: build-native build-java ## Build native + Java for the current platform (skips cross-platform enforcer)
 
 .PHONY: build-all
-build-all: build-native-cross-platform build-java
+build-all: build-native-cross-platform build-java ## Build all 5 native platforms and the Java artifacts
+
+##@ Test
+
+.PHONY: test-go
+test-go: ## Run Go tests in native/
+	cd native && go clean -testcache && go test ./...
 
 .PHONY: test
-test: test-go
+test: test-go ## Run all tests
 
-.PHONY: release
-release:
-	@if [ -z "$(V)" ]; then echo "V is not set"; exit 1; fi
-	@if [ -z "$(VS)" ]; then echo "VS is not set"; exit 1; fi
-	@mvn versions:set -DnewVersion=$(V) -DgenerateBackupPoms=false
-	@git add .
-	@git commit -m "[RELEASE] Updated project version to v$(V)"
-	@git tag v$(V)
-	@git push origin v$(V)
-	@mvn versions:set -DnewVersion=$(VS)-SNAPSHOT -DgenerateBackupPoms=false
-	@git add .
-	@git commit -m "[RELEASE] v$(V) released, prepare for next development iteration"
-	@git push origin main
+##@ Code Quality
 
 .PHONY: license
-license:
+license: ## Apply the Apache 2.0 license header to all .go and .java files
 	@license_len=$$(cat $(LICENSE_FILE) | wc -l) &&											\
 	 files=$$(git ls-files | grep -E "\.go|\.java") &&											\
 	 for file in $$files; do																	\
@@ -89,8 +93,14 @@ license:
 	     ( ( cat $(LICENSE_FILE); echo; cat $$file ) > $$file.temp; mv $$file.temp $$file )		\
 	 done
 
+.PHONY: check-authors
+check-authors: ## Check Java files for missing @author tags (use ARGS='--fix' to see suggestions)
+	@./scripts/check-authors.sh $(ARGS)
+
+##@ Development
+
 .PHONY: update-go-deps
-update-go-deps:
+update-go-deps: ## Update non-indirect Go dependencies and tidy
 	@echo ">> updating Go dependencies"
 	@cd native && for m in $$(go list -mod=readonly -m -f '{{ if and (not .Indirect) (not .Main)}}{{.Path}}{{end}}' all); do \
 		go get $$m; \
@@ -99,3 +109,6 @@ update-go-deps:
 ifneq (,$(wildcard native/vendor))
 	cd native && go mod vendor
 endif
+
+# Include additional make targets
+-include build/*.mk
