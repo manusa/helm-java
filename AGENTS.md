@@ -60,9 +60,13 @@ make update-go-deps                # bulk-bump non-indirect Go deps
 make license                       # apply license-header.txt to .go/.java files
 make check-authors                 # verify @author tags (ARGS='--fix' suggests additions)
 make release V=1.2.3 VS=1.3.0      # tag release and bump to next snapshot (maintainer only)
+make maven-deploy                  # mvn -Prelease clean deploy (CI only; needs Central credentials)
 ```
 
-CI (`.github/workflows/build.yml`): Linux job runs `make test-go` + `make build-all` on Java 8. Matrix jobs run `make build-current-platform` on Windows/macOS with Java 11.
+CI:
+- `.github/workflows/build.yml`: Linux job runs `make test-go` + `make build-all` on Java 8. Matrix jobs run `make build-current-platform` on Windows/macOS with Java 11.
+- `.github/workflows/release.yml` and `snapshots.yml`: Linux Java 8; run `make build-all` then `make maven-deploy`.
+- Shared CI infra: `.github/actions/free-disk-space` (composite action) reclaims runner disk space before Ubuntu builds.
 
 **Don't cancel running tests** that hit Kubernetes — they leak cluster resources.
 

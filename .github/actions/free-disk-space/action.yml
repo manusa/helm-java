@@ -1,0 +1,28 @@
+name: Free up disk space
+description: Remove preinstalled software (dotnet, mono, browsers, Android SDK, …) to reclaim disk space on ubuntu-latest runners.
+runs:
+  using: composite
+  steps:
+    - name: Free up disk space
+      shell: bash
+      run: |
+        sudo apt-get purge -y \
+          'aspnetcore.*' \
+          'dotnet.*' \
+          'firefox.*' \
+          'google-chrome.*' \
+          'mysql.*' \
+          'php.*' \
+          'mono-.*' \
+          'libmono.*' \
+          'azure-cli' \
+          'powershell' \
+          '^llvm-.*' \
+          '^clang-.*'
+        sudo apt-get autoremove -y
+        sudo apt-get clean
+        # Remove Android SDK
+        sudo rm -rf /usr/local/lib/android 2>/dev/null || true
+        # Remove .NET
+        sudo rm -rf /usr/share/dotnet 2>/dev/null || true
+        df -h
