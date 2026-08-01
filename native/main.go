@@ -193,6 +193,7 @@ struct TemplateOptions {
 	char* keyring;
 	int   debug;
 	char* repositoryConfig;
+	int   includeHooks;
 };
 
 struct TestOptions {
@@ -702,6 +703,7 @@ func Template(options *C.struct_TemplateOptions) C.Result {
 			},
 			Debug:            options.debug == 1,
 			RepositoryConfig: C.GoString(options.repositoryConfig),
+			IncludeHooks:     options.includeHooks == 1,
 		})
 	})
 }
