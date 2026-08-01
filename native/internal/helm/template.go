@@ -31,6 +31,7 @@ type TemplateOptions struct {
 	KubeVersion      string
 	DependencyUpdate bool
 	SkipCRDs         bool
+	IncludeHooks     bool
 	Values           string
 	SetFiles         string
 	ValuesFiles      string
@@ -73,6 +74,19 @@ func Template(options *TemplateOptions) (string, error) {
 	var manifests bytes.Buffer
 	if _, fmtErr := fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest)); fmtErr != nil {
 		return "", fmtErr
+	}
+	if options.IncludeHooks {
+		for _, hook := range rel.Hooks {
+			manifest := strings.TrimSpace(hook.Manifest)
+			if manifest == "" {
+				continue
+			}
+			if _, fmtErr := fmt.Fprintf(
+				&manifests, "---\n# Source: %s\n%s\n", strings.TrimSpace(hook.Path), manifest,
+			); fmtErr != nil {
+				return "", fmtErr
+			}
+		}
 	}
 	return appendToOutOrErr(&manifests, "", err)
 }
