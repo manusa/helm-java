@@ -74,7 +74,7 @@ while IFS= read -r author; do
     KNOWN_AUTHORS+=("$author")
   fi
 done < <(find . -name "*.java" -type f ! -path "*/target/*" \
-  -exec sed -n 's/.*@author[[:space:]][[:space:]]*//p' {} + \
+  -exec sed -n 's/.*@author[[:space:]][[:space:]]*//p' {} + 2>/dev/null \
   | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u)
 
 if [[ "$VERBOSE" == true ]]; then
