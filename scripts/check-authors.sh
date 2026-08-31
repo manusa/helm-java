@@ -68,22 +68,24 @@ fi
 
 # Build list of known authors from all @author tags in the codebase
 echo "Building list of known authors from codebase..."
-declare -A KNOWN_AUTHORS
+KNOWN_AUTHORS=()
 while IFS= read -r author; do
   if [[ -n "$author" ]]; then
-    KNOWN_AUTHORS["$author"]=1
+    KNOWN_AUTHORS+=("$author")
   fi
-done < <(grep -rhoP '@author\s+\K.+' --include="*.java" . 2>/dev/null | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u)
+done < <(find . -name "*.java" -type f ! -path "*/target/*" \
+  -exec sed -n 's/.*@author[[:space:]][[:space:]]*//p' {} + \
+  | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u)
 
 if [[ "$VERBOSE" == true ]]; then
-  echo "Known authors: ${!KNOWN_AUTHORS[*]}"
+  echo "Known authors: ${KNOWN_AUTHORS[*]+"${KNOWN_AUTHORS[*]}"}"
 fi
 echo ""
 
 # Extract @author tags from a Java file
 get_javadoc_authors() {
   local file="$1"
-  grep -oP '@author\s+\K.+' "$file" 2>/dev/null | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || true
+  sed -n 's/.*@author[[:space:]][[:space:]]*//p' "$file" 2>/dev/null | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || true
 }
 
 # Get git contributors for a file
@@ -112,7 +114,7 @@ MISSING_AUTHORS_TOTAL=0
 echo "Checking Java files for author information..."
 echo ""
 
-for file in "${FILES[@]}"; do
+for file in "${FILES[@]+"${FILES[@]}"}"; do
   if [[ ! -f "$file" ]]; then
     continue
   fi
@@ -120,15 +122,25 @@ for file in "${FILES[@]}"; do
   ((TOTAL_FILES++)) || true
 
   # Get authors from JavaDoc
-  readarray -t javadoc_authors < <(get_javadoc_authors "$file")
+  javadoc_authors=()
+  while IFS= read -r author; do
+    if [[ -n "$author" ]]; then
+      javadoc_authors+=("$author")
+    fi
+  done < <(get_javadoc_authors "$file")
 
   # Get authors from git history
-  readarray -t git_authors < <(get_git_authors "$file")
+  git_authors=()
+  while IFS= read -r author; do
+    if [[ -n "$author" ]]; then
+      git_authors+=("$author")
+    fi
+  done < <(get_git_authors "$file")
 
   # Filter to only known authors (ignore unknown git usernames)
   known_git_authors=()
-  for author in "${git_authors[@]}"; do
-    if [[ -n "$author" ]] && [[ -v "KNOWN_AUTHORS[$author]" ]]; then
+  for author in "${git_authors[@]+"${git_authors[@]}"}"; do
+    if array_contains "$author" "${KNOWN_AUTHORS[@]+"${KNOWN_AUTHORS[@]}"}"; then
       if ! array_contains "$author" "${known_git_authors[@]+"${known_git_authors[@]}"}"; then
         known_git_authors+=("$author")
       fi
