@@ -137,12 +137,13 @@ class HelmShowTest {
       final String password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
       remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
         new RepoServerOptions(null, null, password)).out;
-      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).plainHttp().call();
       helm.packageIt().withDestination(tempDir).call();
       final Path packagedChart = tempDir.resolve("test-0.1.0.tgz");
       Helm.push()
         .withChart(packagedChart)
         .withRemote(URI.create("oci://" + remoteServer))
+        .plainHttp()
         .call();
     }
 
@@ -172,12 +173,13 @@ class HelmShowTest {
       final String password = UUID.randomUUID().toString(); // If default password is used, test is flaky ¯\_(ツ)_/¯
       remoteServer = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(
         new RepoServerOptions(null, null, password)).out;
-      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).plainHttp().call();
       helm.packageIt().withDestination(tempDir).call();
       final Path packagedChart = tempDir.resolve("test-0.1.0.tgz");
       Helm.push()
         .withChart(packagedChart)
         .withRemote(URI.create("oci://" + remoteServer))
+        .plainHttp()
         .call();
     }
 

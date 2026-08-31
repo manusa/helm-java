@@ -166,15 +166,17 @@ func TestPush(t *testing.T) {
 	})
 	_ = helm.Package(&helm.PackageOptions{Path: create, Destination: dir})
 	_, _ = helm.RegistryLogin(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-		Username: "username",
-		Password: "password",
-		Debug:    true,
+		Hostname:    srv.RegistryURL,
+		Username:    "username",
+		Password:    "password",
+		Debug:       true,
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	out, err := helm.Push(&helm.PushOptions{
-		Chart:  path.Join(dir, "test-0.1.0.tgz"),
-		Remote: "oci://" + srv.RegistryURL,
-		Debug:  true,
+		Chart:       path.Join(dir, "test-0.1.0.tgz"),
+		Remote:      "oci://" + srv.RegistryURL,
+		Debug:       true,
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	if err != nil {
 		t.Errorf("Expected push to succeed, got %s", err)
@@ -217,9 +219,10 @@ func TestRegistryLogin(t *testing.T) {
 		t.Errorf("Expected server to be started")
 	}
 	_, err = helm.RegistryLogin(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-		Username: "username",
-		Password: "password",
+		Hostname:    srv.RegistryURL,
+		Username:    "username",
+		Password:    "password",
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	if err != nil {
 		t.Errorf("Expected login to succeed, got %s", err)
@@ -246,16 +249,18 @@ func TestRegistryLogout(t *testing.T) {
 	defer helm.RepoServerStopAll()
 	srv, _ := helm.RepoOciServerStart(&helm.RepoServerOptions{})
 	_, err := helm.RegistryLogin(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
-		Username: "username",
-		Password: "password",
+		Hostname:    srv.RegistryURL,
+		Username:    "username",
+		Password:    "password",
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	if err != nil {
 		t.Error("Expected initial login to succeed")
 	}
 	var out string
 	out, err = helm.RegistryLogout(&helm.RegistryOptions{
-		Hostname: srv.RegistryURL,
+		Hostname:    srv.RegistryURL,
+		CertOptions: helm.CertOptions{PlainHttp: true},
 	})
 	if err != nil {
 		t.Errorf("Expected logout to succeed, got %s", err)
