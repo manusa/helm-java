@@ -60,6 +60,7 @@ func RegistryLogin(options *RegistryOptions) (string, error) {
 		action.WithKeyFile(options.KeyFile),
 		action.WithCAFile(options.CaFile),
 		action.WithInsecure(options.InsecureSkipTLSverify),
+		action.WithPlainHTTPLogin(options.PlainHttp),
 	)
 	return appendToOutOrErr(debugBuffer, getRegistryClientOut().String(), err)
 }

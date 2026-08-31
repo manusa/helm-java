@@ -61,7 +61,8 @@ class HelmPushTest {
   void pushUnauthorizedThrowsException() {
     final PushCommand pushCommand = Helm.push()
       .withChart(packagedChart)
-      .withRemote(URI.create("oci://" + remoteServer));
+      .withRemote(URI.create("oci://" + remoteServer))
+      .plainHttp();
     assertThatIllegalStateException()
       .isThrownBy(pushCommand::call)
       .extracting(IllegalStateException::getMessage)
@@ -74,6 +75,7 @@ class HelmPushTest {
     final PushCommand pushCommand = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
+      .plainHttp()
       .debug();
     assertThatIllegalStateException()
       .isThrownBy(pushCommand::call)
@@ -88,10 +90,11 @@ class HelmPushTest {
 
   @Test
   void pushAuthorized() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).plainHttp().call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
+      .plainHttp()
       .call();
     assertThat(result)
       .contains("Pushed: ", "test:0.1.0", "Digest: ");
@@ -99,10 +102,11 @@ class HelmPushTest {
 
   @Test
   void pushWithDebugShowsDebugMessages() {
-    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).call();
+    Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword(password).plainHttp().call();
     final String result = Helm.push()
       .withChart(packagedChart)
       .withRemote(URI.create("oci://" + remoteServer))
+      .plainHttp()
       .debug()
       .call();
     assertThat(result)

@@ -43,7 +43,7 @@ class HelmRegistryTest {
     @Test
     void withValidCredentialsSucceeds() {
       final String result = Helm.registry().login()
-        .withHost(remoteServer).withUsername("username").withPassword("password").call();
+        .withHost(remoteServer).withUsername("username").withPassword("password").plainHttp().call();
       assertThat(result).startsWith("Login Succeeded");
     }
 
@@ -51,7 +51,7 @@ class HelmRegistryTest {
     void withDebugAndValidCredentialsSucceeds() {
       final String result = Helm.registry().login()
         .debug()
-        .withHost(remoteServer).withUsername("username").withPassword("password").call();
+        .withHost(remoteServer).withUsername("username").withPassword("password").plainHttp().call();
       assertThat(result)
         .containsPattern(Pattern.compile("^Login Succeeded$", Pattern.MULTILINE))
         .contains("level=info msg=\"authorized request\"");
@@ -60,7 +60,7 @@ class HelmRegistryTest {
     @Test
     void withInvalidCredentialsFails() {
       final RegistryCommand.LoginCommand loginCommand = Helm.registry().login()
-        .withHost(remoteServer).withUsername("username").withPassword("invalid");
+        .withHost(remoteServer).withUsername("username").withPassword("invalid").plainHttp();
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContainingAll(
@@ -72,7 +72,7 @@ class HelmRegistryTest {
     void withDebugAndInvalidCredentialsFails() {
       final RegistryCommand.LoginCommand loginCommand = Helm.registry().login()
         .debug()
-        .withHost(remoteServer).withUsername("username").withPassword("invalid");
+        .withHost(remoteServer).withUsername("username").withPassword("invalid").plainHttp();
       assertThatThrownBy(loginCommand::call)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContainingAll(
@@ -87,7 +87,7 @@ class HelmRegistryTest {
 
     @Test
     void withPreviousLoginSucceeds() {
-      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").plainHttp().call();
       final String result = Helm.registry().logout()
         .withHost(remoteServer).call();
       assertThat(result).startsWith("Removing login credentials for " + remoteServer);
@@ -95,7 +95,7 @@ class HelmRegistryTest {
 
     @Test
     void withDebugAndPreviousLoginSucceeds() {
-      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").call();
+      Helm.registry().login().withHost(remoteServer).withUsername("username").withPassword("password").plainHttp().call();
       final String result = Helm.registry().logout()
         .debug()
         .withHost(remoteServer).call();
