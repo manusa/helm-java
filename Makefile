@@ -4,6 +4,13 @@
 .DEFAULT_GOAL := help
 
 CGO_ENABLED = 1
+# Go toolchain version. CI exports GO_VERSION (see .github/workflows/*.yml), which
+# overrides this default, so the two cannot drift apart.
+# The xgo image must ship a Go >= the `go` directive in native/go.mod. Otherwise the
+# container silently downloads a newer toolchain whose linker is incompatible with
+# that image's mingw-w64 binutils, and the Windows DLL fails to link.
+GO_VERSION ?= 1.26.7
+XGO_IMAGE = ghcr.io/techknowlogick/xgo:go-$(GO_VERSION)
 LD_FLAGS = -s -w
 COMMON_BUILD_ARGS = -ldflags "$(LD_FLAGS)" -buildmode=c-shared
 MAVEN_OPTIONS =
@@ -59,7 +66,7 @@ build-native: ## Build the native shared library for the current platform
 .PHONY: build-native-cross-platform
 build-native-cross-platform: ## Build native shared libraries for all 5 supported platforms (requires Docker)
 	go install src.techknowlogick.com/xgo@latest
-	xgo -image ghcr.io/techknowlogick/xgo:go-1.25.10 $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
+	xgo -image $(XGO_IMAGE) $(COMMON_BUILD_ARGS) -out native/out/helm --targets */arm64,*/amd64 ./native
 
 .PHONY: build-java
 build-java: ## Build and verify the Java artifacts (mvn clean verify)
