@@ -19,6 +19,7 @@ package helm
 import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -28,6 +29,18 @@ func TestTemplateFromLocal(t *testing.T) {
 		Name: "chart-for-template-tests",
 		Dir:  t.TempDir(),
 	})
+	hookManifest := `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: template-hook
+  annotations:
+    "helm.sh/hook": pre-install
+data:
+  marker: hook-manifest
+`
+	if err := os.WriteFile(filepath.Join(create, "templates", "hook.yaml"), []byte(hookManifest), 0600); err != nil {
+		t.Fatalf("Expected hook template creation to succeed, got %s", err)
+	}
 	t.Run("with defaults", func(t *testing.T) {
 		manifests, err := Template(&TemplateOptions{
 			Chart: create,
@@ -38,6 +51,39 @@ func TestTemplateFromLocal(t *testing.T) {
 		}
 		if !strings.Contains(manifests, "name: release-name-chart-for-template-tests") {
 			t.Errorf("Expected template to include provided name, got %s", manifests)
+			return
+		}
+		if strings.Contains(manifests, "marker: hook-manifest") {
+			t.Errorf("Expected template to exclude hooks by default, got %s", manifests)
+			return
+		}
+	})
+	t.Run("with hooks", func(t *testing.T) {
+		manifests, err := Template(&TemplateOptions{
+			Chart:        create,
+			IncludeHooks: true,
+		})
+		if err != nil {
+			t.Errorf("Expected template to succeed, got %s", err)
+			return
+		}
+		if !strings.Contains(manifests, "name: release-name-chart-for-template-tests") {
+			t.Errorf("Expected template to retain ordinary manifests, got %s", manifests)
+			return
+		}
+		if !strings.Contains(manifests, "# Source: chart-for-template-tests/templates/deployment.yaml\n") {
+			t.Errorf("Expected template to preserve ordinary manifest source headers, got %s", manifests)
+			return
+		}
+		if !strings.Contains(
+			manifests,
+			"---\n# Source: chart-for-template-tests/templates/hook.yaml\napiVersion: v1\nkind: ConfigMap\n",
+		) {
+			t.Errorf("Expected template to preserve the hook source path, got %s", manifests)
+			return
+		}
+		if !strings.Contains(manifests, "marker: hook-manifest") {
+			t.Errorf("Expected template to include hooks, got %s", manifests)
 			return
 		}
 	})
