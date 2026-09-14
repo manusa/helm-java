@@ -36,6 +36,8 @@ type TemplateOptions struct {
 	ValuesFiles      string
 	Debug            bool
 	RepositoryConfig string
+	OutputDir        string
+	UseReleaseName   bool
 }
 
 func Template(options *TemplateOptions) (string, error) {
@@ -61,6 +63,8 @@ func Template(options *TemplateOptions) (string, error) {
 		ValuesFiles:      options.ValuesFiles,
 		Debug:            options.Debug,
 		RepositoryConfig: options.RepositoryConfig,
+		OutputDir:        options.OutputDir,
+		UseReleaseName:   options.UseReleaseName,
 	})
 
 	if err != nil && !options.Debug {
