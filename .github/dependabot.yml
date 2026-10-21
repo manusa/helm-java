@@ -15,6 +15,13 @@ updates:
     directory: "/native"
     schedule:
       interval: "daily"
+    groups:
+      opentelemetry:
+        patterns: ["go.opentelemetry.io/*"]
+      kubernetes:
+        patterns: ["k8s.io/*", "sigs.k8s.io/*"]
+      golang-x:
+        patterns: ["golang.org/x/*"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
