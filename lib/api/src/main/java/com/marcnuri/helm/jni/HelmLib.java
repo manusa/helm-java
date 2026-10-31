@@ -43,6 +43,8 @@ public interface HelmLib extends Library {
 
   Result GetValues(GetValuesOptions options);
 
+  Result GetManifest(GetManifestOptions options);
+
   Result Package(PackageOptions options);
 
   Result Push(PushOptions options);
