@@ -6,9 +6,9 @@ This file is the primary context for AI coding agents (Claude Code, Copilot, etc
 
 A Java client library for Helm with no external CLI dependency. The Helm Go SDK (`helm.sh/helm/v3`) is compiled to a per-platform shared library via CGO and loaded from Java with JNA. The public Java API is a fluent builder that mirrors Helm CLI verbs: `install`, `upgrade`, `uninstall`, `template`, `package`, `lint`, `repo`, `registry`, `search`, `show`, `status`, `history`, `get` (values), `test`, `list`, `dependency`, `push`, `version`, `create`.
 
-- Helm SDK version: tracked by `native/go.mod` (currently `helm.sh/helm/v3 v3.21.0`).
+- Helm SDK version: tracked by `native/go.mod` (currently `helm.sh/helm/v3 v3.22.1`).
 - Java baseline: source/target 1.8. Tests run on 8 (Linux CI) or 11 (macOS/Windows CI, because macos-latest dropped 8).
-- Go baseline: pinned in `native/go.mod` and `.github/workflows/build.yml` (`GO_VERSION`); currently `1.25.10`.
+- Go baseline: minimum language version is the `go` directive in `native/go.mod` (currently `1.26.0`); the toolchain used for builds is pinned as `GO_VERSION` in `.github/workflows/{build,release,snapshots}.yml` and the `Makefile` default (currently `1.26.10`). Keep all four in sync.
 
 ## Repository layout
 
