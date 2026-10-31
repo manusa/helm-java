@@ -30,11 +30,8 @@ import (
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
 	"net/url"
-	"os"
-	"os/signal"
 	"slices"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -177,21 +174,13 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 		return nil, outputs, err
 	}
 
-	// Create context that handles SIGINT, SIGTERM
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	// Set up channel on which to send signal notifications.
-	// We must use a buffered channel or risk missing the signal
-	// if we're not ready to receive when the signal is sent.
-	cSignal := make(chan os.Signal, 4)
-	signal.Notify(cSignal, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
-	go func() {
-		<-cSignal
-		cancel()
-	}()
-
 	// Run
-	rel, err := client.RunWithContext(ctx, chartRequested, vals)
+	// Don't use signal.Notify here: in a c-shared library the first call makes the Go
+	// runtime permanently replace the host process' (e.g. an embedding JVM's) OS-level
+	// SIGINT/SIGTERM handlers, and the cancellation it enabled was never reachable by
+	// embedders anyway. Interrupt handling is the host application's responsibility.
+	// See https://github.com/manusa/helm-java/issues/409
+	rel, err := client.RunWithContext(context.Background(), chartRequested, vals)
 	return rel, outputs, err
 }
 
