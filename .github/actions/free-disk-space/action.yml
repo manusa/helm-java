@@ -16,7 +16,6 @@ runs:
           'mono-.*' \
           'libmono.*' \
           'azure-cli' \
-          'powershell' \
           '^llvm-.*' \
           '^clang-.*'
         sudo apt-get autoremove -y
@@ -25,4 +24,6 @@ runs:
         sudo rm -rf /usr/local/lib/android 2>/dev/null || true
         # Remove .NET
         sudo rm -rf /usr/share/dotnet 2>/dev/null || true
+        # Remove PowerShell (tarball install on Ubuntu 26.04, no apt package)
+        sudo rm -rf /opt/microsoft/powershell 2>/dev/null || true
         df -h
