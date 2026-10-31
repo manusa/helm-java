@@ -9,7 +9,7 @@ CGO_ENABLED = 1
 # The xgo image must ship a Go >= the `go` directive in native/go.mod. Otherwise the
 # container silently downloads a newer toolchain whose linker is incompatible with
 # that image's mingw-w64 binutils, and the Windows DLL fails to link.
-GO_VERSION ?= 1.26.7
+GO_VERSION ?= 1.26.10
 XGO_IMAGE = ghcr.io/techknowlogick/xgo:go-$(GO_VERSION)
 LD_FLAGS = -s -w
 COMMON_BUILD_ARGS = -ldflags "$(LD_FLAGS)" -buildmode=c-shared
