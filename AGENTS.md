@@ -65,7 +65,7 @@ make maven-deploy                  # mvn -Prelease clean deploy (CI only; needs 
 
 CI:
 - `.github/workflows/build.yml`: Linux job runs `make test-go` + `make build-all` on Java 8. Matrix jobs run `make build-current-platform` on Windows/macOS with Java 11.
-- `.github/workflows/release.yml` and `snapshots.yml`: Linux Java 8; run `make build-all` then `make maven-deploy`.
+- `.github/workflows/release.yml` and `snapshots.yml`: Linux Java 8; run `make build-all` then `make maven-deploy`. `release.yml` then creates the GitHub Release for the tag.
 - Shared CI infra: `.github/actions/free-disk-space` (composite action) reclaims runner disk space before Ubuntu builds.
 
 ## Releasing (maintainer only)
@@ -75,7 +75,7 @@ Versioning is `0.0.X` patch-only; `main` always sits on `0.0-SNAPSHOT` (so `VS=0
 1. **Pre-flight**: be on `main`, clean tree, in sync with `origin`. Skim `git log v0.0.<X-1>..HEAD --oneline` to confirm the scope is patch-worthy.
 2. **Cut the release**: `make release V=0.0.X VS=0.0`. This sets the pom to `0.0.X`, commits, tags `v0.0.X`, **pushes the tag** (which triggers `release.yml`), then sets the pom back to `0.0-SNAPSHOT`, commits, and pushes `main`. Two commits land on `main` plus one tag.
 3. **Wait for `release.yml`**: ~20 min. `gh run watch <run-id> --exit-status` until it's green. It builds all 5 native binaries and runs `make maven-deploy` to Maven Central. If it fails partway, artifacts may be partially staged — don't re-run blindly, inspect first.
-4. **Create the GitHub Release manually**: `release.yml` only publishes to Maven Central; it does NOT cut a GitHub Release. On https://github.com/manusa/helm-java/releases/new pick the `v0.0.X` tag and click **Generate release notes** (this is what every prior release used — a PR list plus the `compare/v0.0.<X-1>...v0.0.X` link). Publish.
+4. **GitHub Release (automatic)**: once the Maven deploy succeeds, the `Create GitHub Release` step in `release.yml` runs `gh release create v0.0.X --verify-tag --title v0.0.X --generate-notes --latest`. That gives the same format as every earlier release: a PR list plus the `compare/v0.0.<X-1>...v0.0.X` link. If the release already exists, the step skips. Check https://github.com/manusa/helm-java/releases. **Fallback** (the step failed or the deploy was finished by hand): on https://github.com/manusa/helm-java/releases/new pick the `v0.0.X` tag, click **Generate release notes**, and publish, or run `gh release create v0.0.X --verify-tag --title v0.0.X --generate-notes --latest`. Don't re-run the whole job just to get the release: that would also redeploy to Maven Central, which rejects a version that already exists.
 5. **Verify on Maven Central**: artifacts appear under https://central.sonatype.com/artifact/com.marcnuri.helm-java/helm-java within ~30 min of step 3 finishing.
 
 **Don't cancel running tests** that hit Kubernetes — they leak cluster resources.
