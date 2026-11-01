@@ -888,7 +888,13 @@ To release a new version manually:
 
 #### Create GitHub Release
 
-Once the release is published to Maven Central, create a new [GitHub release](https://github.com/manusa/helm-java/releases/new) for the released tag.
+The `Release to Maven Central` workflow creates the GitHub release for the pushed tag after the Maven Central deployment succeeds. A separate `GitHub Release` job does this, with the tag as title, generated release notes, and the release marked latest. If the release already exists, the job skips.
+If only that job failed, use "Re-run failed jobs"; this re-runs just the GitHub Release job and does not redeploy to Maven Central.
+If the re-run fails too, or the deployment was finished by hand, create a new [GitHub release](https://github.com/manusa/helm-java/releases/new) for the released tag manually with "Generate release notes", or run:
+
+```shell
+gh release create vX.Y.Z --verify-tag --title vX.Y.Z --generate-notes --latest
+```
 
 ### License Headers
 
