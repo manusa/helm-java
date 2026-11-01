@@ -13,7 +13,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # gh release create
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -42,6 +42,13 @@ jobs:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           SIGNINGPASSWORD: ${{ secrets.SIGNINGPASSWORD }}
+  github-release:
+    name: GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # gh release create
+    steps:
       - name: Create GitHub Release
         run: |
           if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
