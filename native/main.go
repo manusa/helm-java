@@ -213,6 +213,15 @@ struct GetValuesOptions {
 	char* kubeConfigContents;
 };
 
+struct GetManifestOptions {
+	char* releaseName;
+	int   revision;
+	char* namespace;
+	char* kubeConfig;
+	char* kubeConfigContents;
+};
+
+
 struct StatusOptions {
 	char* releaseName;
 	int   revision;
@@ -465,6 +474,19 @@ func GetValues(options *C.struct_GetValuesOptions) C.Result {
 		return helm.GetValues(&helm.GetValuesOptions{
 			ReleaseName:        C.GoString(options.releaseName),
 			AllValues:          options.allValues == 1,
+			Revision:           int(options.revision),
+			Namespace:          C.GoString(options.namespace),
+			KubeConfig:         C.GoString(options.kubeConfig),
+			KubeConfigContents: C.GoString(options.kubeConfigContents),
+		})
+	})
+}
+
+//export GetManifest
+func GetManifest(options *C.struct_GetManifestOptions) C.Result {
+	return runCommand(func() (string, error) {
+		return helm.GetManifest(&helm.GetManifestOptions{
+			ReleaseName:        C.GoString(options.releaseName),
 			Revision:           int(options.revision),
 			Namespace:          C.GoString(options.namespace),
 			KubeConfig:         C.GoString(options.kubeConfig),
