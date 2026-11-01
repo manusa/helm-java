@@ -28,10 +28,10 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
           server-id: central-portal
-          server-username: MAVEN_CENTRAL_USERNAME
-          server-password: MAVEN_CENTRAL_PASSWORD
+          server-username-env-var: MAVEN_CENTRAL_USERNAME
+          server-password-env-var: MAVEN_CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.SIGNINGKEY }}
-          gpg-passphrase: SIGNINGPASSWORD
+          gpg-passphrase-env-var: SIGNINGPASSWORD
       - name: Build
         run: make build-all
       - name: Maven Release
