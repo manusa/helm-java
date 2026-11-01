@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @author Marc Nuri
  * @author Andres F. Vallecilla
  * @author Antonio Fernandez Alhambra
+ * @author Shubham Mohole
  */
 class HelmTemplateTest {
 
@@ -61,6 +62,36 @@ class HelmTemplateTest {
     void withName() {
       final String result = helm.template().withName("the-name").call();
       assertThat(result)
+        .contains("name: the-name-local-chart-test");
+    }
+
+    @Test
+    void withOutputDir() throws IOException {
+      final Path outputDir = tempDir.resolve("rendered");
+      helm.template().withOutputDir(outputDir).call();
+
+      final Path deployment = outputDir.resolve("local-chart-test/templates/deployment.yaml");
+      final Path service = outputDir.resolve("local-chart-test/templates/service.yaml");
+      assertThat(deployment)
+        .exists()
+        .content(StandardCharsets.UTF_8)
+        .contains("name: release-name-local-chart-test");
+      assertThat(service).exists();
+    }
+
+    @Test
+    void withOutputDirAndReleaseName() throws IOException {
+      final Path outputDir = tempDir.resolve("rendered-with-release");
+      helm.template()
+        .withName("the-name")
+        .withOutputDir(outputDir)
+        .useReleaseName()
+        .call();
+
+      final Path deployment = outputDir.resolve("the-name/local-chart-test/templates/deployment.yaml");
+      assertThat(deployment)
+        .exists()
+        .content(StandardCharsets.UTF_8)
         .contains("name: the-name-local-chart-test");
     }
 

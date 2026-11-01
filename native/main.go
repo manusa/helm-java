@@ -193,6 +193,8 @@ struct TemplateOptions {
 	char* keyring;
 	int   debug;
 	char* repositoryConfig;
+	char* outputDir;
+	int   useReleaseName;
 };
 
 struct TestOptions {
@@ -702,6 +704,8 @@ func Template(options *C.struct_TemplateOptions) C.Result {
 			},
 			Debug:            options.debug == 1,
 			RepositoryConfig: C.GoString(options.repositoryConfig),
+			OutputDir:        C.GoString(options.outputDir),
+			UseReleaseName:   options.useReleaseName == 1,
 		})
 	})
 }

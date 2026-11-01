@@ -29,6 +29,7 @@ import java.util.Map;
  * @author Marc Nuri
  * @author Andres F. Vallecilla
  * @author Antonio Fernandez Alhambra
+ * @author Shubham Mohole
  */
 public class TemplateCommand extends HelmCommand<String> {
 
@@ -50,6 +51,8 @@ public class TemplateCommand extends HelmCommand<String> {
   private Path keyring;
   private boolean debug;
   private Path repositoryConfig;
+  private Path outputDir;
+  private boolean useReleaseName;
 
   public TemplateCommand(HelmLib helmLib) {
     this(helmLib, null);
@@ -83,7 +86,9 @@ public class TemplateCommand extends HelmCommand<String> {
       toInt(plainHttp),
       toString(keyring),
       toInt(debug),
-      toString(repositoryConfig)
+      toString(repositoryConfig),
+      toString(outputDir),
+      toInt(useReleaseName)
     ))).out;
   }
 
@@ -296,6 +301,27 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand withRepositoryConfig(Path repositoryConfig) {
     this.repositoryConfig = repositoryConfig;
+    return this;
+  }
+
+  /**
+   * Write rendered manifests to separate files in the specified directory.
+   *
+   * @param outputDir the directory for rendered manifest files.
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand withOutputDir(Path outputDir) {
+    this.outputDir = outputDir;
+    return this;
+  }
+
+  /**
+   * Include the release name in the output directory path.
+   *
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand useReleaseName() {
+    this.useReleaseName = true;
     return this;
   }
 

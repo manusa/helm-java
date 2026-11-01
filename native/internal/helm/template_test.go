@@ -19,6 +19,7 @@ package helm
 import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -53,6 +54,46 @@ func TestTemplateFromLocal(t *testing.T) {
 		if !strings.Contains(manifests, "name: the-name-chart-for-template-tests") {
 			t.Errorf("Expected template to include provided name, got %s", manifests)
 			return
+		}
+	})
+	t.Run("with output directory", func(t *testing.T) {
+		outputDir := t.TempDir()
+		_, err := Template(&TemplateOptions{
+			Chart:     create,
+			OutputDir: outputDir,
+		})
+		if err != nil {
+			t.Errorf("Expected template to succeed, got %s", err)
+			return
+		}
+		manifest, err := os.ReadFile(filepath.Join(outputDir, "chart-for-template-tests", "templates", "deployment.yaml"))
+		if err != nil {
+			t.Errorf("Expected deployment manifest to be written, got %s", err)
+			return
+		}
+		if !strings.Contains(string(manifest), "name: release-name-chart-for-template-tests") {
+			t.Errorf("Expected deployment manifest to contain rendered release name, got %s", manifest)
+		}
+	})
+	t.Run("with release name in output directory", func(t *testing.T) {
+		outputDir := t.TempDir()
+		_, err := Template(&TemplateOptions{
+			Name:           "the-name",
+			Chart:          create,
+			OutputDir:      outputDir,
+			UseReleaseName: true,
+		})
+		if err != nil {
+			t.Errorf("Expected template to succeed, got %s", err)
+			return
+		}
+		manifest, err := os.ReadFile(filepath.Join(outputDir, "the-name", "chart-for-template-tests", "templates", "deployment.yaml"))
+		if err != nil {
+			t.Errorf("Expected deployment manifest to be written under the release name, got %s", err)
+			return
+		}
+		if !strings.Contains(string(manifest), "name: the-name-chart-for-template-tests") {
+			t.Errorf("Expected deployment manifest to contain rendered release name, got %s", manifest)
 		}
 	})
 	t.Run("with invalid values", func(t *testing.T) {
