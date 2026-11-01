@@ -657,6 +657,8 @@ String result = templateCommand
   .withKubeVersion("v1.21.0")
   // Optionally update dependencies if they are missing before installing the chart
   .dependencyUpdate()
+  // Optionally include rendered Helm hooks in the output
+  .includeHooks()
   // Optionally set values for the chart
   .set("key", "value")
   // Optionally set a chart value from a file's contents (equivalent to --set-file)

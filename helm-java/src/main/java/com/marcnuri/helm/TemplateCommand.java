@@ -50,6 +50,7 @@ public class TemplateCommand extends HelmCommand<String> {
   private Path keyring;
   private boolean debug;
   private Path repositoryConfig;
+  private boolean includeHooks;
 
   public TemplateCommand(HelmLib helmLib) {
     this(helmLib, null);
@@ -83,7 +84,8 @@ public class TemplateCommand extends HelmCommand<String> {
       toInt(plainHttp),
       toString(keyring),
       toInt(debug),
-      toString(repositoryConfig)
+      toString(repositoryConfig),
+      toInt(includeHooks)
     ))).out;
   }
 
@@ -170,6 +172,16 @@ public class TemplateCommand extends HelmCommand<String> {
    */
   public TemplateCommand skipCrds() {
     this.skipCrds = true;
+    return this;
+  }
+
+  /**
+   * Include rendered Helm hooks in the output.
+   *
+   * @return this {@link TemplateCommand} instance.
+   */
+  public TemplateCommand includeHooks() {
+    this.includeHooks = true;
     return this;
   }
 

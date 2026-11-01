@@ -41,7 +41,8 @@
   "plainHttp",
   "keyring",
   "debug",
-  "repositoryConfig"
+  "repositoryConfig",
+  "includeHooks"
 })
 public class TemplateOptions extends Structure {
   public String name;
@@ -62,6 +63,7 @@ public class TemplateOptions extends Structure {
   public String keyring;
   public int debug;
   public String repositoryConfig;
+  public int includeHooks;
 
   public TemplateOptions(
     String name,
@@ -81,7 +83,8 @@ public class TemplateOptions extends Structure {
     int plainHttp,
     String keyring,
     int debug,
-    String repositoryConfig
+    String repositoryConfig,
+    int includeHooks
   ) {
     this.name = name;
     this.version = version;
@@ -101,5 +104,6 @@ public class TemplateOptions extends Structure {
     this.keyring = keyring;
     this.debug = debug;
     this.repositoryConfig = repositoryConfig;
+    this.includeHooks = includeHooks;
   }
 }
