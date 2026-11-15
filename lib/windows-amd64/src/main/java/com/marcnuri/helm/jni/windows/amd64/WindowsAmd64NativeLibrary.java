@@ -26,4 +26,14 @@ public class WindowsAmd64NativeLibrary implements NativeLibrary {
   public String getBinaryName() {
     return "helm-windows-4.0-amd64.dll";
   }
+
+  @Override
+  public String getOs() {
+    return "windows";
+  }
+
+  @Override
+  public String getArch() {
+    return "amd64";
+  }
 }

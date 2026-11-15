@@ -94,7 +94,7 @@ Java caller
   → returns C.Result (out/err/stdOut/stdErr) → JNA → Result → parsed into Release
 ```
 
-Native library loading: `Helm` class holds `HelmLibHolder.INSTANCE`, initialized lazily by `NativeLibrary.getInstance().load()`. `getInstance()` uses Java `ServiceLoader` to discover the platform module on the classpath (each platform JAR has `META-INF/services/com.marcnuri.helm.jni.NativeLibrary`); if none found, falls back to `RemoteJarLoader` (downloads the correct platform JAR at runtime — works for Gradle, fails when air-gapped). `helm-java/pom.xml` has OS-activated profiles that pull in the right platform module automatically; both `amd64`/`x86_64` and `arm64`/`aarch64` aliases are handled.
+Native library loading: `Helm` class holds `HelmLibHolder.INSTANCE`, initialized lazily by `NativeLibrary.getInstance().load()`. `getInstance()` uses Java `ServiceLoader` to discover the platform module on the classpath (each platform JAR has `META-INF/services/com.marcnuri.helm.jni.NativeLibrary`) and `NativeLibrarySelector` picks the first one whose `getOs()`/`getArch()` match the running JVM, else the first that declares neither (detection in `Platform`; providers declaring another platform are never picked; the `com.marcnuri.jkube-helm.nativeLibrary` system property forces one by class name, `com.marcnuri.jkube-helm.tempDir` sets the extraction dir); if none are registered, falls back to `RemoteJarLoader` (downloads the correct platform JAR at runtime — works for Gradle, fails when air-gapped). `helm-java/pom.xml` has OS-activated profiles that pull in the right platform module automatically; both `amd64`/`x86_64` and `arm64`/`aarch64` aliases are handled.
 
 ## Public API shape (Helm.java)
 

@@ -166,6 +166,23 @@
       </dependencies>
     </profile>
     <profile>
+      <id>linux-aarch64</id>
+      <activation>
+        <!-- Linux JVMs report aarch64; the name keeps Apple Silicon macOS (also family unix) out of this profile -->
+        <os>
+          <family>unix</family>
+          <name>linux</name>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>linux-arm64</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>windows-amd64</id>
       <activation>
         <os>
