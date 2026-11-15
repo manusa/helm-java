@@ -74,8 +74,8 @@ class RemoteJarLoader {
       final String repository = isSnapshot ?
         nativeLibraries.getProperty(SNAPSHOTS) :
         nativeLibraries.getProperty(RELEASES);
-      final String osName = osName();
-      final String archName = archName();
+      final String osName = Platform.osName();
+      final String archName = Platform.archName();
       if (osName != null && archName != null) {
         final String groupUrl = repository + "/" + groupId.replace('.', '/') + "/" + osName + "-" + archName + "/" + version;
         final String jarName;
@@ -120,27 +120,5 @@ class RemoteJarLoader {
       }
     }
     return jarFile.toUri().toURL();
-  }
-
-  private static String osName() {
-    final String osName = System.getProperty("os.name").toLowerCase();
-    if (osName.contains("win")) {
-      return "windows";
-    } else if (osName.contains("mac")) {
-      return "darwin";
-    } else if (osName.contains("nux") || osName.contains("nix") || osName.contains("aix")) {
-      return "linux";
-    }
-    return null;
-  }
-
-  private static String archName() {
-    final String arch = System.getProperty("os.arch");
-    if (arch.equals("amd64") || arch.equals("x86_64")) {
-      return "amd64";
-    } else if (arch.equals("arm64") || arch.equals("aarch64")) {
-      return "arm64";
-    }
-    return null;
   }
 }

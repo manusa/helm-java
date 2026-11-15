@@ -14,7 +14,7 @@ Add the dependency to your project:
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java</artifactId>
-  <version>0.0.15</version>
+  <version>0.0.22</version>
 </dependency>
 ```
 
@@ -27,6 +27,58 @@ public static void main(String... args) {
 ```
 
 Check the features section for more examples and documentation.
+
+### Native libraries
+
+Helm runs in-process from a native library built for each platform, shipped in its own artifact:
+`darwin-amd64`, `darwin-arm64`, `linux-amd64`, `linux-arm64`, and `windows-amd64`.
+
+**How the platform artifact is chosen.**
+
+- **Maven:** the `helm-java` artifact adds the native library artifact through profiles activated by the OS and architecture of the machine **running the build**.
+  An application built on Linux x86_64 gets `linux-amd64`, whatever host it runs on later.
+- **Without a platform artifact** (e.g. Gradle, which doesn't activate Maven profiles): the matching artifact is downloaded from Maven Central the first time it's needed.
+  This doesn't work in air-gapped environments.
+
+**Building for another platform.** When the build host and the target host differ (e.g. a container image for `linux/arm64` built on an x86_64 machine), exclude the platform artifacts and add the one for the target explicitly:
+
+```xml
+<dependency>
+  <groupId>com.marcnuri.helm-java</groupId>
+  <artifactId>helm-java</artifactId>
+  <version>0.0.22</version>
+  <exclusions>
+    <exclusion>
+      <groupId>com.marcnuri.helm-java</groupId>
+      <artifactId>*</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+<dependency>
+  <groupId>com.marcnuri.helm-java</groupId>
+  <artifactId>lib-api</artifactId>
+  <version>0.0.22</version>
+</dependency>
+<dependency>
+  <groupId>com.marcnuri.helm-java</groupId>
+  <artifactId>linux-arm64</artifactId>
+  <version>0.0.22</version>
+</dependency>
+```
+
+**Several platforms in one application (since 0.0.23).** You can ship more than one platform artifact. At runtime, the library is chosen in this order:
+
+1. The first one whose declared OS and/or architecture match the current platform.
+2. If there is none, the first one that declares no platform at all (custom implementations, or platform artifacts older than 0.0.23).
+
+Libraries declaring another platform are never used. If libraries are on the classpath but none of them can be used, loading fails with an error listing them. In that case, no download from Maven Central is attempted.
+
+**System properties (since 0.0.23).** These customize how the native library is loaded:
+
+| Property                                | Description                                                                                                                                                                                                                                                                                        |
+|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.marcnuri.jkube-helm.tempDir`       | Base directory where the native library is extracted before loading it (defaults to `java.io.tmpdir`). It's created if missing, and each JVM extracts into its own `helm-java*` subdirectory inside it. Set it to an executable location if `/tmp` is mounted with `noexec`.                     |
+| `com.marcnuri.jkube-helm.nativeLibrary` | Fully qualified class name of the `com.marcnuri.helm.jni.NativeLibrary` implementation to use, regardless of the detected platform. The class must be registered in a `META-INF/services/com.marcnuri.helm.jni.NativeLibrary` file on the classpath, like the ones in the platform artifacts. |
 
 ## Features
 

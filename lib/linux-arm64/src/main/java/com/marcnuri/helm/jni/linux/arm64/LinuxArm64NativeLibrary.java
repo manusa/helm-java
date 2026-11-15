@@ -26,4 +26,14 @@ public class LinuxArm64NativeLibrary implements NativeLibrary {
   public String getBinaryName() {
     return "helm-linux-arm64.so";
   }
+
+  @Override
+  public String getOs() {
+    return "linux";
+  }
+
+  @Override
+  public String getArch() {
+    return "arm64";
+  }
 }

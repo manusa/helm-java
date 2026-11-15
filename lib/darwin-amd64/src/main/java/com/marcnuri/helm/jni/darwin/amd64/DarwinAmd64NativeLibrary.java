@@ -26,4 +26,14 @@ public class DarwinAmd64NativeLibrary implements NativeLibrary {
   public String getBinaryName() {
     return "helm-darwin-10.12-amd64.dylib";
   }
+
+  @Override
+  public String getOs() {
+    return "darwin";
+  }
+
+  @Override
+  public String getArch() {
+    return "amd64";
+  }
 }
