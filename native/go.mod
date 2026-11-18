@@ -15,8 +15,8 @@ require (
 	helm.sh/helm/v3 v3.22.1
 	k8s.io/cli-runtime v0.37.2
 	k8s.io/client-go v0.37.2
-	sigs.k8s.io/controller-runtime v0.25.2
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.25.2
+	sigs.k8s.io/controller-runtime v0.25.3
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.25.3
 	sigs.k8s.io/yaml v1.6.0
 )
 
