@@ -18,7 +18,6 @@ package helm
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
@@ -175,12 +174,16 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	}
 
 	// Run
-	// Don't use signal.Notify here: in a c-shared library the first call makes the Go
-	// runtime permanently replace the host process' (e.g. an embedding JVM's) OS-level
-	// SIGINT/SIGTERM handlers, and the cancellation it enabled was never reachable by
-	// embedders anyway. Interrupt handling is the host application's responsibility.
-	// See https://github.com/manusa/helm-java/issues/409
-	rel, err := client.RunWithContext(context.Background(), chartRequested, vals)
+	// signal.Notify is deliberately not used: in a c-shared library it makes the Go runtime
+	// take over the host process' (e.g. the JVM's) SIGINT/SIGTERM/SIGQUIT handlers for good,
+	// so shutdown hooks never run and kill -3 thread dumps stop working.
+	// The trade-off: a signal no longer cancels an in-flight install (which used to mark the
+	// release failed, or uninstall it with Atomic); the host decides how to terminate, and a
+	// release interrupted that way can be left pending-install. upgrade never had signal-based
+	// cancellation either.
+	// See manusa/helm-java#409, fixed by #411, which removed the signal handling added in #113 (for #112):
+	// https://github.com/manusa/helm-java/issues/409
+	rel, err := client.Run(chartRequested, vals)
 	return rel, outputs, err
 }
 

@@ -54,6 +54,7 @@ class NativeLibraryTest {
     } finally {
       Thread.currentThread().setContextClassLoader(currentClassLoader);
       System.clearProperty("com.marcnuri.jkube-helm.version");
+      System.clearProperty("com.marcnuri.jkube-helm.forceUpdate");
     }
   }
 
@@ -71,6 +72,7 @@ class NativeLibraryTest {
     } finally {
       Thread.currentThread().setContextClassLoader(currentClassLoader);
       System.clearProperty("com.marcnuri.jkube-helm.version");
+      System.clearProperty("com.marcnuri.jkube-helm.forceUpdate");
     }
   }
 

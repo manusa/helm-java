@@ -32,7 +32,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
 var servers = cmap.New[*ActiveServer]()
@@ -102,7 +101,10 @@ func RepoOciServerStart(options *RepoServerOptions) (*repotest.OCIServer, error)
 	}
 	config := &configuration.Configuration{}
 	config.HTTP.Addr = fmt.Sprintf(":%d", port)
-	config.HTTP.DrainTimeout = time.Duration(1) * time.Second
+	// config.HTTP.DrainTimeout is deliberately left at 0: with a non-zero value, distribution's
+	// Registry.ListenAndServe calls signal.Notify for SIGINT/SIGTERM, which in a c-shared library
+	// takes over the host process' (e.g. the JVM's) handlers for good. With 0 it serves directly.
+	// See https://github.com/manusa/helm-java/issues/409
 	config.Storage = map[string]configuration.Parameters{"inmemory": map[string]interface{}{}}
 	config.Auth = configuration.Auth{
 		"htpasswd": configuration.Parameters{

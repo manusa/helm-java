@@ -584,7 +584,8 @@ func TestRepoServerStopAll(t *testing.T) {
 }
 
 func TestSearchRepo(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	repositoryConfigFile, _ := os.CreateTemp(t.TempDir(), "repositories.yaml")
+	_ = repositoryConfigFile.Close()
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
