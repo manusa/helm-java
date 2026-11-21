@@ -67,6 +67,8 @@ type InstallOptions struct {
 	// For testing purposes only, prevents connecting to Kubernetes (happens even with DryRun=true and DryRunOption=client)
 	ClientOnly       bool
 	RepositoryConfig string
+	OutputDir        string
+	UseReleaseName   bool
 }
 
 type installOutputs struct {
@@ -144,6 +146,8 @@ func install(options *InstallOptions) (*release.Release, *installOutputs, error)
 	client.Wait = options.Wait
 	client.Timeout = options.Timeout
 	client.ClientOnly = options.ClientOnly
+	client.OutputDir = options.OutputDir
+	client.UseReleaseName = options.UseReleaseName
 	client.CertFile = options.CertFile
 	client.KeyFile = options.KeyFile
 	client.CaFile = options.CaFile

@@ -22,6 +22,7 @@
  * @author Marc Nuri
  * @author Andres F. Vallecilla
  * @author Antonio Fernandez Alhambra
+ * @author Shubham Mohole
  */
 @Structure.FieldOrder({
   "name",
@@ -41,7 +42,9 @@
   "plainHttp",
   "keyring",
   "debug",
-  "repositoryConfig"
+  "repositoryConfig",
+  "outputDir",
+  "useReleaseName"
 })
 public class TemplateOptions extends Structure {
   public String name;
@@ -62,6 +65,8 @@ public class TemplateOptions extends Structure {
   public String keyring;
   public int debug;
   public String repositoryConfig;
+  public String outputDir;
+  public int useReleaseName;
 
   public TemplateOptions(
     String name,
@@ -81,7 +86,9 @@ public class TemplateOptions extends Structure {
     int plainHttp,
     String keyring,
     int debug,
-    String repositoryConfig
+    String repositoryConfig,
+    String outputDir,
+    int useReleaseName
   ) {
     this.name = name;
     this.version = version;
@@ -101,5 +108,7 @@ public class TemplateOptions extends Structure {
     this.keyring = keyring;
     this.debug = debug;
     this.repositoryConfig = repositoryConfig;
+    this.outputDir = outputDir;
+    this.useReleaseName = useReleaseName;
   }
 }
