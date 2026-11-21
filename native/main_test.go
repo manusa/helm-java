@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -584,16 +585,19 @@ func TestRepoServerStopAll(t *testing.T) {
 }
 
 func TestSearchRepo(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
+	repositoryConfig := filepath.Join(t.TempDir(), "repositories.yaml")
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
 		InsecureSkipTlsVerify: true,
-		RepositoryConfig:      repositoryConfigFile.Name(),
+		RepositoryConfig:      repositoryConfig,
 	})
+	if err != nil {
+		t.Fatalf("Expected repo add to succeed, got %s", err)
+	}
 	out, err := helm.SearchRepo(&helm.SearchOptions{
 		Keyword:          "nginx",
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfig,
 	})
 	if err != nil {
 		t.Errorf("Expected search to succeed, got %s", err)
