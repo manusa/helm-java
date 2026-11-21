@@ -17,6 +17,7 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.RepoServerOptions;
+import com.marcnuri.helm.jni.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -165,7 +166,11 @@ class HelmSignalHandlerTest {
      * in a goroutine, after registering any signal handlers, so a response proves they are in place.
      */
     private static void startTestOciServer() throws Exception {
-      final String registry = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(new RepoServerOptions()).out;
+      final Result result = Helm.HelmLibHolder.INSTANCE.RepoOciServerStart(new RepoServerOptions());
+      if (result.err != null && !result.err.isEmpty()) {
+        throw new IllegalStateException("Test OCI server failed to start: " + result.err);
+      }
+      final String registry = result.out;
       final URL url = new URL("http://" + registry + "/v2/");
       final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
       while (true) {
