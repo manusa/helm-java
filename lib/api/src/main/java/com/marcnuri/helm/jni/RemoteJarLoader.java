@@ -63,7 +63,13 @@ class RemoteJarLoader {
   private RemoteJarLoader() {
   }
 
-  static ClassLoader remoteJar() {
+  /**
+   * Downloads (or reuses the cached) native library JAR for the current platform.
+   *
+   * @return a class loader for the JAR, or {@code null} if the remote JAR is disabled or the platform is unknown.
+   * @throws IOException if the JAR (or the snapshot metadata) can't be downloaded or read.
+   */
+  static ClassLoader remoteJar() throws IOException {
     // For testing
     if (System.getProperty(SKIP) != null) {
       return null;
@@ -71,53 +77,55 @@ class RemoteJarLoader {
     final Properties nativeLibraries = new Properties();
     try (final InputStream stream = NativeLibrary.class.getResourceAsStream("/META-INF/native-libraries.properties")) {
       nativeLibraries.load(stream);
-      final String version;
-      // Version can be overridden (for testing) using a system property
-      if (System.getProperty(VERSION) != null) {
-        version = System.getProperty(VERSION);
-      } else {
-        version = nativeLibraries.getProperty(VERSION);
-      }
-      final String groupId = nativeLibraries.getProperty(GROUP_ID);
-      final boolean isSnapshot = version.endsWith("-SNAPSHOT");
-      final String repository = isSnapshot ?
-        nativeLibraries.getProperty(SNAPSHOTS) :
-        nativeLibraries.getProperty(RELEASES);
-      final String osName = Platform.osName();
-      final String archName = Platform.archName();
-      if (osName != null && archName != null) {
-        final String groupUrl = repository + "/" + groupId.replace('.', '/') + "/" + osName + "-" + archName + "/" + version;
-        final String jarName;
-        if (isSnapshot) {
-          jarName = latestSnapshot(version, osName, archName, groupUrl);
-        } else {
-          jarName = osName + "-" + archName + "-" + version + ".jar";
-        }
-        final URL jarUrl = new URL(groupUrl + "/" + jarName);
-        final Path jarFile = Paths.get(System.getProperty(TEMP_DIR), jarName);
-        return new URLClassLoader(new URL[]{cache(jarUrl, jarFile)}, NativeLibrary.class.getClassLoader());
-      }
-    } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException exception) {
-      // NO OP
     }
-    return null;
+    final String version;
+    // Version can be overridden (for testing) using a system property
+    if (System.getProperty(VERSION) != null) {
+      version = System.getProperty(VERSION);
+    } else {
+      version = nativeLibraries.getProperty(VERSION);
+    }
+    final String repository = version.endsWith("-SNAPSHOT") ?
+      nativeLibraries.getProperty(SNAPSHOTS) :
+      nativeLibraries.getProperty(RELEASES);
+    final String osName = Platform.osName();
+    final String archName = Platform.archName();
+    if (osName == null || archName == null) {
+      return null;
+    }
+    return remoteJar(repository, nativeLibraries.getProperty(GROUP_ID), version, osName, archName,
+      Paths.get(System.getProperty(TEMP_DIR)));
+  }
+
+  static ClassLoader remoteJar(String repository, String groupId, String version, String osName, String archName,
+    Path cacheDirectory) throws IOException {
+    final String groupUrl = repository + "/" + groupId.replace('.', '/') + "/" + osName + "-" + archName + "/" + version;
+    final String jarName;
+    if (version.endsWith("-SNAPSHOT")) {
+      jarName = latestSnapshot(version, osName, archName, groupUrl);
+    } else {
+      jarName = osName + "-" + archName + "-" + version + ".jar";
+    }
+    final URL jarUrl = new URL(groupUrl + "/" + jarName);
+    return new URLClassLoader(new URL[]{cache(jarUrl, cacheDirectory.resolve(jarName))}, NativeLibrary.class.getClassLoader());
   }
 
   private static String latestSnapshot(String version, String osName, String archName, String groupUrl)
-    throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
+    throws IOException {
     final String metadataXml = groupUrl + "/maven-metadata.xml";
-    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-    factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-    final Document xml;
     try (InputStream stream = openStream(new URL(metadataXml), CONNECT_TIMEOUT_MILLIS, READ_TIMEOUT_MILLIS)) {
-      xml = factory.newDocumentBuilder().parse(stream, metadataXml);
+      final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      final Document xml = factory.newDocumentBuilder().parse(stream, metadataXml);
+      final XPath xPath = XPathFactory.newInstance().newXPath();
+      final String versionFragment = version.replace("-SNAPSHOT", "");
+      final String timestamp = xPath.evaluate("//metadata/versioning/snapshot/timestamp", xml);
+      final String buildNumber = xPath.evaluate("//metadata/versioning/snapshot/buildNumber", xml);
+      return osName + "-" + archName + "-" + versionFragment + "-" + timestamp + "-" + buildNumber + ".jar";
+    } catch (ParserConfigurationException | SAXException | XPathExpressionException exception) {
+      throw new IOException("Unable to read " + metadataXml, exception);
     }
-    final XPath xPath = XPathFactory.newInstance().newXPath();
-    final String versionFragment = version.replace("-SNAPSHOT", "");
-    final String timestamp = xPath.evaluate("//metadata/versioning/snapshot/timestamp", xml);
-    final String buildNumber = xPath.evaluate("//metadata/versioning/snapshot/buildNumber", xml);
-    return osName + "-" + archName + "-" + versionFragment + "-" + timestamp + "-" + buildNumber + ".jar";
   }
 
   static URL cache(URL jarUrl, Path jarFile) throws IOException {

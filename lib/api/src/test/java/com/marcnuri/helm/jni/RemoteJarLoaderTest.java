@@ -23,8 +23,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,6 +34,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,6 +92,34 @@ class RemoteJarLoaderTest {
       exchange.sendResponseHeaders(200, 0);
       try (OutputStream os = exchange.getResponseBody()) {
         os.write(jar, 0, jar.length / 2);
+      }
+    });
+    server.createContext("/repo/com/example/linux-amd64/1.0.0/linux-amd64-1.0.0.jar", exchange -> {
+      exchange.sendResponseHeaders(200, jar.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(jar);
+      }
+    });
+    server.createContext("/repo/com/example/linux-amd64/1.1-SNAPSHOT/maven-metadata.xml", exchange -> {
+      final byte[] body = ("<metadata><versioning><snapshot>" +
+        "<timestamp>20261121.103929</timestamp><buildNumber>401</buildNumber>" +
+        "</snapshot></versioning></metadata>").getBytes(StandardCharsets.UTF_8);
+      exchange.sendResponseHeaders(200, body.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(body);
+      }
+    });
+    server.createContext("/repo/com/example/linux-amd64/1.1-SNAPSHOT/linux-amd64-1.1-20261121.103929-401.jar", exchange -> {
+      exchange.sendResponseHeaders(200, jar.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(jar);
+      }
+    });
+    server.createContext("/repo/com/example/linux-amd64/1.2-SNAPSHOT/maven-metadata.xml", exchange -> {
+      final byte[] body = "not xml".getBytes(StandardCharsets.UTF_8);
+      exchange.sendResponseHeaders(200, body.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(body);
       }
     });
     server.createContext("/truncated", exchange -> {
@@ -231,6 +262,56 @@ class RemoteJarLoaderTest {
         assertThat(jarFile).hasContent("cached");
         assertThat(tempDir).isDirectoryNotContaining("glob:**.part");
       }
+    }
+  }
+
+  @Nested
+  class RemoteJar {
+
+    @Test
+    void downloadsReleaseJarIntoCacheDirectory() throws IOException {
+      try (URLClassLoader classLoader = (URLClassLoader) RemoteJarLoader.remoteJar(
+        url("/repo").toString(), "com.example", "1.0.0", "linux", "amd64", tempDir)) {
+        final Path jarFile = tempDir.resolve("linux-amd64-1.0.0.jar");
+        assertThat(classLoader.getURLs()).containsExactly(jarFile.toUri().toURL());
+        assertThat(jarFile).hasBinaryContent(jar);
+      }
+    }
+
+    @Test
+    void downloadsLatestSnapshotJarFromMetadata() throws IOException {
+      try (URLClassLoader classLoader = (URLClassLoader) RemoteJarLoader.remoteJar(
+        url("/repo").toString(), "com.example", "1.1-SNAPSHOT", "linux", "amd64", tempDir)) {
+        final Path jarFile = tempDir.resolve("linux-amd64-1.1-20261121.103929-401.jar");
+        assertThat(classLoader.getURLs()).containsExactly(jarFile.toUri().toURL());
+        assertThat(jarFile).hasBinaryContent(jar);
+      }
+    }
+
+    @Test
+    void missingReleaseJarThrowsWithUrl() {
+      assertThatThrownBy(() -> RemoteJarLoader.remoteJar(
+        url("/repo").toString(), "com.example", "2.0.0", "linux", "amd64", tempDir))
+        .isInstanceOf(FileNotFoundException.class)
+        .hasMessageEndingWith("/repo/com/example/linux-amd64/2.0.0/linux-amd64-2.0.0.jar");
+      assertThat(tempDir).isEmptyDirectory();
+    }
+
+    @Test
+    void missingSnapshotMetadataThrowsWithUrl() {
+      assertThatThrownBy(() -> RemoteJarLoader.remoteJar(
+        url("/repo").toString(), "com.example", "2.0-SNAPSHOT", "linux", "amd64", tempDir))
+        .isInstanceOf(FileNotFoundException.class)
+        .hasMessageEndingWith("/repo/com/example/linux-amd64/2.0-SNAPSHOT/maven-metadata.xml");
+    }
+
+    @Test
+    void invalidSnapshotMetadataThrowsWithUrl() {
+      assertThatThrownBy(() -> RemoteJarLoader.remoteJar(
+        url("/repo").toString(), "com.example", "1.2-SNAPSHOT", "linux", "amd64", tempDir))
+        .isInstanceOf(IOException.class)
+        .hasMessageEndingWith("/repo/com/example/linux-amd64/1.2-SNAPSHOT/maven-metadata.xml")
+        .hasCauseInstanceOf(SAXException.class);
     }
   }
 

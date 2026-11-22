@@ -84,7 +84,8 @@ class NativeLibraryTest {
       Thread.currentThread().setContextClassLoader(new URLClassLoader(new java.net.URL[0], null));
       assertThatThrownBy(NativeLibrary::getInstance)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("No NativeLibrary implementation found, please add one of the supported dependencies to your project");
+        .hasMessage("No NativeLibrary implementation found, please add one of the supported dependencies to your project")
+        .hasNoCause();
     } finally {
       System.clearProperty("com.marcnuri.jkube-helm.skipRemoteJar");
       Thread.currentThread().setContextClassLoader(currentClassLoader);
