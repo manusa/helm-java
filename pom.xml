@@ -61,6 +61,7 @@
     <version.maven-enforcer-plugin>3.7.0</version.maven-enforcer-plugin>
     <version.maven-gpg>3.2.8</version.maven-gpg>
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
+    <version.maven-jar-plugin>3.5.1</version.maven-jar-plugin>
     <version.maven-javadoc-plugin>3.12.0</version.maven-javadoc-plugin>
     <version.maven-release-plugin>3.3.1</version.maven-release-plugin>
     <!-- DON'T BUMP to 3.3.0 -->
@@ -221,7 +222,9 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>${version.maven-jar-plugin}</version>
         <configuration>
           <archive>
             <manifestEntries>

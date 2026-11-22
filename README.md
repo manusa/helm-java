@@ -39,6 +39,11 @@ Helm runs in-process from a native library built for each platform, shipped in i
   An application built on Linux x86_64 gets `linux-amd64`, whatever host it runs on later.
 - **Without a platform artifact** (e.g. Gradle, which doesn't activate Maven profiles): the matching artifact is downloaded from Maven Central the first time it's needed.
   This doesn't work in air-gapped environments.
+  The download is verified against the repository's SHA-1 checksum (`.sha1`) and cached in a per-user directory: `~/.cache/helm-java` (or `$XDG_CACHE_HOME/helm-java`) on Linux and macOS, `%LOCALAPPDATA%\helm-java\cache` on Windows.
+  On Linux and macOS the directory and its files are created owner-only, and the directory is refused if it's a symbolic link, belongs to another user, or is group- or world-writable.
+  If the default directory can't be created or written (no home directory, a read-only file system), a new private temporary directory is used, so each JVM downloads the JAR again (a `java.util.logging` warning says why).
+  A cached JAR is used if it's still a file of the size recorded when it was verified that other users can't write; otherwise it's downloaded and verified again.
+  It isn't hashed again on each use, so a replacement of the same size by the same user isn't detected.
 
 **Building for another platform.** When the build host and the target host differ (e.g. a container image for `linux/arm64` built on an x86_64 machine), exclude the platform artifacts and add the one for the target explicitly:
 
@@ -79,6 +84,7 @@ Libraries declaring another platform are never used. If libraries are on the cla
 |-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `com.marcnuri.jkube-helm.tempDir`       | Base directory where the native library is extracted before loading it (defaults to `java.io.tmpdir`). It's created if missing, and each JVM extracts into its own `helm-java*` subdirectory inside it. Set it to an executable location if `/tmp` is mounted with `noexec`.                     |
 | `com.marcnuri.jkube-helm.nativeLibrary` | Fully qualified class name of the `com.marcnuri.helm.jni.NativeLibrary` implementation to use, regardless of the detected platform. The class must be registered in a `META-INF/services/com.marcnuri.helm.jni.NativeLibrary` file on the classpath, like the ones in the platform artifacts. |
+| `com.marcnuri.jkube-helm.cacheDir`      | Directory where the native library JAR downloaded from Maven Central is cached (see above for the default). It must not be writable by other users: on Linux and macOS it's created owner-only if missing, and refused if it's a symbolic link, belongs to another user, or is group- or world-writable. Unlike the default directory, a directory set here that can't be created or written is an error, not a reason to fall back to a temporary one. |
 
 ## Features
 
