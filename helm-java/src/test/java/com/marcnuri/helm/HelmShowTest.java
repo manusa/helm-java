@@ -17,6 +17,7 @@
 package com.marcnuri.helm;
 
 import com.marcnuri.helm.jni.RepoServerOptions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -147,6 +148,11 @@ class HelmShowTest {
         .call();
     }
 
+    @AfterEach
+    void tearDown() {
+      Helm.HelmLibHolder.INSTANCE.RepoServerStop(remoteServer);
+    }
+
     @Test
     void all() {
       final String result = Helm.show("oci://" + remoteServer + "/test")
@@ -181,6 +187,11 @@ class HelmShowTest {
         .withRemote(URI.create("oci://" + remoteServer))
         .plainHttp()
         .call();
+    }
+
+    @AfterEach
+    void tearDown() {
+      Helm.HelmLibHolder.INSTANCE.RepoServerStop(remoteServer);
     }
 
     @Test

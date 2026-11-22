@@ -29,13 +29,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * @author Marc Nuri
@@ -50,6 +54,9 @@ class RemoteJarLoader {
   // For testing
   private static final String FORCE_UPDATE = "com.marcnuri.jkube-helm.forceUpdate";
   private static final String SKIP = "com.marcnuri.jkube-helm.skipRemoteJar";
+  // Without them, an unresponsive repository blocks the native library lookup forever
+  static final int CONNECT_TIMEOUT_MILLIS = 10_000;
+  static final int READ_TIMEOUT_MILLIS = 30_000;
 
   private RemoteJarLoader() {
   }
@@ -100,7 +107,10 @@ class RemoteJarLoader {
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
     factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-    final Document xml = factory.newDocumentBuilder().parse(metadataXml);
+    final Document xml;
+    try (InputStream stream = openStream(new URL(metadataXml), CONNECT_TIMEOUT_MILLIS, READ_TIMEOUT_MILLIS)) {
+      xml = factory.newDocumentBuilder().parse(stream, metadataXml);
+    }
     final XPath xPath = XPathFactory.newInstance().newXPath();
     final String versionFragment = version.replace("-SNAPSHOT", "");
     final String timestamp = xPath.evaluate("//metadata/versioning/snapshot/timestamp", xml);
@@ -108,17 +118,78 @@ class RemoteJarLoader {
     return osName + "-" + archName + "-" + versionFragment + "-" + timestamp + "-" + buildNumber + ".jar";
   }
 
-  private static URL cache(URL jarUrl, Path jarFile) throws IOException {
+  static URL cache(URL jarUrl, Path jarFile) throws IOException {
+    return cache(jarUrl, jarFile, CONNECT_TIMEOUT_MILLIS, READ_TIMEOUT_MILLIS);
+  }
+
+  static URL cache(URL jarUrl, Path jarFile, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
     if (System.getProperty(FORCE_UPDATE) != null || !jarFile.toFile().exists() || !jarFile.toFile().isFile()) {
-      Files.deleteIfExists(jarFile);
-      try (
-        ReadableByteChannel inChannel = Channels.newChannel(jarUrl.openStream());
-        FileOutputStream fos = new FileOutputStream(jarFile.toFile());
-        FileChannel outChannel = fos.getChannel()
-      ) {
-        outChannel.transferFrom(inChannel, 0, Long.MAX_VALUE);
+      // Download next to the target and move it into place, so that neither this JVM on a later run nor a
+      // concurrent JVM ever sees (or deletes) a partial JAR
+      final Path partFile = jarFile.resolveSibling(jarFile.getFileName() + "." + UUID.randomUUID() + ".part");
+      final long downloaded;
+      try {
+        final URLConnection connection = openConnection(jarUrl, connectTimeoutMillis, readTimeoutMillis);
+        try (
+          ReadableByteChannel inChannel = Channels.newChannel(connection.getInputStream());
+          FileOutputStream fos = new FileOutputStream(partFile.toFile());
+          FileChannel outChannel = fos.getChannel()
+        ) {
+          downloaded = outChannel.transferFrom(inChannel, 0, Long.MAX_VALUE);
+          // A connection dropped mid-body reads as a normal end of stream
+          final long expected = connection.getContentLengthLong();
+          if (expected >= 0 && downloaded != expected) {
+            throw new IOException("Incomplete download of " + jarUrl + ": got " + downloaded + " of " + expected + " bytes");
+          }
+        }
+      } catch (IOException | RuntimeException exception) {
+        deletePartFile(partFile, exception);
+        throw exception;
+      }
+      try {
+        move(partFile, jarFile);
+      } catch (IOException exception) {
+        deletePartFile(partFile, exception);
+        // A concurrent JVM may have moved its (complete) JAR into place first and still hold it open, which
+        // prevents replacing it on Windows: use that one, if it is the same size as the one just downloaded
+        // (a partial JAR left by a version without the .part download is not)
+        if (!jarFile.toFile().isFile() || jarFile.toFile().length() != downloaded) {
+          throw exception;
+        }
       }
     }
     return jarFile.toUri().toURL();
+  }
+
+  private static void deletePartFile(Path partFile, Exception exception) {
+    try {
+      Files.deleteIfExists(partFile);
+    } catch (IOException cleanupException) {
+      exception.addSuppressed(cleanupException);
+    }
+  }
+
+  private static void move(Path source, Path target) throws IOException {
+    try {
+      Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+    } catch (AtomicMoveNotSupportedException exception) {
+      Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+  /**
+   * Same as {@link URL#openStream()}, but fails instead of blocking forever when the server doesn't
+   * accept the connection or stops sending data.
+   */
+  static InputStream openStream(URL url, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
+    return openConnection(url, connectTimeoutMillis, readTimeoutMillis).getInputStream();
+  }
+
+  private static URLConnection openConnection(URL url, int connectTimeoutMillis, int readTimeoutMillis)
+    throws IOException {
+    final URLConnection connection = url.openConnection();
+    connection.setConnectTimeout(connectTimeoutMillis);
+    connection.setReadTimeout(readTimeoutMillis);
+    return connection;
   }
 }

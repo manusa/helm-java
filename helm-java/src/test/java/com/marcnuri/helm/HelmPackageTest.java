@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
@@ -66,8 +65,8 @@ class HelmPackageTest {
 
   }
   @Test
-  void withoutChart() {
-    final PackageCommand packageCommand = new Helm(Paths.get("")).packageIt();
+  void withoutChart() throws IOException {
+    final PackageCommand packageCommand = new Helm(Files.createDirectory(tempDir.resolve("no-chart"))).packageIt();
     assertThatIllegalStateException()
       .isThrownBy(packageCommand::call)
       .withMessage("Chart.yaml file is missing");

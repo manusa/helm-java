@@ -30,9 +30,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	defer cleanup()
-
-	os.Exit(m.Run())
+	// Not deferred: os.Exit skips deferred calls, which left the isolated directories behind
+	code := m.Run()
+	cleanup()
+	os.Exit(code)
 }
 
 const kubeConfigContentsForTests = `

@@ -85,14 +85,17 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 	_ = os.MkdirAll(dockerConfigHome, 0755)
 	_ = os.MkdirAll(gnupgHome, 0700)
 
-	// Create a minimal Docker config to avoid GPG credential helper
-	dockerConfigFile := filepath.Join(dockerConfigHome, "config.json")
-	dockerConfig := `{
-	"auths": {},
-	"credHelpers": {},
-	"credsStore": ""
+	// Seed the Docker and Helm registry configs with a placeholder entry. With no entry (an empty "auths" or
+	// "credsStore" is not enough), Helm's registry client (oras-go DetectDefaultNativeStore) picks the platform's
+	// credential helper (osxkeychain, wincred, pass, secretservice) if found in PATH, and stores logins there.
+	registryConfig := `{
+	"auths": {
+		"helm-java.invalid": {}
+	}
 }`
-	_ = os.WriteFile(dockerConfigFile, []byte(dockerConfig), 0644)
+	_ = os.WriteFile(filepath.Join(dockerConfigHome, "config.json"), []byte(registryConfig), 0644)
+	_ = os.MkdirAll(filepath.Join(helmConfigHome, "registry"), 0755)
+	_ = os.WriteFile(filepath.Join(helmConfigHome, "registry", "config.json"), []byte(registryConfig), 0644)
 
 	// Clear all Helm-related environment variables
 	for _, envVar := range helmEnvVars {
@@ -105,7 +108,8 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 	_ = os.Setenv("HELM_DATA_HOME", helmDataHome)
 	_ = os.Setenv("DOCKER_CONFIG", dockerConfigHome)
 	_ = os.Setenv("GNUPGHOME", gnupgHome)
-	// Set minimal PATH to avoid credential helper binaries
+	// Minimal PATH. It still includes /usr/local/bin (where e.g. docker-credential-osxkeychain lives), so it's the
+	// seeded registry configs above, not the PATH, that prevent the native credential store detection
 	_ = os.Setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 	// Note: We don't set HELM_DRIVER, leaving it to use the default driver
 

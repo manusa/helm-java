@@ -20,14 +20,12 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/manusa/helm-java/native/internal/helm"
 	"github.com/manusa/helm-java/native/internal/test"
-	"helm.sh/helm/v3/pkg/repo/repotest"
 )
 
 // TestMain sets up an isolated environment for tests by clearing Helm-related
@@ -37,9 +35,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	defer cleanup()
-
-	os.Exit(m.Run())
+	// Not deferred: os.Exit skips deferred calls, which left the isolated directories behind
+	code := m.Run()
+	cleanup()
+	os.Exit(code)
 }
 
 func TestCreate(t *testing.T) {
@@ -272,19 +271,18 @@ func TestRegistryLogout(t *testing.T) {
 }
 
 func TestRepoAdd(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
+	repositoryConfigFile := test.RepositoryConfig(t, "")
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
 		InsecureSkipTlsVerify: true,
-		RepositoryConfig:      repositoryConfigFile.Name(),
+		RepositoryConfig:      repositoryConfigFile,
 	})
 	if err != nil {
 		t.Errorf("Expected repo add to succeed, got %s", err)
 		return
 	}
-	fileContent, _ := os.ReadFile(repositoryConfigFile.Name())
+	fileContent, _ := os.ReadFile(repositoryConfigFile)
 	repositoryConfig := string(fileContent)
 	if !strings.Contains(repositoryConfig, " name: helm\n") {
 		t.Errorf("Expected file to contain 'helm' as name, got %s", repositoryConfig)
@@ -295,12 +293,11 @@ func TestRepoAdd(t *testing.T) {
 }
 
 func TestRepoAddInvalidName(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
+	repositoryConfigFile := test.RepositoryConfig(t, "")
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:             "helm/invalid",
 		Url:              "https://charts.helm.sh/stable",
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 	})
 	if err == nil {
 		t.Error("Expected repo add to fail")
@@ -324,12 +321,11 @@ func TestRepoAddInvalidPath(t *testing.T) {
 }
 
 func TestRepoAddInvalidRepo(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
+	repositoryConfigFile := test.RepositoryConfig(t, "")
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:             "helm",
 		Url:              "https://localhost/stable",
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 	})
 	if err == nil {
 		t.Error("Expected repo add to fail")
@@ -341,15 +337,13 @@ func TestRepoAddInvalidRepo(t *testing.T) {
 }
 
 func TestRepoList(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
-	out, err := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile.Name()})
+	out, err := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile})
 	if err != nil {
 		t.Error("Expected repo list to succeed")
 	}
@@ -362,23 +356,21 @@ func TestRepoList(t *testing.T) {
 }
 
 func TestRepoRemove(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
 	err := helm.RepoRemove(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 		Names:            "stable",
 	})
 	if err != nil {
 		t.Error("Expected repo remove to succeed")
 		return
 	}
-	out, _ := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile.Name()})
+	out, _ := helm.RepoList(&helm.RepoOptions{RepositoryConfig: repositoryConfigFile})
 	if strings.Contains(out, "name=stable") {
 		t.Errorf("Expected 'stable' repo to be removed, got %s", out)
 	}
@@ -388,16 +380,14 @@ func TestRepoRemove(t *testing.T) {
 }
 
 func TestRepoRemoveWithMissing(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
 	err := helm.RepoRemove(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 		Names:            "missing\nstable",
 	})
 	if err == nil {
@@ -410,14 +400,12 @@ func TestRepoRemoveWithMissing(t *testing.T) {
 }
 
 func TestRepoUpdateAll(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
 		"    url: https://charts.helm.sh/stable\n")
 	updated, err := helm.RepoUpdate(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 	})
 	if err != nil {
 		t.Error("Expected repo update to succeed")
@@ -429,16 +417,14 @@ func TestRepoUpdateAll(t *testing.T) {
 }
 
 func TestRepoUpdateByName(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
 	updated, err := helm.RepoUpdate(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 		Names:            "stable\n",
 	})
 	if err != nil {
@@ -451,16 +437,14 @@ func TestRepoUpdateByName(t *testing.T) {
 }
 
 func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
 	updated, err := helm.RepoUpdate(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 		Names:            "other\n",
 	})
 	if err == nil {
@@ -478,16 +462,14 @@ func TestRepoUpdateByNameWithInvalidRepo(t *testing.T) {
 }
 
 func TestRepoUpdateByNameWithInvalidAndValidRepo(t *testing.T) {
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
-	_, _ = repositoryConfigFile.WriteString("apiVersion: \"\"\n" +
-		"repositories:\n" +
-		"  - name: stable\n" +
-		"    url: https://charts.helm.sh/stable\n" +
-		"  - name: other\n" +
+	repositoryConfigFile := test.RepositoryConfig(t, "apiVersion: \"\"\n"+
+		"repositories:\n"+
+		"  - name: stable\n"+
+		"    url: https://charts.helm.sh/stable\n"+
+		"  - name: other\n"+
 		"    url: https://charts.example.com/other\n")
 	updated, err := helm.RepoUpdate(&helm.RepoOptions{
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 		Names:            "other\nstable\n",
 	})
 	if err == nil {
@@ -504,88 +486,117 @@ func TestRepoUpdateByNameWithInvalidAndValidRepo(t *testing.T) {
 	}
 }
 
-func repoServerStartAsync(t *testing.T, serverInfoChannel chan *repotest.Server, stopChannel chan bool) {
-	srv, err := helm.RepoServerStart(&helm.RepoServerOptions{})
+// testHttpClient bounds every request to the test servers; keep-alives are disabled so that a request
+// after a server is stopped opens a new connection instead of reusing a pooled one
+var testHttpClient = &http.Client{
+	Timeout:   10 * time.Second,
+	Transport: &http.Transport{DisableKeepAlives: true},
+}
+
+// statusCode performs a GET request and returns the response status code
+func statusCode(url string) (int, error) {
+	resp, err := testHttpClient.Get(url)
 	if err != nil {
-		t.Errorf("Expected server to be started")
+		return 0, err
 	}
-	serverInfoChannel <- srv
+	_ = resp.Body.Close()
+	return resp.StatusCode, nil
+}
+
+// waitForOciServer waits (bounded) until the test OCI server, which starts serving in a goroutine, responds
+func waitForOciServer(t *testing.T, registryURL string) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
 	for {
-		select {
-		case <-stopChannel:
-			helm.RepoServerStop(srv.URL())
+		_, err := statusCode("http://" + registryURL + "/v2/")
+		if err == nil {
 			return
-		default:
-			time.Sleep(10 * time.Millisecond)
 		}
+		if time.Now().After(deadline) {
+			t.Fatalf("Expected OCI server to be started, got %s", err)
+		}
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
 func TestRepoServerStart(t *testing.T) {
 	defer helm.RepoServerStopAll()
-	serverInfoChannel := make(chan *repotest.Server)
-	stopChannel := make(chan bool)
-	defer func() { stopChannel <- true }()
-	go repoServerStartAsync(t, serverInfoChannel, stopChannel)
-	time.Sleep(100 * time.Millisecond)
-	serverInfo := <-serverInfoChannel
-	resp, err := http.Get(serverInfo.URL())
+	srv, err := helm.RepoServerStart(&helm.RepoServerOptions{})
 	if err != nil {
-		t.Errorf("Expected server to be started")
+		t.Fatalf("Expected server to be started, got %s", err)
 	}
-	if resp.StatusCode != 200 {
-		t.Errorf("Expected server to return 200, got %d", resp.StatusCode)
+	code, err := statusCode(srv.URL())
+	if err != nil {
+		t.Fatalf("Expected server to be started, got %s", err)
+	}
+	if code != 200 {
+		t.Errorf("Expected server to return 200, got %d", code)
 	}
 }
 
 func TestRepoServerStartMultipleInstances(t *testing.T) {
 	defer helm.RepoServerStopAll()
-	serverInfoChannel := make(chan *repotest.Server)
-	stopChannel := make(chan bool)
-	defer func() { stopChannel <- true }()
-	defer helm.RepoServerStopAll()
-	go repoServerStartAsync(t, serverInfoChannel, stopChannel)
-	srv1 := <-serverInfoChannel
-	go repoServerStartAsync(t, serverInfoChannel, stopChannel)
-	time.Sleep(100 * time.Millisecond) // ensure servers are started and continue to run
-	srv2 := <-serverInfoChannel
-	resp1, err1 := http.Get(srv1.URL())
-	resp2, err2 := http.Get(srv2.URL())
+	srv1, err1 := helm.RepoServerStart(&helm.RepoServerOptions{})
+	srv2, err2 := helm.RepoServerStart(&helm.RepoServerOptions{})
 	if err1 != nil || err2 != nil {
-		t.Errorf("Expected all servers to be started")
+		t.Fatalf("Expected all servers to be started, got %v and %v", err1, err2)
 	}
-	if resp1.StatusCode != 200 || resp2.StatusCode != 200 {
-		t.Errorf("Expected all server to return 200, got %d and %d", resp1.StatusCode, resp2.StatusCode)
+	code1, err1 := statusCode(srv1.URL())
+	code2, err2 := statusCode(srv2.URL())
+	if err1 != nil || err2 != nil {
+		t.Fatalf("Expected all servers to be started, got %v and %v", err1, err2)
+	}
+	if code1 != 200 || code2 != 200 {
+		t.Errorf("Expected all server to return 200, got %d and %d", code1, code2)
 	}
 }
 
 func TestRepoServerStop(t *testing.T) {
-	serverInfoChannel := make(chan *repotest.Server)
-	stopChannel := make(chan bool)
-	defer func() { stopChannel <- true }()
-	go repoServerStartAsync(t, serverInfoChannel, stopChannel)
-	time.Sleep(100 * time.Millisecond)
-	serverInfo := <-serverInfoChannel
-	helm.RepoServerStop(serverInfo.URL())
-	_, err := http.Get(serverInfo.URL())
-	if err == nil {
+	defer helm.RepoServerStopAll()
+	srv, err := helm.RepoServerStart(&helm.RepoServerOptions{})
+	if err != nil {
+		t.Fatalf("Expected server to be started, got %s", err)
+	}
+	helm.RepoServerStop(srv.URL())
+	if _, err := statusCode(srv.URL()); err == nil {
 		t.Errorf("Expected server to be stopped")
 	}
 }
 
+func TestRepoServerStopWithOciServer(t *testing.T) {
+	defer helm.RepoServerStopAll()
+	srv, err := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	if err != nil {
+		t.Fatalf("Expected OCI server to be started, got %s", err)
+	}
+	waitForOciServer(t, srv.RegistryURL)
+	helm.RepoServerStop(srv.RegistryURL)
+	if _, err := statusCode("http://" + srv.RegistryURL + "/v2/"); err == nil {
+		t.Errorf("Expected OCI server to be stopped")
+	}
+	if _, err := os.Stat(srv.Dir); !os.IsNotExist(err) {
+		t.Errorf("Expected OCI server directory %s to be removed, got %v", srv.Dir, err)
+	}
+}
+
 func TestRepoServerStopAll(t *testing.T) {
-	srv1, _ := helm.RepoServerStart(&helm.RepoServerOptions{})
-	srv2, _ := helm.RepoServerStart(&helm.RepoServerOptions{})
+	defer helm.RepoServerStopAll() // in case the test fails before stopping them
+	srv1, err1 := helm.RepoServerStart(&helm.RepoServerOptions{})
+	srv2, err2 := helm.RepoOciServerStart(&helm.RepoServerOptions{})
+	if err1 != nil || err2 != nil {
+		t.Fatalf("Expected all servers to be started, got %v and %v", err1, err2)
+	}
+	waitForOciServer(t, srv2.RegistryURL)
 	helm.RepoServerStopAll()
-	_, err := http.Get(srv1.URL())
-	_, err2 := http.Get(srv2.URL())
-	if err == nil || err2 == nil {
+	_, err1 = statusCode(srv1.URL())
+	_, err2 = statusCode("http://" + srv2.RegistryURL + "/v2/")
+	if err1 == nil || err2 == nil {
 		t.Errorf("Expected all servers to be stopped")
 	}
 }
 
 func TestSearchRepo(t *testing.T) {
-	repositoryConfig := filepath.Join(t.TempDir(), "repositories.yaml")
+	repositoryConfig := test.RepositoryConfig(t, "")
 	err := helm.RepoAdd(&helm.RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",

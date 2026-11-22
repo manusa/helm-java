@@ -22,7 +22,7 @@ Multi-module Maven build (parent `pom.xml`) + a sibling Go module under `native/
 | `lib/wasi/` | Abandoned WebAssembly experiment (issue [#239](https://github.com/manusa/helm-java/issues/239), PR [#243](https://github.com/manusa/helm-java/pull/243)). Not in parent `pom.xml`. Don't touch; will be removed. |
 | `native/main.go` | **CGO bridge only**: C struct definitions + `//export` wrappers that delegate to `internal/helm`. No business logic. |
 | `native/internal/helm/` | **Real Go implementations** — one file per verb (`install.go`, `upgrade.go`, …) plus `_test.go` siblings. `helm.go` holds shared config (`NewCfg`), `debug.go` the stdout/stderr capture. |
-| `native/internal/test/` | Go test helpers (envtest). |
+| `native/internal/test/` | Go test helpers: `SetupIsolatedEnv` (isolated Helm/Docker homes and seeded registry configs, called from each package's `TestMain`) and `RepositoryConfig` (a `repositories.yaml` path in a test temp dir). The envtest (k8s) helper is `internal/helm/envtest_test.go`. |
 | `native/wasm/`, `native/out/` | TinyGo/WASI experiment entrypoint (see `lib/wasi/` note); build output for shared libraries. |
 | `docs/research/` | Audits and decision records (e.g. native-codebase audit). Snapshots — may be stale; check the date. |
 | `scripts/check-authors.sh` | Validates `@author` Javadoc tags (invoked via `make check-authors`). |
@@ -125,7 +125,7 @@ Verbs with both forms: `install`, `template`, `show`, `upgrade`. Most others are
 ## Adding a new Helm command (end-to-end)
 
 1. `native/internal/helm/<verb>.go` — write the real Go function (params struct + function returning `(string, error)`).
-2. `native/internal/helm/<verb>_test.go` — Go test (use `internal/test/env.go` helpers if k8s needed).
+2. `native/internal/helm/<verb>_test.go` — Go test (use the envtest helpers in `internal/helm/envtest_test.go` if k8s is needed, and `test.RepositoryConfig(t, content)` for any `repositories.yaml`, never `os.CreateTemp("", …)`: repo commands create a lock file next to it).
 3. `native/main.go`:
    - Add `struct <Verb>Options { ... }` in the CGO comment block.
    - Add `//export <Verb>` wrapper calling `helm.<Verb>(...)` via `runCommand(...)`.
@@ -145,6 +145,12 @@ Verbs with both forms: `install`, `template`, `show`, `upgrade`. Most others are
 - `@TempDir` as a field for shared dirs; as a parameter for per-test dirs (see `HelmInstallTest`).
 - k8s integration: `HelmKubernetesTest` spins up KinD via Testcontainers in `@BeforeAll`; clean releases in `@AfterEach`.
 - Surefire sets `KUBECONFIG=/dev/null` in `helm-java/pom.xml` so tests cannot accidentally hit your local cluster — pass `kubeConfigFile`/`kubeConfigContents` explicitly.
+- Surefire also isolates the tests from your Helm and Docker config:
+  - `HELM_CACHE_HOME`, `HELM_CONFIG_HOME`, `HELM_DATA_HOME` and `DOCKER_CONFIG` point at `helm-java/target/helm-home/`.
+  - The other `HELM_*` variables from your environment that redirect Helm's files or change its behavior (`HELM_REPOSITORY_CACHE`, `HELM_REPOSITORY_CONFIG`, `HELM_NAMESPACE`, …) are not passed to the tests. `HELM_REGISTRY_CONFIG` is excluded too, defensively: the native registry client doesn't read it.
+  - Maven's `process-test-resources` phase seeds the registry configs there from `helm-java/src/test/helm-home/` with a placeholder entry, so registry logins go to that file and not to an OS credential store (Keychain, Credential Manager, `pass`, Secret Service). A test run from an IDE on a freshly cleaned `target/`, without that Maven phase, has no seed.
+  - Trade-off: Testcontainers reads `DOCKER_CONFIG` too, so the KinD image pulls in `HelmKubernetesTest` are anonymous (Docker Hub rate limits apply; an authenticated mirror won't be used).
+  - Don't make a test depend on the working directory (e.g. packaging `Paths.get("")`): `target/helm-home` lives in it and holds large repository indexes.
 
 ```java
 class HelmFeatureTest {

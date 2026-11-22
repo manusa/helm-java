@@ -41,8 +41,7 @@ class HelmTestServerTest {
   @Test
   void testRepoServerStart() throws Exception {
     final Result result = Helm.HelmLibHolder.INSTANCE.RepoServerStart(new RepoServerOptions());
-    final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
-    uc.setRequestMethod("GET");
+    final HttpURLConnection uc = get(result.out);
     uc.connect();
     assertThat(uc.getResponseCode()).isEqualTo(200);
   }
@@ -52,8 +51,7 @@ class HelmTestServerTest {
     final Result result1 = Helm.HelmLibHolder.INSTANCE.RepoServerStart(new RepoServerOptions());
     final Result result2 = Helm.HelmLibHolder.INSTANCE.RepoServerStart(new RepoServerOptions());
     for (Result result : new Result[]{result1, result2}) {
-      final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
-      uc.setRequestMethod("GET");
+      final HttpURLConnection uc = get(result.out);
       uc.connect();
       assertThat(uc.getResponseCode()).isEqualTo(200);
     }
@@ -65,10 +63,16 @@ class HelmTestServerTest {
     final Result result2 = Helm.HelmLibHolder.INSTANCE.RepoServerStart(new RepoServerOptions());
     Helm.HelmLibHolder.INSTANCE.RepoServerStopAll();
     for (Result result : new Result[]{result1, result2}) {
-      final HttpURLConnection uc = (HttpURLConnection) new URI(result.out).toURL().openConnection();
-      uc.setRequestMethod("GET");
+      final HttpURLConnection uc = get(result.out);
       assertThatThrownBy(uc::connect).isInstanceOf(ConnectException.class);
     }
   }
 
+  private static HttpURLConnection get(String url) throws Exception {
+    final HttpURLConnection uc = (HttpURLConnection) new URI(url).toURL().openConnection();
+    uc.setRequestMethod("GET");
+    uc.setConnectTimeout(10_000);
+    uc.setReadTimeout(10_000);
+    return uc;
+  }
 }

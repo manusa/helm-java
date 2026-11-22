@@ -17,20 +17,20 @@
 package helm
 
 import (
-	"os"
 	"strings"
 	"testing"
+
+	"github.com/manusa/helm-java/native/internal/test"
 )
 
 func TestUpgradeFromRepoAndInvalidVersion(t *testing.T) {
 	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
-	repositoryConfigFile, _ := os.CreateTemp(t.TempDir(), "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
+	repositoryConfigFile := test.RepositoryConfig(t, "")
 	err := RepoAdd(&RepoOptions{
 		Name:                  "helm",
 		Url:                   "https://charts.helm.sh/stable",
 		InsecureSkipTlsVerify: true,
-		RepositoryConfig:      repositoryConfigFile.Name(),
+		RepositoryConfig:      repositoryConfigFile,
 	})
 	if err != nil {
 		t.Errorf("Expected repo add to succeed, got %s", err)
@@ -42,7 +42,7 @@ func TestUpgradeFromRepoAndInvalidVersion(t *testing.T) {
 		Name:             "ingress-nginx",
 		Version:          "9999.9999.9999",
 		ClientOnly:       true,
-		RepositoryConfig: repositoryConfigFile.Name(),
+		RepositoryConfig: repositoryConfigFile,
 	})
 	// Then
 	if err == nil {
