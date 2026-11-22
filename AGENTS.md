@@ -146,10 +146,10 @@ Verbs with both forms: `install`, `template`, `show`, `upgrade`. Most others are
 - k8s integration: `HelmKubernetesTest` spins up KinD via Testcontainers in `@BeforeAll`; clean releases in `@AfterEach`.
 - Surefire sets `KUBECONFIG=/dev/null` in `helm-java/pom.xml` so tests cannot accidentally hit your local cluster — pass `kubeConfigFile`/`kubeConfigContents` explicitly.
 - Surefire also isolates the tests from your Helm and Docker config:
-  - `HELM_CACHE_HOME`, `HELM_CONFIG_HOME`, `HELM_DATA_HOME` and `DOCKER_CONFIG` point at `helm-java/target/helm-home/`.
-  - The other `HELM_*` variables from your environment that redirect Helm's files or change its behavior (`HELM_REPOSITORY_CACHE`, `HELM_REPOSITORY_CONFIG`, `HELM_NAMESPACE`, …) are not passed to the tests. `HELM_REGISTRY_CONFIG` is excluded too, defensively: the native registry client doesn't read it.
-  - Maven's `process-test-resources` phase seeds the registry configs there from `helm-java/src/test/helm-home/` with a placeholder entry, so registry logins go to that file and not to an OS credential store (Keychain, Credential Manager, `pass`, Secret Service). A test run from an IDE on a freshly cleaned `target/`, without that Maven phase, has no seed.
-  - Trade-off: Testcontainers reads `DOCKER_CONFIG` too, so the KinD image pulls in `HelmKubernetesTest` are anonymous (Docker Hub rate limits apply; an authenticated mirror won't be used).
+  - `HELM_CACHE_HOME` and `HELM_DATA_HOME` point at `helm-java/target/helm-home/`; `HELM_CONFIG_HOME` and `DOCKER_CONFIG` at `helm-java/target/test-classes/helm-home/`.
+  - Every other `HELM_*` variable Helm reads that redirects its files or changes its behavior (`HELM_REPOSITORY_CACHE`, `HELM_NAMESPACE`, `HELM_KUBEASUSER`, …) is not passed to the tests. The list in `helm-java/pom.xml` matches the one in `native/internal/test/env.go`; keep both in sync with the variables Helm reads: those in its `pkg/cli/environment.go`, plus `HELM_DRIVER` (read by `native/internal/helm/helm.go`) and `HELM_DRIVER_SQL_CONNECTION_STRING` (Helm's `pkg/action/action.go`). `HELM_REGISTRY_CONFIG` is excluded defensively: the native registry client doesn't read it.
+  - The registry configs come from the test resources (`helm-java/src/test/resources/helm-home/`, copied by Maven and IDEs alike) and hold a placeholder entry, so registry logins go to that file and not to an OS credential store (Keychain, Credential Manager, `pass`, Secret Service).
+  - Trade-off: Testcontainers reads `DOCKER_CONFIG` too, so the KinD and Ryuk image pulls in `HelmKubernetesTest` are anonymous (Docker Hub rate limits apply; an authenticated mirror won't be used).
   - Don't make a test depend on the working directory (e.g. packaging `Paths.get("")`): `target/helm-home` lives in it and holds large repository indexes.
 
 ```java

@@ -17,7 +17,7 @@
 
   <properties>
     <enforcer.skipRules>requireFilesExist</enforcer.skipRules>
-    <!-- Helm and Docker config, cache and data used by the tests (see the surefire configuration) -->
+    <!-- Helm cache and data used by the tests (see the surefire configuration) -->
     <helm.test.home>${project.build.directory}/helm-home</helm.test.home>
   </properties>
 
@@ -29,52 +29,41 @@
         <configuration>
           <environmentVariables>
             <KUBECONFIG>/dev/null</KUBECONFIG>
-            <!-- Keep registry credentials, repositories and their cache out of the developer's Helm and Docker config -->
+            <!-- Keep registry credentials, repositories and their cache out of the developer's Helm and Docker config.
+                 The config homes are in the test output directory because they hold the seeded registry configs
+                 (src/test/resources/helm-home), which IDEs copy there too. Without a seeded entry, Helm's registry
+                 client (oras-go DetectDefaultNativeStore) would store logins in the OS credential store
+                 (osxkeychain, wincred, pass, secretservice). -->
             <HELM_CACHE_HOME>${helm.test.home}/cache</HELM_CACHE_HOME>
-            <HELM_CONFIG_HOME>${helm.test.home}/config</HELM_CONFIG_HOME>
+            <HELM_CONFIG_HOME>${project.build.testOutputDirectory}/helm-home/config</HELM_CONFIG_HOME>
             <HELM_DATA_HOME>${helm.test.home}/data</HELM_DATA_HOME>
-            <DOCKER_CONFIG>${helm.test.home}/docker</DOCKER_CONFIG>
+            <DOCKER_CONFIG>${project.build.testOutputDirectory}/helm-home/docker</DOCKER_CONFIG>
           </environmentVariables>
-          <!-- These take precedence over the *_HOME variables above, or change behavior (mirrors native/internal/test/env.go) -->
+          <!-- Every HELM_* variable Helm reads that would redirect its files or change its behavior: those in
+               helm.sh/helm/v3 pkg/cli/environment.go, plus HELM_DRIVER (read by native/internal/helm/helm.go) and
+               HELM_DRIVER_SQL_CONNECTION_STRING (pkg/action/action.go); same list as native/internal/test/env.go -->
           <excludedEnvironmentVariables>
+            <excludedEnvironmentVariable>HELM_BURST_LIMIT</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_DEBUG</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_DRIVER</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_DRIVER_SQL_CONNECTION_STRING</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_KUBEAPISERVER</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_KUBEASGROUPS</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_KUBEASUSER</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_KUBECAFILE</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_KUBECONTEXT</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_KUBEINSECURE_SKIP_TLS_VERIFY</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_KUBETLS_SERVER_NAME</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_KUBETOKEN</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_MAX_HISTORY</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_NAMESPACE</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_PLUGINS</excludedEnvironmentVariable>
+            <excludedEnvironmentVariable>HELM_QPS</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_REGISTRY_CONFIG</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_REPOSITORY_CACHE</excludedEnvironmentVariable>
             <excludedEnvironmentVariable>HELM_REPOSITORY_CONFIG</excludedEnvironmentVariable>
           </excludedEnvironmentVariables>
         </configuration>
-      </plugin>
-      <plugin>
-        <!-- Seeds the registry configs with a placeholder entry. With no entry, Helm's registry client
-             (oras-go DetectDefaultNativeStore) would store logins in the OS credential store (osxkeychain,
-             wincred, pass, secretservice) instead. Overwritten on every build, so stale logins don't pile up. -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${version.maven-resources-plugin}</version>
-        <executions>
-          <execution>
-            <id>seed-helm-test-home</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${helm.test.home}</outputDirectory>
-              <overwrite>true</overwrite>
-              <resources>
-                <resource>
-                  <directory>src/test/helm-home</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

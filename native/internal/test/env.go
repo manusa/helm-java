@@ -26,12 +26,26 @@ var helmEnvVars = []string{
 	"HELM_CACHE_HOME",
 	"HELM_CONFIG_HOME",
 	"HELM_DATA_HOME",
+	// Every other HELM_* variable Helm reads that would redirect its files or change its behavior: those in
+	// helm.sh/helm/v3 pkg/cli/environment.go, plus HELM_DRIVER (read by internal/helm/helm.go) and
+	// HELM_DRIVER_SQL_CONNECTION_STRING (pkg/action/action.go); same list as the excludedEnvironmentVariables in
+	// helm-java/pom.xml
+	"HELM_BURST_LIMIT",
 	"HELM_DEBUG",
 	"HELM_DRIVER",
+	"HELM_DRIVER_SQL_CONNECTION_STRING",
 	"HELM_KUBEAPISERVER",
+	"HELM_KUBEASGROUPS",
+	"HELM_KUBEASUSER",
+	"HELM_KUBECAFILE",
 	"HELM_KUBECONTEXT",
+	"HELM_KUBEINSECURE_SKIP_TLS_VERIFY",
+	"HELM_KUBETLS_SERVER_NAME",
 	"HELM_KUBETOKEN",
+	"HELM_MAX_HISTORY",
 	"HELM_NAMESPACE",
+	"HELM_PLUGINS",
+	"HELM_QPS",
 	"HELM_REGISTRY_CONFIG",
 	"HELM_REPOSITORY_CACHE",
 	"HELM_REPOSITORY_CONFIG",
@@ -93,9 +107,19 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 		"helm-java.invalid": {}
 	}
 }`
-	_ = os.WriteFile(filepath.Join(dockerConfigHome, "config.json"), []byte(registryConfig), 0644)
-	_ = os.MkdirAll(filepath.Join(helmConfigHome, "registry"), 0755)
-	_ = os.WriteFile(filepath.Join(helmConfigHome, "registry", "config.json"), []byte(registryConfig), 0644)
+	// A failed write must fail the tests: they would otherwise silently run with that detection back on
+	for _, seed := range []string{
+		filepath.Join(dockerConfigHome, "config.json"),
+		filepath.Join(helmConfigHome, "registry", "config.json"),
+	} {
+		if err = os.MkdirAll(filepath.Dir(seed), 0755); err == nil {
+			err = os.WriteFile(seed, []byte(registryConfig), 0644)
+		}
+		if err != nil {
+			_ = os.RemoveAll(tempDir)
+			return nil, err
+		}
+	}
 
 	// Clear all Helm-related environment variables
 	for _, envVar := range helmEnvVars {

@@ -40,6 +40,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 /**
  * @author Marc Nuri
@@ -136,11 +138,18 @@ class RemoteJarLoader {
           FileChannel outChannel = fos.getChannel()
         ) {
           downloaded = outChannel.transferFrom(inChannel, 0, Long.MAX_VALUE);
-          // A connection dropped mid-body reads as a normal end of stream
+          // A connection dropped mid-body reads as a normal end of stream. This cheap first check only covers
+          // responses with a Content-Length (not chunked or close-delimited ones): the ZIP check below covers all
           final long expected = connection.getContentLengthLong();
           if (expected >= 0 && downloaded != expected) {
             throw new IOException("Incomplete download of " + jarUrl + ": got " + downloaded + " of " + expected + " bytes");
           }
+        }
+        // The ZIP central directory is at the end of the file, so a truncated download fails to open
+        try (ZipFile ignored = new ZipFile(partFile.toFile())) {
+          // Valid
+        } catch (ZipException exception) {
+          throw new IOException("Invalid download of " + jarUrl + ": truncated or not a valid ZIP", exception);
         }
       } catch (IOException | RuntimeException exception) {
         deletePartFile(partFile, exception);

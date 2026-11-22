@@ -33,11 +33,14 @@ import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,8 +52,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Timeout(value = 30, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
 class RemoteJarLoaderTest {
 
+  private static final String FORCE_UPDATE = "com.marcnuri.jkube-helm.forceUpdate";
+
   @TempDir
   private Path tempDir;
+
+  private byte[] jar;
 
   private CountDownLatch release;
   private ExecutorService executor;
@@ -59,6 +66,7 @@ class RemoteJarLoaderTest {
   @BeforeEach
   void setUp() throws IOException {
     release = new CountDownLatch(1);
+    jar = jar();
     executor = Executors.newCachedThreadPool();
     server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
     server.setExecutor(executor);
@@ -67,6 +75,20 @@ class RemoteJarLoaderTest {
       exchange.sendResponseHeaders(200, body.length);
       try (OutputStream os = exchange.getResponseBody()) {
         os.write(body);
+      }
+    });
+    server.createContext("/jar", exchange -> {
+      exchange.sendResponseHeaders(200, jar.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(jar);
+      }
+    });
+    server.createContext("/jar-truncated-chunked", exchange -> {
+      // A chunked response (no Content-Length) with only part of the JAR: what the client gets when such a
+      // response is cut off, since it reads a dropped chunked or close-delimited body as a normal end of stream
+      exchange.sendResponseHeaders(200, 0);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(jar, 0, jar.length / 2);
       }
     });
     server.createContext("/truncated", exchange -> {
@@ -121,9 +143,29 @@ class RemoteJarLoaderTest {
     @Test
     void downloadsToTarget() throws IOException {
       final Path jarFile = tempDir.resolve("the.jar");
-      assertThat(RemoteJarLoader.cache(url("/responds"), jarFile)).isEqualTo(jarFile.toUri().toURL());
-      assertThat(jarFile).hasContent("the-content");
+      assertThat(RemoteJarLoader.cache(url("/jar"), jarFile)).isEqualTo(jarFile.toUri().toURL());
+      assertThat(jarFile).hasBinaryContent(jar);
       assertThat(tempDir).isDirectoryNotContaining("glob:**.part");
+    }
+
+    @Test
+    void notAJarLeavesNoFile() throws IOException {
+      final Path jarFile = tempDir.resolve("the.jar");
+      final URL url = url("/responds");
+      assertThatThrownBy(() -> RemoteJarLoader.cache(url, jarFile))
+        .isInstanceOf(IOException.class)
+        .hasMessageEndingWith(": truncated or not a valid ZIP");
+      assertThat(tempDir).isEmptyDirectory();
+    }
+
+    @Test
+    void truncatedChunkedDownloadLeavesNoFile() throws IOException {
+      final Path jarFile = tempDir.resolve("the.jar");
+      final URL url = url("/jar-truncated-chunked");
+      assertThatThrownBy(() -> RemoteJarLoader.cache(url, jarFile))
+        .isInstanceOf(IOException.class)
+        .hasMessageEndingWith(": truncated or not a valid ZIP");
+      assertThat(tempDir).isEmptyDirectory();
     }
 
     @Test
@@ -143,6 +185,53 @@ class RemoteJarLoaderTest {
         .isInstanceOf(SocketTimeoutException.class);
       assertThat(tempDir).isEmptyDirectory();
     }
+
+    @Test
+    void usesCachedJarWithoutContactingServer() throws IOException {
+      final Path jarFile = Files.write(tempDir.resolve("the.jar"), "cached".getBytes(StandardCharsets.UTF_8));
+      final long start = System.nanoTime();
+      assertThat(RemoteJarLoader.cache(url("/never-responds"), jarFile, 5_000, 5_000))
+        .isEqualTo(jarFile.toUri().toURL());
+      assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)).isLessThan(2_000L);
+      assertThat(jarFile).hasContent("cached");
+    }
+
+    @Nested
+    class ForceUpdate {
+
+      private String previousForceUpdate;
+
+      @BeforeEach
+      void setForceUpdate() {
+        previousForceUpdate = System.setProperty(FORCE_UPDATE, "true");
+      }
+
+      @AfterEach
+      void restoreForceUpdate() {
+        if (previousForceUpdate == null) {
+          System.clearProperty(FORCE_UPDATE);
+        } else {
+          System.setProperty(FORCE_UPDATE, previousForceUpdate);
+        }
+      }
+
+      @Test
+      void replacesCachedJar() throws IOException {
+        final Path jarFile = Files.write(tempDir.resolve("the.jar"), "cached".getBytes(StandardCharsets.UTF_8));
+        RemoteJarLoader.cache(url("/jar"), jarFile);
+        assertThat(jarFile).hasBinaryContent(jar);
+      }
+
+      @Test
+      void keepsCachedJarWhenDownloadFails() throws IOException {
+        final Path jarFile = Files.write(tempDir.resolve("the.jar"), "cached".getBytes(StandardCharsets.UTF_8));
+        final URL url = url("/truncated");
+        assertThatThrownBy(() -> RemoteJarLoader.cache(url, jarFile))
+          .isInstanceOf(IOException.class);
+        assertThat(jarFile).hasContent("cached");
+        assertThat(tempDir).isDirectoryNotContaining("glob:**.part");
+      }
+    }
   }
 
   @Nested
@@ -158,6 +247,16 @@ class RemoteJarLoaderTest {
     void readTimeoutIsBounded() {
       assertThat(RemoteJarLoader.READ_TIMEOUT_MILLIS).isPositive();
     }
+  }
+
+  private static byte[] jar() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      zip.putNextEntry(new ZipEntry("META-INF/services/com.marcnuri.helm.jni.NativeLibrary"));
+      zip.write("com.example.NativeLibrary\n".getBytes(StandardCharsets.UTF_8));
+      zip.closeEntry();
+    }
+    return out.toByteArray();
   }
 
   private URL url(String path) throws IOException {
