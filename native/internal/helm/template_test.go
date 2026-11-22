@@ -21,6 +21,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/manusa/helm-java/native/internal/test"
 )
 
 func TestTemplateFromLocal(t *testing.T) {
@@ -90,13 +92,12 @@ func TestTemplateFromLocal(t *testing.T) {
 
 func TestTemplateFromReference(t *testing.T) {
 	// Add a temp repository to retrieve the chart from (should include ingress-nginx)
-	repositoryConfigFile, _ := os.CreateTemp("", "repositories.yaml")
-	defer func(name string) { _ = os.Remove(name) }(repositoryConfigFile.Name())
+	repositoryConfigFile := test.RepositoryConfig(t, "")
 	err := RepoAdd(&RepoOptions{
 		Name:                  "ingress-nginx",
 		Url:                   "https://kubernetes.github.io/ingress-nginx",
 		InsecureSkipTlsVerify: true,
-		RepositoryConfig:      repositoryConfigFile.Name(),
+		RepositoryConfig:      repositoryConfigFile,
 	})
 	if err != nil {
 		t.Errorf("Expected repo add to succeed, got %s", err)
@@ -109,7 +110,7 @@ func TestTemplateFromReference(t *testing.T) {
 		manifests, err := Template(&TemplateOptions{
 			Name:             "the-name",
 			Chart:            "ingress-nginx/ingress-nginx",
-			RepositoryConfig: repositoryConfigFile.Name(),
+			RepositoryConfig: repositoryConfigFile,
 		})
 		if err != nil {
 			t.Errorf("Expected template to succeed, got %s", err)
@@ -127,7 +128,7 @@ func TestTemplateFromReference(t *testing.T) {
 	t.Run("with values", func(t *testing.T) {
 		manifests, err := Template(&TemplateOptions{
 			Chart:            "ingress-nginx/ingress-nginx",
-			RepositoryConfig: repositoryConfigFile.Name(),
+			RepositoryConfig: repositoryConfigFile,
 			Values:           "controller.image.registry=helm-java.registry.example.com",
 			Debug:            true,
 		})
@@ -146,7 +147,7 @@ func TestTemplateFromReference(t *testing.T) {
 		_, _ = valuesFile.WriteString("controller:\n  image:\n    registry: file.helm-java.registry.example.com\n")
 		manifests, err := Template(&TemplateOptions{
 			Chart:            "ingress-nginx/ingress-nginx",
-			RepositoryConfig: repositoryConfigFile.Name(),
+			RepositoryConfig: repositoryConfigFile,
 			ValuesFiles:      valuesFile.Name(),
 			Debug:            true,
 		})

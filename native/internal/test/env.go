@@ -26,12 +26,26 @@ var helmEnvVars = []string{
 	"HELM_CACHE_HOME",
 	"HELM_CONFIG_HOME",
 	"HELM_DATA_HOME",
+	// Every other HELM_* variable Helm reads that would redirect its files or change its behavior: those in
+	// helm.sh/helm/v3 pkg/cli/environment.go, plus HELM_DRIVER (read by internal/helm/helm.go) and
+	// HELM_DRIVER_SQL_CONNECTION_STRING (pkg/action/action.go); same list as the excludedEnvironmentVariables in
+	// helm-java/pom.xml
+	"HELM_BURST_LIMIT",
 	"HELM_DEBUG",
 	"HELM_DRIVER",
+	"HELM_DRIVER_SQL_CONNECTION_STRING",
 	"HELM_KUBEAPISERVER",
+	"HELM_KUBEASGROUPS",
+	"HELM_KUBEASUSER",
+	"HELM_KUBECAFILE",
 	"HELM_KUBECONTEXT",
+	"HELM_KUBEINSECURE_SKIP_TLS_VERIFY",
+	"HELM_KUBETLS_SERVER_NAME",
 	"HELM_KUBETOKEN",
+	"HELM_MAX_HISTORY",
 	"HELM_NAMESPACE",
+	"HELM_PLUGINS",
+	"HELM_QPS",
 	"HELM_REGISTRY_CONFIG",
 	"HELM_REPOSITORY_CACHE",
 	"HELM_REPOSITORY_CONFIG",
@@ -85,14 +99,27 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 	_ = os.MkdirAll(dockerConfigHome, 0755)
 	_ = os.MkdirAll(gnupgHome, 0700)
 
-	// Create a minimal Docker config to avoid GPG credential helper
-	dockerConfigFile := filepath.Join(dockerConfigHome, "config.json")
-	dockerConfig := `{
-	"auths": {},
-	"credHelpers": {},
-	"credsStore": ""
+	// Seed the Docker and Helm registry configs with a placeholder entry. With no entry (an empty "auths" or
+	// "credsStore" is not enough), Helm's registry client (oras-go DetectDefaultNativeStore) picks the platform's
+	// credential helper (osxkeychain, wincred, pass, secretservice) if found in PATH, and stores logins there.
+	registryConfig := `{
+	"auths": {
+		"helm-java.invalid": {}
+	}
 }`
-	_ = os.WriteFile(dockerConfigFile, []byte(dockerConfig), 0644)
+	// A failed write must fail the tests: they would otherwise silently run with that detection back on
+	for _, seed := range []string{
+		filepath.Join(dockerConfigHome, "config.json"),
+		filepath.Join(helmConfigHome, "registry", "config.json"),
+	} {
+		if err = os.MkdirAll(filepath.Dir(seed), 0755); err == nil {
+			err = os.WriteFile(seed, []byte(registryConfig), 0644)
+		}
+		if err != nil {
+			_ = os.RemoveAll(tempDir)
+			return nil, err
+		}
+	}
 
 	// Clear all Helm-related environment variables
 	for _, envVar := range helmEnvVars {
@@ -105,7 +132,8 @@ func SetupIsolatedEnv() (EnvCleanup, error) {
 	_ = os.Setenv("HELM_DATA_HOME", helmDataHome)
 	_ = os.Setenv("DOCKER_CONFIG", dockerConfigHome)
 	_ = os.Setenv("GNUPGHOME", gnupgHome)
-	// Set minimal PATH to avoid credential helper binaries
+	// Minimal PATH. It still includes /usr/local/bin (where e.g. docker-credential-osxkeychain lives), so it's the
+	// seeded registry configs above, not the PATH, that prevent the native credential store detection
 	_ = os.Setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 	// Note: We don't set HELM_DRIVER, leaving it to use the default driver
 

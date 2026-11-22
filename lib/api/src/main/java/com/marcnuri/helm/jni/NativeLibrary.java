@@ -36,17 +36,24 @@ import static com.marcnuri.helm.jni.RemoteJarLoader.remoteJar;
 public interface NativeLibrary {
 
   static NativeLibrary getInstance() {
-    NativeLibrary nativeLibrary;
-    ClassLoader remoteJar;
-    if (
-      // Load from ClassPath (should work on Maven)
-      (nativeLibrary = serviceProviderLibrary(null)) != null ||
-        // Load from remote JAR (should work on Gradle if not air-gapped)
-        ((remoteJar = remoteJar()) != null && (nativeLibrary = serviceProviderLibrary(remoteJar)) != null)
-    ) {
+    // Load from ClassPath (should work on Maven)
+    NativeLibrary nativeLibrary = serviceProviderLibrary(null);
+    if (nativeLibrary != null) {
       return nativeLibrary;
     }
-    throw new IllegalStateException("No NativeLibrary implementation found, please add one of the supported dependencies to your project");
+    // Load from remote JAR (should work on Gradle if not air-gapped)
+    IOException remoteJarFailure = null;
+    try {
+      final ClassLoader remoteJar = remoteJar();
+      if (remoteJar != null && (nativeLibrary = serviceProviderLibrary(remoteJar)) != null) {
+        return nativeLibrary;
+      }
+    } catch (IOException exception) {
+      remoteJarFailure = exception;
+    }
+    throw new IllegalStateException(
+      "No NativeLibrary implementation found, please add one of the supported dependencies to your project",
+      remoteJarFailure);
   }
 
   /**

@@ -32,9 +32,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 var servers = cmap.New[*ActiveServer]()
+
+const ociServerShutdownTimeout = 5 * time.Second
 
 type RepoServerOptions struct {
 	Glob     string
@@ -137,10 +140,12 @@ func serverStop(server *ActiveServer) {
 		server.server.Stop()
 	}
 	if server.ociServer != nil {
-		// server.ociServer.Stop() //TODO can't be stopped for now ¯\_(ツ)_/¯
+		// Closes the listener and lets ListenAndServe return; bounded in case a connection never goes idle
+		ctx, cancel := context.WithTimeout(context.Background(), ociServerShutdownTimeout)
+		_ = server.ociServer.Shutdown(ctx)
+		cancel()
 	}
 	_ = os.RemoveAll(server.dir)
-	_ = os.RemoveAll(server.id)
 }
 
 func RepoServerStop(url string) {
