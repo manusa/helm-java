@@ -14,7 +14,7 @@ Add the dependency to your project:
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java</artifactId>
-  <version>0.0.22</version>
+  <version>0.0.23</version>
 </dependency>
 ```
 
@@ -51,7 +51,7 @@ Helm runs in-process from a native library built for each platform, shipped in i
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>helm-java</artifactId>
-  <version>0.0.22</version>
+  <version>0.0.23</version>
   <exclusions>
     <exclusion>
       <groupId>com.marcnuri.helm-java</groupId>
@@ -62,12 +62,12 @@ Helm runs in-process from a native library built for each platform, shipped in i
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>lib-api</artifactId>
-  <version>0.0.22</version>
+  <version>0.0.23</version>
 </dependency>
 <dependency>
   <groupId>com.marcnuri.helm-java</groupId>
   <artifactId>linux-arm64</artifactId>
-  <version>0.0.22</version>
+  <version>0.0.23</version>
 </dependency>
 ```
 
@@ -929,7 +929,7 @@ To release a new version manually:
 2. Commit and tag the release with the  `pom.xml` version.
    ```shell
    git add .
-   git commit -m "[RELEASE] vX.Y.Z released"
+   git commit -m "[RELEASE] Updated project version to vX.Y.Z"
    git tag vX.Y.Z
    git push origin vX.Y.Z
    ```
@@ -940,8 +940,8 @@ To release a new version manually:
 4. Commit the changes with the following message:
    ```shell
    git add .
-   git commit -m "[RELEASE] v0.0.15 released, prepare for next development iteration"
-   git push origin master
+   git commit -m "[RELEASE] vX.Y.Z released, prepare for next development iteration"
+   git push origin main
    ```
 
 #### Create GitHub Release
