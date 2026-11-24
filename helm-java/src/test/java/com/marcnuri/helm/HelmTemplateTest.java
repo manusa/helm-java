@@ -46,15 +46,36 @@ class HelmTemplateTest {
     private Helm helm;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
       helm = Helm.create().withName("local-chart-test").withDir(tempDir).call();
+      Files.write(tempDir.resolve("local-chart-test").resolve("templates").resolve("hook.yaml"),
+        ("apiVersion: v1\n" +
+          "kind: ConfigMap\n" +
+          "metadata:\n" +
+          "  name: template-hook\n" +
+          "  annotations:\n" +
+          "    \"helm.sh/hook\": pre-install\n" +
+          "data:\n" +
+          "  marker: hook-manifest\n").getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.CREATE);
     }
 
     @Test
     void withDefaults() {
       final String result = helm.template().call();
       assertThat(result)
-        .contains("name: release-name-local-chart-test");
+        .contains("name: release-name-local-chart-test")
+        .doesNotContain("marker: hook-manifest");
+    }
+
+    @Test
+    void includeHooks() {
+      final String result = helm.template().includeHooks().call();
+      assertThat(result)
+        .contains("name: release-name-local-chart-test")
+        .contains("# Source: local-chart-test/templates/deployment.yaml\n")
+        .contains("---\n# Source: local-chart-test/templates/hook.yaml\napiVersion: v1\nkind: ConfigMap\n")
+        .contains("marker: hook-manifest");
     }
 
     @Test
